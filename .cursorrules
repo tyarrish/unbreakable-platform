@@ -1,0 +1,141 @@
+# Rogue Leadership Training Experience - Development Rules
+
+## Project Context
+Building a learning management platform for leadership training with Next.js 14, TypeScript, Supabase, and ShadCN UI. Always maintain the nature-inspired design system and modular component architecture.
+
+## Code Standards
+
+### File Organization
+- Place all reusable UI components in /components/ui
+- Group feature-specific components in /components/[feature-name]
+- Use /lib for utilities, helpers, and shared logic
+- Store types in /types with .types.ts suffix
+- Keep Supabase queries in /lib/supabase/queries
+- Store constants in /lib/constants
+
+### Component Design
+- Always use existing /components/ui components before creating new ones
+- Build new components in a modular, reusable way
+- Use Tailwind CSS with the custom Rogue color palette
+- Implement glass-morphism effects consistently (backdrop-blur-sm bg-white/10)
+- Maintain 0.5rem border radius throughout (rounded-lg)
+- Include hover states with smooth transitions (transition-all duration-200)
+
+### Naming Conventions
+- Components: PascalCase (UserProfile.tsx)
+- Files: kebab-case for utilities (format-date.ts)
+- Functions: camelCase (getUserProgress)
+- Constants: UPPER_SNAKE_CASE (MAX_FILE_SIZE)
+- CSS classes: Tailwind utilities, no custom CSS unless absolutely necessary
+
+### TypeScript Standards
+- Always define types for component props
+- Use strict TypeScript (no any unless absolutely necessary)
+- Create shared types in /types directory
+- Use Supabase generated types for database queries
+- Define API response types explicitly
+
+### Supabase Best Practices
+- Use Row Level Security (RLS) for all tables
+- Create reusable query functions in /lib/supabase
+- Handle real-time subscriptions properly (cleanup on unmount)
+- Use Supabase Storage for all file uploads
+- Optimize queries with proper indexing
+
+### State Management
+- Use React Server Components by default
+- Client components only when needed ('use client' directive)
+- Use React Context for global UI state (theme, sidebar)
+- Zustand for complex client state if needed
+- Server actions for mutations
+
+### Performance
+- Implement lazy loading for images
+- Use Next.js Image component with proper optimization
+- Code split large components
+- Debounce search and filter inputs
+- Implement pagination for large lists
+- Use Suspense boundaries for async components
+
+### Accessibility
+- Include proper ARIA labels
+- Ensure keyboard navigation works
+- Maintain color contrast ratios
+- Add alt text for all images
+- Use semantic HTML elements
+
+### Security
+- Validate all user inputs
+- Sanitize rich text content
+- Use environment variables for secrets
+- Implement proper authentication checks
+- Follow principle of least privilege for RLS
+
+### Error Handling
+- Use error boundaries for component errors
+- Show user-friendly error messages
+- Log errors appropriately
+- Handle loading states gracefully
+- Provide fallback UI
+
+## Design System Consistency
+
+### Colors
+Primary: rogue-forest (#2c3e2d), rogue-pine (#1a2e1d)
+Accent: rogue-gold (#d4af37), rogue-gold-light (#e6c555)
+Background: rogue-cream (#f4f1e8)
+Use color classes: bg-rogue-forest, text-rogue-gold, border-rogue-sage
+
+### Spacing
+Use Tailwind spacing scale consistently
+Generous whitespace: p-6, p-8, gap-6
+Card padding: p-6
+Section spacing: space-y-8
+
+### Typography
+Headings: text-rogue-forest, font-semibold
+Body: text-rogue-slate, leading-relaxed
+Use consistent heading hierarchy (text-3xl, text-2xl, text-xl)
+
+### Interactive Elements
+Buttons: Primary (bg-rogue-forest hover:bg-rogue-pine), Secondary (bg-rogue-gold)
+Focus states: focus:ring-2 focus:ring-rogue-gold
+Disabled states: opacity-50 cursor-not-allowed
+
+## Testing Approach
+- Test authentication flows thoroughly
+- Verify RLS policies prevent unauthorized access
+- Test responsive design on mobile/tablet/desktop
+- Check real-time features work correctly
+- Validate file uploads and downloads
+
+## Commit Practices
+- Write clear, descriptive commit messages
+- Use conventional commits (feat:, fix:, docs:, style:, refactor:)
+- Keep commits focused and atomic
+- Reference issue numbers when applicable
+
+## Environment Management
+- Never commit .env files
+- Use .env.local for local development
+- Maintain separate Supabase projects for dev/staging/prod
+- Document required environment variables
+
+## When Starting New Features
+1. Check existing components for reusability
+2. Plan component structure before coding
+3. Define TypeScript types first
+4. Create database schema/migrations if needed
+5. Implement RLS policies
+6. Build UI with existing design system
+7. Test thoroughly before moving on
+
+## Optimization Guidelines
+- Use server components for data fetching
+- Minimize client-side JavaScript
+- Implement proper caching strategies
+- Optimize database queries
+- Use Vercel Edge Functions for API routes when beneficial
+
+Always prioritize code reusability, maintainability, and adherence to the nature-inspired design system.
+

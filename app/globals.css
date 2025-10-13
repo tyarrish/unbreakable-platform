@@ -1,26 +1,104 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Rogue Leadership Training Experience - Color Palette */
+  
+  /* Primary Forest Tones */
+  --color-rogue-forest: #2c3e2d;
+  --color-rogue-pine: #1a2e1d;
+  --color-rogue-sage: #7a8471;
+  
+  /* Accent Gold */
+  --color-rogue-gold: #d4af37;
+  --color-rogue-gold-light: #e6c555;
+  
+  /* Supporting Neutrals */
+  --color-rogue-cream: #f4f1e8;
+  --color-rogue-slate: #4a5568;
+  --color-rogue-steel: #5a6c7d;
+  
+  /* Earth Tones */
+  --color-rogue-terracotta: #c65d07;
+  --color-rogue-ochre: #cc8900;
+  --color-rogue-copper: #b87333;
+  
+  /* Base colors */
+  --color-background: #ffffff;
+  --color-foreground: #2c3e2d;
+  
+  /* Font families */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, Menlo, Monaco, 'Cascadia Code', 'Source Code Pro', 'Courier New', monospace;
+  
+  /* Border radius */
+  --radius: 0.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-rogue-sage/20;
+  }
+  
+  body {
+    @apply bg-rogue-cream text-rogue-slate antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-rogue-forest font-semibold;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Glass-morphism effect for cards */
+  .glass-card {
+    @apply backdrop-blur-sm bg-white/80 border border-rogue-sage/20 rounded-lg shadow-sm;
+  }
+  
+  /* Button variants */
+  .btn-primary {
+    @apply bg-rogue-forest hover:bg-rogue-pine text-white rounded-lg px-6 py-3 font-medium transition-all duration-200 focus:ring-2 focus:ring-rogue-gold focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-rogue-gold hover:bg-rogue-ochre text-rogue-forest rounded-lg px-6 py-3 font-medium transition-all duration-200 focus:ring-2 focus:ring-rogue-gold-light focus:ring-offset-2;
+  }
+  
+  .btn-ghost {
+    @apply bg-transparent hover:bg-rogue-sage/10 text-rogue-forest rounded-lg px-6 py-3 font-medium transition-all duration-200;
+  }
+  
+  /* Rich text editor prose styles */
+  .prose-rogue {
+    @apply text-rogue-slate;
+  }
+  
+  .prose-rogue h2 {
+    @apply text-rogue-forest font-semibold text-xl mt-6 mb-3;
+  }
+  
+  .prose-rogue p {
+    @apply leading-relaxed mb-4;
+  }
+  
+  .prose-rogue ul,
+  .prose-rogue ol {
+    @apply ml-6 mb-4;
+  }
+  
+  .prose-rogue li {
+    @apply mb-2;
+  }
+  
+  .prose-rogue blockquote {
+    @apply border-l-4 border-rogue-gold pl-4 italic text-rogue-slate;
+  }
+  
+  .prose-rogue a {
+    @apply text-rogue-forest hover:text-rogue-pine underline;
+  }
+  
+  .prose-rogue strong {
+    @apply font-semibold text-rogue-forest;
+  }
 }
