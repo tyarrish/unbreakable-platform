@@ -218,6 +218,19 @@ See `.cursorrules` for comprehensive development guidelines including:
 - Sub-2s page load times
 - Zero critical security vulnerabilities
 
+## 📚 Documentation
+
+All comprehensive guides are in the **[/docs](./docs/)** folder:
+
+- **[Setup Guide](./docs/SETUP.md)** - Build status and next steps
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Deploy to Vercel
+- **[Testing Guide](./docs/TESTING_GUIDE.md)** - Test all features  
+- **[Video Setup](./docs/VIDEO_SETUP_GUIDE.md)** - Configure video hosting
+- **[Complete Summary](./docs/COMPLETE_BUILD_SUMMARY.md)** - Full feature list
+- **[Database Setup](./supabase/README.md)** - Migrations and schema
+
+See **[docs/README.md](./docs/README.md)** for complete documentation index.
+
 ## 🤝 Contributing
 
 This is a solo project built with Claude Sonnet 4.5 in Cursor. Follow the `.cursorrules` guidelines for consistent code quality.
