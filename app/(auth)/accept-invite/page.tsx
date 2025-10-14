@@ -39,46 +39,51 @@ function AcceptInviteContent() {
     setIsValidating(true)
     
     try {
+      // Get full URL for debugging
+      const fullUrl = window.location.href
+      console.log('Full invite URL:', fullUrl)
+      
       // Log all URL parameters for debugging
       const allParams: { [key: string]: string } = {}
       searchParams.forEach((value, key) => {
         allParams[key] = value
       })
       console.log('All URL parameters:', allParams)
+      console.log('Number of parameters:', Object.keys(allParams).length)
+      
+      // If there are no URL parameters at all, the link is incomplete
+      if (Object.keys(allParams).length === 0) {
+        console.error('No URL parameters found - invite link is incomplete')
+        setIsValid(false)
+        setIsValidating(false)
+        toast.error('Incomplete invite link. The invite email may not have been sent correctly.')
+        return
+      }
       
       // Get the token_hash and type from URL params (from Supabase invite email)
       const tokenHash = searchParams.get('token_hash')
       const type = searchParams.get('type')
-      const token = searchParams.get('token') // Sometimes Supabase uses 'token' instead
       
       console.log('Accept invite - token_hash:', tokenHash ? 'present' : 'missing')
-      console.log('Accept invite - token:', token ? 'present' : 'missing')
       console.log('Accept invite - type:', type)
       
-      // Handle different URL formats Supabase might use
-      if (!tokenHash && !token) {
-        console.error('Missing token parameters - both token_hash and token are missing')
+      if (!tokenHash) {
+        console.error('token_hash is missing - this means Supabase invite link was not properly constructed')
+        console.error('This usually means:')
+        console.error('1. The redirect URL in Supabase is not in the allowed list')
+        console.error('2. The NEXT_PUBLIC_SITE_URL env variable is not set correctly')
+        console.error('3. The invite was sent before fixing these settings')
         setIsValid(false)
         setIsValidating(false)
-        toast.error('Invalid invite link format - missing token')
+        toast.error('Invalid invite link - missing security token. Please request a new invite.')
         return
       }
       
-      if (!type) {
-        console.error('Missing type parameter')
+      if (type !== 'invite') {
+        console.error('Wrong type parameter - expected "invite", got:', type)
         setIsValid(false)
         setIsValidating(false)
-        toast.error('Invalid invite link format - missing type')
-        return
-      }
-
-      // Verify the invite token with Supabase
-      // Note: Supabase always uses token_hash for invite links
-      if (!tokenHash) {
-        console.error('token_hash is required but not present')
-        setIsValid(false)
-        setIsValidating(false)
-        toast.error('Invalid invite link - missing token_hash parameter')
+        toast.error('Invalid invite link type. Please request a new invite.')
         return
       }
       
