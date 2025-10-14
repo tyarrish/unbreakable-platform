@@ -34,7 +34,7 @@ export default function EditEventPage() {
       .from('profiles')
       .select('role')
       .eq('id', user.id)
-      .single()
+      .single<{ role: string }>()
 
     if (profile?.role !== 'admin' && profile?.role !== 'facilitator') {
       router.push('/dashboard')

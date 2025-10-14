@@ -44,7 +44,7 @@ export default function DashboardPage() {
           .from('profiles')
           .select('*')
           .eq('id', authUser.id)
-          .single()
+          .single() as any
 
         if (profile) {
           const userData = {

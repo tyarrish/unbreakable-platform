@@ -6,6 +6,7 @@ import { Container } from '@/components/layout/container'
 import { PageHeader } from '@/components/layout/page-header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -71,7 +72,7 @@ export default function PartnerPage() {
         .from('profiles')
         .select('partner_id')
         .eq('id', user.id)
-        .single()
+        .single<{ partner_id: string | null }>()
 
       if (profile?.partner_id) {
         setPartnerId(profile.partner_id)

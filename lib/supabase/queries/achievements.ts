@@ -60,8 +60,8 @@ export async function awardAchievement(userId: string, achievementId: string): P
   
   if (existing) return // Already has this achievement
   
-  const { error } = await supabase
-    .from('user_achievements')
+  const { error } = await (supabase
+    .from('user_achievements') as any)
     .insert({
       user_id: userId,
       achievement_id: achievementId
@@ -70,15 +70,15 @@ export async function awardAchievement(userId: string, achievementId: string): P
   if (error) throw error
   
   // Get achievement details for notification
-  const { data: achievement } = await supabase
-    .from('achievements')
+  const { data: achievement } = await (supabase
+    .from('achievements') as any)
     .select('*')
     .eq('id', achievementId)
     .single()
   
   if (achievement) {
     // Create notification
-    await supabase.from('notifications').insert({
+    await (supabase.from('notifications') as any).insert({
       user_id: userId,
       type: 'achievement',
       title: `Achievement Unlocked: ${achievement.name}!`,
@@ -88,7 +88,7 @@ export async function awardAchievement(userId: string, achievementId: string): P
     })
     
     // Create activity
-    await supabase.from('activity_feed').insert({
+    await (supabase.from('activity_feed') as any).insert({
       user_id: userId,
       activity_type: 'achievement_earned',
       title: `Earned "${achievement.name}" achievement`,
@@ -114,16 +114,16 @@ export async function getUserAchievementCount(userId: string): Promise<number> {
 export async function getTotalPoints(userId: string): Promise<number> {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('user_achievements')
     .select(`
       achievement:achievements(points)
     `)
-    .eq('user_id', userId)
+    .eq('user_id', userId)) as any
   
   if (error) throw error
   
-  const totalPoints = data?.reduce((sum, item) => {
+  const totalPoints = data?.reduce((sum: number, item: any) => {
     return sum + (item.achievement?.points || 0)
   }, 0) || 0
   
@@ -139,20 +139,20 @@ export async function getLeaderboard(limit: number = 10): Promise<Array<{
   const supabase = createClient()
   
   // Get all users with their achievements
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('user_achievements')
     .select(`
       user_id,
       user:profiles!user_achievements_user_id_fkey(id, full_name, avatar_url),
       achievement:achievements(points)
-    `)
+    `)) as any
   
   if (error) throw error
   
   // Group by user and calculate totals
   const userMap = new Map<string, { user: any; total_points: number; achievement_count: number }>()
   
-  data?.forEach((item) => {
+  data?.forEach((item: any) => {
     const userId = item.user_id
     const points = item.achievement?.points || 0
     

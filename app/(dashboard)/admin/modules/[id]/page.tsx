@@ -55,7 +55,7 @@ export default function EditModulePage() {
         .from('profiles')
         .select('role')
         .eq('id', user.id)
-        .single()
+        .single<{ role: string }>()
       setUserRole(profile?.role || '')
     }
   }
@@ -110,7 +110,7 @@ export default function EditModulePage() {
         title,
         description,
         order_number: orderNumber,
-        release_date: releaseDate || null,
+        release_date: releaseDate || undefined,
         is_published: isPublished,
       })
 

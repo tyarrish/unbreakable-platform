@@ -37,7 +37,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
-          .single()
+          .single<{ role: string }>()
 
         console.log('Dashboard: Profile data:', profile)
 
@@ -47,7 +47,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           return
         }
 
-        setUserRole(profile.role)
+        setUserRole(profile.role as UserRole)
         console.log('Dashboard: User role set:', profile.role)
       } catch (error) {
         console.error('Dashboard: Auth check error:', error)

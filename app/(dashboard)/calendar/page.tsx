@@ -14,9 +14,10 @@ import { getEvents, registerForEvent, unregisterFromEvent, isRegisteredForEvent 
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
 import { EVENT_TYPES, LOCATION_TYPES } from '@/lib/constants'
+import type { Event } from '@/types/index.types'
 
 export default function CalendarPage() {
-  const [events, setEvents] = useState<any[]>([])
+  const [events, setEvents] = useState<Event[]>([])
   const [registrations, setRegistrations] = useState<Set<string>>(new Set())
   const [userId, setUserId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -36,7 +37,7 @@ export default function CalendarPage() {
       }
       setUserId(user.id)
 
-      const eventsData = await getEvents()
+      const eventsData = await getEvents() as Event[]
       setEvents(eventsData)
 
       // Check registrations
@@ -143,8 +144,8 @@ export default function CalendarPage() {
                       const eventType = EVENT_TYPES.find(t => t.value === event.event_type)
                       const locationType = LOCATION_TYPES.find(l => l.value === event.location_type)
                       const isRegistered = registrations.has(event.id)
-                      const attendeeCount = event.attendance?.[0]?.count || 0
-                      const isCapacityReached = event.max_attendees && attendeeCount >= event.max_attendees
+                      const attendeeCount = (event as any).attendance?.[0]?.count || 0
+                      const isCapacityReached = !!(event.max_attendees && attendeeCount >= event.max_attendees)
 
                       return (
                         <Card key={event.id} className="border-0 shadow-xl hover:shadow-2xl transition-all bg-gradient-to-br from-white to-rogue-copper/5">
@@ -172,9 +173,9 @@ export default function CalendarPage() {
                                   {isCapacityReached && !isRegistered && (
                                     <Badge className="bg-red-600 text-white border-0">Full</Badge>
                                   )}
-                                  {event.module && (
+                                  {(event as any).module && (
                                     <Badge variant="outline">
-                                      Module {event.module.order_number}
+                                      Module {(event as any).module.order_number}
                                     </Badge>
                                   )}
                                 </div>

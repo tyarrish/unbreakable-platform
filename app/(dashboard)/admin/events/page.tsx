@@ -60,7 +60,7 @@ export default function AdminEventsPage() {
       .from('profiles')
       .select('role')
       .eq('id', user.id)
-      .single()
+      .single<{ role: string }>()
 
     if (profile?.role !== 'admin' && profile?.role !== 'facilitator') {
       router.push('/dashboard')
@@ -111,13 +111,12 @@ export default function AdminEventsPage() {
         <PageHeader
           heading="Manage Events"
           description="Create and manage cohort calls, workshops, and events"
-          action={
-            <Button onClick={() => router.push('/admin/events/new')}>
-              <Plus size={16} className="mr-2" />
-              Create Event
-            </Button>
-          }
-        />
+        >
+          <Button onClick={() => router.push('/admin/events/new')}>
+            <Plus size={16} className="mr-2" />
+            Create Event
+          </Button>
+        </PageHeader>
 
         {events.length === 0 ? (
           <EmptyState

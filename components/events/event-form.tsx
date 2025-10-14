@@ -99,17 +99,17 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       // Prepare data
       const eventData = {
         title: formData.title,
-        description: formData.description || null,
+        description: formData.description || undefined,
         event_type: formData.event_type,
         start_time: new Date(formData.start_time).toISOString(),
         end_time: new Date(formData.end_time).toISOString(),
         is_required: formData.is_required,
         location_type: formData.location_type,
-        location_address: formData.location_address || null,
-        zoom_link: formData.zoom_link || null,
-        zoom_meeting_id: formData.zoom_meeting_id || null,
-        module_id: formData.module_id || null,
-        max_attendees: formData.max_attendees ? parseInt(formData.max_attendees) : null,
+        location_address: formData.location_address || undefined,
+        zoom_link: formData.zoom_link || undefined,
+        zoom_meeting_id: formData.zoom_meeting_id || undefined,
+        module_id: formData.module_id || undefined,
+        max_attendees: formData.max_attendees ? parseInt(formData.max_attendees) : undefined,
         created_by: user.id,
       }
 

@@ -31,7 +31,7 @@ export default function ProfilePage() {
           .from('profiles')
           .select('*')
           .eq('id', authUser.id)
-          .single()
+          .single() as any
 
         if (profile) {
           setUser({

@@ -32,8 +32,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
     setIsLoading(true)
 
     try {
-      const { error } = await supabase
-        .from('profiles')
+      const { error } = await (supabase
+        .from('profiles') as any)
         .update({
           full_name: fullName,
           bio: bio,
@@ -97,8 +97,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
         .getPublicUrl(filePath)
 
       // Update profile
-      const { error: updateError } = await supabase
-        .from('profiles')
+      const { error: updateError } = await (supabase
+        .from('profiles') as any)
         .update({ avatar_url: publicUrl })
         .eq('id', user.id)
 

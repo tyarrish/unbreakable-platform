@@ -53,13 +53,13 @@ export function GlobalSearch() {
       const searchResults: SearchResult[] = []
 
       // Search modules
-      const { data: modules } = await supabase
+      const { data: modules } = await (supabase
         .from('modules')
         .select('id, title, description')
         .or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
-        .limit(5)
+        .limit(5)) as any
 
-      modules?.forEach(module => {
+      modules?.forEach((module: any) => {
         searchResults.push({
           id: module.id,
           type: 'module',
@@ -70,13 +70,13 @@ export function GlobalSearch() {
       })
 
       // Search lessons
-      const { data: lessons } = await supabase
+      const { data: lessons } = await (supabase
         .from('lessons')
         .select('id, title, module_id')
         .ilike('title', `%${searchQuery}%`)
-        .limit(5)
+        .limit(5)) as any
 
-      lessons?.forEach(lesson => {
+      lessons?.forEach((lesson: any) => {
         searchResults.push({
           id: lesson.id,
           type: 'lesson',
@@ -86,13 +86,13 @@ export function GlobalSearch() {
       })
 
       // Search discussions
-      const { data: discussions } = await supabase
+      const { data: discussions } = await (supabase
         .from('discussion_threads')
         .select('id, title')
         .ilike('title', `%${searchQuery}%`)
-        .limit(5)
+        .limit(5)) as any
 
-      discussions?.forEach(discussion => {
+      discussions?.forEach((discussion: any) => {
         searchResults.push({
           id: discussion.id,
           type: 'discussion',
@@ -102,13 +102,13 @@ export function GlobalSearch() {
       })
 
       // Search events
-      const { data: events } = await supabase
+      const { data: events } = await (supabase
         .from('events')
         .select('id, title, event_type, start_time')
         .or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
-        .limit(5)
+        .limit(5)) as any
 
-      events?.forEach(event => {
+      events?.forEach((event: any) => {
         searchResults.push({
           id: event.id,
           type: 'event',
@@ -120,13 +120,13 @@ export function GlobalSearch() {
       })
 
       // Search members
-      const { data: members } = await supabase
+      const { data: members } = await (supabase
         .from('profiles')
         .select('id, full_name, email')
         .or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
-        .limit(5)
+        .limit(5)) as any
 
-      members?.forEach(member => {
+      members?.forEach((member: any) => {
         searchResults.push({
           id: member.id,
           type: 'member',

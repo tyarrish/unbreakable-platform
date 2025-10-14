@@ -42,7 +42,7 @@ export default function CapstonePage() {
         .from('capstone_projects')
         .select('*')
         .eq('user_id', user.id)
-        .single()
+        .single<CapstoneProject>()
 
       if (data) {
         setProject(data)
@@ -63,13 +63,13 @@ export default function CapstonePage() {
 
     setIsSaving(true)
     try {
-      const { error } = await supabase
-        .from('capstone_projects')
+      const { error } = await (supabase
+        .from('capstone_projects') as any)
         .upsert({
           user_id: userId,
           title,
           description,
-          status: 'in_progress',
+          status: 'in_progress' as CapstoneStatus,
         })
 
       if (error) throw error
@@ -89,10 +89,10 @@ export default function CapstonePage() {
 
     setIsSaving(true)
     try {
-      const { error } = await supabase
-        .from('capstone_projects')
+      const { error } = await (supabase
+        .from('capstone_projects') as any)
         .update({
-          status: 'submitted',
+          status: 'submitted' as CapstoneStatus,
           submitted_at: new Date().toISOString(),
         })
         .eq('user_id', userId)

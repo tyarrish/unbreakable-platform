@@ -39,13 +39,13 @@ export default function NewBookPage() {
         author,
         description,
         isbn,
-        cover_image_url: coverImageUrl || null,
-        amazon_link: amazonLink || null,
-        goodreads_link: goodreadsLink || null,
+        cover_image_url: coverImageUrl || undefined,
+        amazon_link: amazonLink || undefined,
+        goodreads_link: goodreadsLink || undefined,
         assigned_month: assignedMonth,
         is_featured: isFeatured,
-        reasoning: reasoning || null,
-        key_takeaways: keyTakeaways ? keyTakeaways.split('\n').filter(t => t.trim()) : null,
+        reasoning: reasoning || undefined,
+        key_takeaways: keyTakeaways ? keyTakeaways.split('\n').filter(t => t.trim()) : undefined,
       })
 
       toast.success('Book added successfully!')

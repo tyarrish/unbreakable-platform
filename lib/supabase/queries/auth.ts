@@ -12,11 +12,11 @@ export async function getCurrentUser(): Promise<User | null> {
   
   if (error || !user) return null
   
-  const { data: profile } = await supabase
+  const { data: profile } = await (supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .single()) as any
   
   if (!profile) return null
   

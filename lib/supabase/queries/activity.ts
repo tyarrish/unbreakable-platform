@@ -91,8 +91,8 @@ export async function createActivity(
 ): Promise<void> {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('activity_feed')
+  const { error } = await (supabase
+    .from('activity_feed') as any)
     .insert({
       user_id: userId,
       activity_type: activityType,
@@ -127,7 +127,7 @@ export function subscribeToActivityFeed(callback: (activity: ActivityItem) => vo
         
         callback({
           ...(payload.new as ActivityItem),
-          user
+          user: user || undefined
         })
       }
     )

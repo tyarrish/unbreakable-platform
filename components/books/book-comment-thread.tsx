@@ -16,6 +16,7 @@ import {
 import { formatDate } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
 import { MessageSquare, Heart, Reply, Trash2, Send } from 'lucide-react'
+import type { UserRole } from '@/types/index.types'
 
 interface BookCommentThreadProps {
   bookId: string
@@ -130,7 +131,7 @@ export function BookCommentThread({ bookId, userId }: BookCommentThreadProps) {
               <span className="font-medium text-rogue-forest">
                 {comment.user?.full_name || 'Anonymous'}
               </span>
-              {comment.user?.role && <RoleBadge role={comment.user.role} />}
+              {comment.user?.role && <RoleBadge role={comment.user.role as UserRole} />}
               <span className="text-xs text-rogue-slate">
                 {formatDate(comment.created_at)}
                 {comment.is_edited && ' (edited)'}

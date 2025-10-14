@@ -31,7 +31,7 @@ export default function AdminPage() {
           .from('profiles')
           .select('role')
           .eq('id', user.id)
-          .single()
+          .single<{ role: string }>()
 
         if (!profile || (profile.role !== 'admin' && profile.role !== 'facilitator')) {
           router.push('/dashboard')

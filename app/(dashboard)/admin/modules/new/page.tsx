@@ -31,7 +31,7 @@ export default function NewModulePage() {
         title,
         description,
         order_number: orderNumber,
-        release_date: releaseDate || null,
+        release_date: releaseDate || undefined,
         is_published: isPublished,
       })
 

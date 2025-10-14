@@ -65,8 +65,8 @@ export function ResourceUpload({ onUploadComplete, lessonId, moduleId }: Resourc
       const idColumn = lessonId ? 'lesson_id' : 'module_id'
       const idValue = lessonId || moduleId
 
-      const { error: dbError } = await supabase
-        .from(table)
+      const { error: dbError } = await (supabase
+        .from(table) as any)
         .insert({
           [idColumn]: idValue,
           file_name: file.name,

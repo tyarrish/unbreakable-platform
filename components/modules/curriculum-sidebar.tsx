@@ -132,7 +132,7 @@ export function CurriculumSidebar({ modules, progressMap, currentLessonId, class
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {modules.map((module) => {
             const isExpanded = expandedModules.has(module.id)
-            const isLocked = module.release_date && new Date(module.release_date) > new Date()
+            const isLocked = !!(module.release_date && new Date(module.release_date) > new Date())
             const completedCount = module.lessons.filter(
               l => progressMap.get(l.id)?.status === 'completed'
             ).length
