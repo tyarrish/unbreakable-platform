@@ -312,10 +312,10 @@ export default function DashboardPage() {
                         <Calendar className="h-4 w-4 text-rogue-copper mt-1" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-rogue-forest">{event.title}</p>
-                          <p className="text-sm text-rogue-slate">{new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>
-                          {event.is_virtual && event.meeting_link && (
+                          <p className="text-sm text-rogue-slate">{new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>
+                          {event.location_type === 'virtual' && event.zoom_link && (
                             <Button variant="link" className="h-auto p-0 text-xs text-rogue-gold" asChild>
-                              <a href={event.meeting_link} target="_blank" rel="noopener noreferrer">Join virtual meeting</a>
+                              <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">Join virtual meeting</a>
                             </Button>
                           )}
                         </div>
