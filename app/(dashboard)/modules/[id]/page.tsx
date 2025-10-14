@@ -17,9 +17,10 @@ import { getEventsByModule } from '@/lib/supabase/queries/events'
 import { getBooksByMonth } from '@/lib/supabase/queries/books'
 import { calculateProgress } from '@/lib/utils/progress'
 import { formatTimeSpent } from '@/lib/utils/progress'
-import { ArrowLeft, Clock, BookOpen, CheckCircle2, TrendingUp, Calendar } from 'lucide-react'
+import { formatDate, formatEventTime } from '@/lib/utils/format-date'
+import { ArrowLeft, Clock, CheckCircle2, TrendingUp, Calendar, MapPin, Video } from 'lucide-react'
 import { toast } from 'sonner'
-import type { Module, Lesson, LessonProgress } from '@/types/index.types'
+import type { Module, Lesson, LessonProgress, Event } from '@/types/index.types'
 
 export default function ModuleDetailPage() {
   const params = useParams()
@@ -120,11 +121,11 @@ export default function ModuleDetailPage() {
       {/* Main Content (with sidebars offset) */}
       <div className="lg:mr-80 py-8 px-6">
         {/* Clean Module Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <Button 
             variant="ghost" 
             onClick={() => router.push('/modules')}
-            className="mb-6"
+            className="mb-4 hover:bg-rogue-sage/10"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to All Modules
@@ -142,58 +143,96 @@ export default function ModuleDetailPage() {
             )}
           </div>
           
-          <h1 className="text-3xl md:text-4xl font-bold text-rogue-forest mb-3">{module.title}</h1>
-          
-          {module.description && (
-            <p className="text-lg text-rogue-slate leading-relaxed max-w-3xl">
-              {module.description}
-            </p>
-          )}
+          <h1 className="text-3xl md:text-4xl font-bold text-rogue-forest">{module.title}</h1>
         </div>
 
-        {/* Progress Card */}
-          <Card className="mb-8 border-0 shadow-xl bg-gradient-to-br from-white to-rogue-forest/5">
-            <CardHeader>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-rogue-forest/10 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-rogue-forest" />
-                </div>
+        {/* Compact Progress & Events Bar */}
+        <div className="mb-8 space-y-3">
+          {/* Progress Indicator */}
+          <div className="bg-white rounded-lg border border-rogue-sage/20 p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-rogue-forest" />
+                <span className="text-sm font-medium text-rogue-forest">Your Module Progress</span>
               </div>
-              <CardTitle className="text-2xl">Your Module Progress</CardTitle>
-              <CardDescription className="text-base">
-                {completedLessons} of {lessons.length} lessons completed
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ProgressTree progress={progressPercentage} />
-            </CardContent>
-          </Card>
+              <span className="text-sm font-semibold text-rogue-forest">{completedLessons} of {lessons.length} lessons</span>
+            </div>
+            <ProgressTree progress={progressPercentage} />
+          </div>
 
-        {/* Events Banner */}
-        {events.length > 0 && (
-          <Card className="mb-8 border-0 shadow-xl bg-gradient-to-br from-rogue-copper/5 to-white">
-            <CardHeader>
-              <div className="flex items-center justify-between">
+          {/* Events Listing */}
+          {events.length > 0 && (
+            <div className="bg-white rounded-lg border border-rogue-sage/20 p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 bg-rogue-copper/10 rounded-lg">
-                    <Calendar className="h-5 w-5 text-rogue-copper" />
-                  </div>
-                  <CardTitle className="text-2xl">Module Events</CardTitle>
+                  <Calendar className="h-4 w-4 text-rogue-gold" />
+                  <h3 className="text-sm font-semibold text-rogue-forest">Module Events</h3>
+                  <Badge variant="outline" className="border-rogue-gold text-rogue-gold bg-rogue-gold/5 text-xs">
+                    {events.length}
+                  </Badge>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => router.push('/calendar')}
-                >
-                  View All
-                </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              <ModuleEventsBanner events={events} />
-            </CardContent>
-          </Card>
-        )}
+              
+              <div className="space-y-2">
+                {events.map((event: Event) => (
+                  <div
+                    key={event.id}
+                    onClick={() => router.push(`/calendar?event=${event.id}`)}
+                    className="group flex items-start gap-3 p-3 rounded-lg border border-rogue-sage/10 hover:border-rogue-gold/30 hover:bg-rogue-gold/5 cursor-pointer transition-all"
+                  >
+                    <div className="flex-shrink-0 w-1 h-full bg-rogue-gold rounded-full" />
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h4 className="font-medium text-sm text-rogue-forest group-hover:text-rogue-gold transition-colors">
+                          {event.title}
+                        </h4>
+                        {event.is_required && (
+                          <Badge variant="outline" className="border-red-500 text-red-600 bg-red-50 text-xs flex-shrink-0">
+                            Required
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-1 text-xs text-rogue-slate">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-3 w-3" />
+                          <span>
+                            {formatDate(event.start_time, { month: 'short', day: 'numeric', year: 'numeric' })} • {formatEventTime(event.start_time, event.end_time)}
+                          </span>
+                        </div>
+                        
+                        {event.location_type === 'virtual' && event.zoom_link ? (
+                          <div className="flex items-center gap-2">
+                            <Video className="h-3 w-3" />
+                            <span>Virtual Event</span>
+                          </div>
+                        ) : event.location_address ? (
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-3 w-3" />
+                            <span className="truncate">{event.location_address}</span>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex-shrink-0 text-xs h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        router.push(`/calendar?event=${event.id}`)
+                      }}
+                    >
+                      Details
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Tabs for Lessons and Resources */}
         <Tabs defaultValue="lessons" className="space-y-6">
@@ -205,8 +244,6 @@ export default function ModuleDetailPage() {
           </TabsList>
 
           <TabsContent value="lessons" className="space-y-4">
-            <h2 className="text-2xl font-semibold text-rogue-forest">Lessons</h2>
-            
             {lessons.length === 0 ? (
               <Card>
                 <CardContent className="py-12">
@@ -268,11 +305,6 @@ export default function ModuleDetailPage() {
           </TabsContent>
 
           <TabsContent value="resources" className="space-y-4">
-            <h2 className="text-2xl font-semibold text-rogue-forest flex items-center gap-2">
-              <BookOpen size={24} />
-              Reading Materials
-            </h2>
-            
             {books.length === 0 ? (
               <Card>
                 <CardContent className="py-12">

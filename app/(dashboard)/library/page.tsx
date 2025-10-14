@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Library, BookOpen, Star, ExternalLink, Sparkles, BookMarked, Check } from 'lucide-react'
+import { Library, BookOpen, Star, ExternalLink, Sparkles, BookMarked, Check, Circle, CheckCircle2 } from 'lucide-react'
 import { getBooks, getReadingProgress, updateReadingProgress } from '@/lib/supabase/queries/books'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
@@ -228,47 +228,26 @@ export default function LibraryPage() {
                               </div>
                             )}
 
-                            {/* Quick Status Toggle */}
-                            <div className="flex gap-1.5 pt-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  updateStatus(book.id, 'want_to_read')
-                                }}
-                                className={`flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all ${
-                                  status === 'want_to_read' 
-                                    ? 'bg-rogue-forest text-white shadow-sm' 
-                                    : 'bg-rogue-sage/10 text-rogue-slate hover:bg-rogue-sage/20'
-                                }`}
-                              >
-                                To Read
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  updateStatus(book.id, 'reading')
-                                }}
-                                className={`flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all ${
-                                  status === 'reading' 
-                                    ? 'bg-rogue-gold text-white shadow-sm' 
-                                    : 'bg-rogue-sage/10 text-rogue-slate hover:bg-rogue-sage/20'
-                                }`}
-                              >
-                                Reading
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  updateStatus(book.id, 'finished')
-                                }}
-                                className={`flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all ${
-                                  status === 'finished' 
-                                    ? 'bg-green-600 text-white shadow-sm' 
-                                    : 'bg-rogue-sage/10 text-rogue-slate hover:bg-rogue-sage/20'
-                                }`}
-                              >
-                                Done
-                              </button>
+                            {/* Reading Status Badge */}
+                            <div className="pt-2 border-t border-rogue-sage/10">
+                              {status === 'want_to_read' && (
+                                <div className="flex items-center gap-1.5 text-rogue-slate text-xs">
+                                  <Circle className="w-3 h-3" />
+                                  <span>To Read</span>
+                                </div>
+                              )}
+                              {status === 'reading' && (
+                                <div className="flex items-center gap-1.5 text-rogue-gold text-xs font-medium">
+                                  <BookOpen className="w-3 h-3" />
+                                  <span>Reading</span>
+                                </div>
+                              )}
+                              {status === 'finished' && (
+                                <div className="flex items-center gap-1.5 text-green-700 text-xs font-medium">
+                                  <CheckCircle2 className="w-3 h-3 fill-green-700" />
+                                  <span>Completed</span>
+                                </div>
+                              )}
                             </div>
                           </CardContent>
                           </Card>

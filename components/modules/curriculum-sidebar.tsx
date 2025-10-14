@@ -20,8 +20,15 @@ interface CurriculumSidebarProps {
 export function CurriculumSidebar({ modules, progressMap, currentLessonId, className }: CurriculumSidebarProps) {
   const router = useRouter()
   const params = useParams()
-  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Initialize with only the current module expanded
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(() => {
+    if (params.id) {
+      return new Set([params.id as string])
+    }
+    return new Set()
+  })
 
   // Calculate overall progress
   const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0)
@@ -30,27 +37,12 @@ export function CurriculumSidebar({ modules, progressMap, currentLessonId, class
   }, 0)
   const overallProgress = calculateProgress(completedLessons, totalLessons)
 
-  // Auto-expand current module
+  // When navigating to a different module, expand only that module
   useEffect(() => {
     if (params.id) {
-      setExpandedModules(prev => new Set(prev).add(params.id as string))
+      setExpandedModules(new Set([params.id as string]))
     }
   }, [params.id])
-
-  // Load expanded state from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('curriculum-expanded')
-    if (saved) {
-      try {
-        setExpandedModules(new Set(JSON.parse(saved)))
-      } catch {}
-    }
-  }, [])
-
-  // Save expanded state
-  useEffect(() => {
-    localStorage.setItem('curriculum-expanded', JSON.stringify(Array.from(expandedModules)))
-  }, [expandedModules])
 
   const toggleModule = (moduleId: string) => {
     setExpandedModules(prev => {

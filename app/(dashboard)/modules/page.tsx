@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
 import { ProgressTree } from '@/components/ui/progress-tree'
-import { TreePine, Clock, CheckCircle2, Lock, Sparkles, ArrowRight, BookOpen, TrendingUp } from 'lucide-react'
+import { TreePine, CheckCircle2, Lock, Sparkles, ArrowRight, BookOpen, TrendingUp } from 'lucide-react'
 import { getModules } from '@/lib/supabase/queries/modules'
 import { formatDate, isFuture, isPast } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
@@ -21,6 +21,21 @@ export default function ModulesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+
+  // Color scheme from marketing page for each month
+  const getModuleColors = (orderNumber: number) => {
+    const colors = [
+      { bg: 'from-emerald-500/20', border: 'border-emerald-500', badge: 'from-emerald-600 to-emerald-700' }, // Month 1 - Teal
+      { bg: 'from-blue-500/20', border: 'border-blue-500', badge: 'from-blue-600 to-blue-700' }, // Month 2 - Blue
+      { bg: 'from-purple-500/20', border: 'border-purple-500', badge: 'from-purple-600 to-purple-700' }, // Month 3 - Purple
+      { bg: 'from-orange-500/20', border: 'border-orange-500', badge: 'from-orange-600 to-orange-700' }, // Month 4 - Orange
+      { bg: 'from-emerald-500/20', border: 'border-emerald-500', badge: 'from-emerald-600 to-emerald-700' }, // Month 5 - Teal
+      { bg: 'from-blue-500/20', border: 'border-blue-500', badge: 'from-blue-600 to-blue-700' }, // Month 6 - Blue
+      { bg: 'from-purple-500/20', border: 'border-purple-500', badge: 'from-purple-600 to-purple-700' }, // Month 7 - Purple
+      { bg: 'from-orange-500/20', border: 'border-orange-500', badge: 'from-orange-600 to-orange-700' }, // Month 8 - Orange
+    ]
+    return colors[(orderNumber - 1) % colors.length]
+  }
 
   useEffect(() => {
     loadModules()
@@ -136,43 +151,33 @@ export default function ModulesPage() {
               </div>
               
               <div className="grid lg:grid-cols-2 gap-6">
-                {unlockedModules.map((module) => (
-                  <Card
-                    key={module.id}
-                    className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 bg-gradient-to-br from-white to-rogue-sage/5"
-                    onClick={() => router.push(`/modules/${module.id}`)}
-                  >
-                    {/* Decorative gradient overlay */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-rogue-gold/10 via-transparent to-transparent rounded-bl-[100px]"></div>
-                    
-                    {/* Module number badge */}
-                    <div className="absolute top-6 right-6 w-16 h-16 bg-gradient-to-br from-rogue-forest to-rogue-pine rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <span className="text-2xl font-bold text-white">{module.order_number}</span>
-                    </div>
+                {unlockedModules.map((module) => {
+                  const colors = getModuleColors(module.order_number)
+                  return (
+                    <Card
+                      key={module.id}
+                      className={`group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-l-4 ${colors.border} bg-gradient-to-br from-white to-rogue-sage/5`}
+                      onClick={() => router.push(`/modules/${module.id}`)}
+                    >
+                      {/* Decorative gradient overlay with module color */}
+                      <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl ${colors.bg} via-transparent to-transparent rounded-bl-[100px]`}></div>
+                      
+                      {/* Module number badge with dynamic color */}
+                      <div className={`absolute top-6 right-6 w-16 h-16 bg-gradient-to-br ${colors.badge} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                        <span className="text-2xl font-bold text-white">{module.order_number}</span>
+                      </div>
 
-                    <CardHeader className="pb-4 relative z-10">
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2 flex-wrap">
+                      <CardHeader className="pb-4 relative z-10">
+                        <div className="space-y-4">
                           <Badge className="bg-rogue-forest text-white border-0 shadow-sm">
                             Module {module.order_number}
                           </Badge>
-                          <Badge variant="outline" className="border-rogue-gold text-rogue-gold bg-rogue-gold/5">
-                            <Clock size={12} className="mr-1" />
-                            4-6 weeks
-                          </Badge>
+                          
+                          <CardTitle className="text-2xl md:text-3xl leading-tight group-hover:text-rogue-forest transition-colors pr-20">
+                            {module.title}
+                          </CardTitle>
                         </div>
-                        
-                        <CardTitle className="text-2xl md:text-3xl leading-tight group-hover:text-rogue-forest transition-colors pr-20">
-                          {module.title}
-                        </CardTitle>
-                        
-                        {module.description && (
-                          <CardDescription className="text-base leading-relaxed">
-                            {module.description}
-                          </CardDescription>
-                        )}
-                      </div>
-                    </CardHeader>
+                      </CardHeader>
 
                     <CardContent className="space-y-6 relative z-10">
                       {/* Progress bar */}
@@ -216,7 +221,8 @@ export default function ModulesPage() {
                       </Button>
                     </CardContent>
                   </Card>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}

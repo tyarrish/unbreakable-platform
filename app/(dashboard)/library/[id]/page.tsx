@@ -13,7 +13,7 @@ import { BookCommentThread } from '@/components/books/book-comment-thread'
 import { getBook, getReadingProgress, updateReadingProgress } from '@/lib/supabase/queries/books'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { ArrowLeft, ExternalLink, BookOpen, Star, Lightbulb } from 'lucide-react'
+import { ArrowLeft, ExternalLink, BookOpen, Star, Lightbulb, Circle, CheckCircle2 } from 'lucide-react'
 import type { Book, ReadingStatus } from '@/types/index.types'
 
 export default function BookDetailPage() {
@@ -150,33 +150,44 @@ export default function BookDetailPage() {
 
                 {/* Reading Status */}
                 <div className="space-y-3">
-                  <label className="text-sm font-medium text-rogue-slate">Reading Status</label>
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      size="sm"
-                      variant={status === 'want_to_read' ? 'default' : 'outline'}
+                  <label className="text-sm font-medium text-rogue-forest">Update Reading Status</label>
+                  <div className="space-y-2">
+                    <button
                       onClick={() => updateStatus('want_to_read')}
-                      className="w-full"
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                        status === 'want_to_read' 
+                          ? 'bg-rogue-forest text-white shadow-md' 
+                          : 'bg-white border border-rogue-sage/20 text-rogue-slate hover:border-rogue-forest/30 hover:bg-rogue-forest/5'
+                      }`}
                     >
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      To Read
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={status === 'reading' ? 'default' : 'outline'}
+                      <Circle className={`w-4 h-4 flex-shrink-0 ${status === 'want_to_read' ? 'fill-white' : ''}`} />
+                      <span className="flex-1 text-left">To Read</span>
+                      {status === 'want_to_read' && <CheckCircle2 className="w-4 h-4" />}
+                    </button>
+                    <button
                       onClick={() => updateStatus('reading')}
-                      className="w-full"
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                        status === 'reading' 
+                          ? 'bg-rogue-gold text-white shadow-md' 
+                          : 'bg-white border border-rogue-sage/20 text-rogue-slate hover:border-rogue-gold/30 hover:bg-rogue-gold/5'
+                      }`}
                     >
-                      Reading
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={status === 'finished' ? 'default' : 'outline'}
+                      <BookOpen className="w-4 h-4 flex-shrink-0" />
+                      <span className="flex-1 text-left">Reading</span>
+                      {status === 'reading' && <CheckCircle2 className="w-4 h-4" />}
+                    </button>
+                    <button
                       onClick={() => updateStatus('finished')}
-                      className="w-full"
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                        status === 'finished' 
+                          ? 'bg-green-600 text-white shadow-md' 
+                          : 'bg-white border border-rogue-sage/20 text-rogue-slate hover:border-green-600/30 hover:bg-green-50'
+                      }`}
                     >
-                      Finished
-                    </Button>
+                      <CheckCircle2 className={`w-4 h-4 flex-shrink-0 ${status === 'finished' ? 'fill-white' : ''}`} />
+                      <span className="flex-1 text-left">Completed</span>
+                      {status === 'finished' && <CheckCircle2 className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
 
