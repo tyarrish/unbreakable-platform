@@ -126,17 +126,29 @@ export default function PartnerPage() {
 
   if (!partnerId) {
     return (
-      <div className="py-8">
+      <div className="min-h-screen bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
+        {/* Subtle header background */}
+        <div className="bg-white/40 backdrop-blur-sm border-b border-rogue-sage/10">
+          <Container>
+            <div className="py-8">
+              <h1 className="text-3xl md:text-4xl font-bold text-rogue-forest mb-2">Accountability Partner</h1>
+              <p className="text-lg text-rogue-slate">
+                Your paired partner for weekly check-ins and mutual support
+              </p>
+            </div>
+          </Container>
+        </div>
+
         <Container>
-          <PageHeader
-            heading="Accountability Partner"
-            description="Your paired partner for weekly check-ins and mutual support"
-          />
-          <EmptyState
-            icon={<Users size={64} />}
-            title="No Partner Assigned"
-            description="Complete the partner questionnaire to be matched with an accountability partner."
-          />
+          <div className="py-8">
+            <Card className="border-0 shadow-xl">
+              <EmptyState
+                icon={<Users size={64} />}
+                title="No Partner Assigned"
+                description="Complete the partner questionnaire to be matched with an accountability partner."
+              />
+            </Card>
+          </div>
         </Container>
       </div>
     )
@@ -145,20 +157,42 @@ export default function PartnerPage() {
   const currentWeek = getWeekNumber(cohortStartDate)
 
   return (
-    <div className="py-8">
+    <div className="min-h-screen bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
+      {/* Subtle header background */}
+      <div className="bg-white/40 backdrop-blur-sm border-b border-rogue-sage/10">
+        <Container size="lg">
+          <div className="py-8">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold text-rogue-forest mb-2">Accountability Partner</h1>
+                <p className="text-lg text-rogue-slate">
+                  Weekly check-ins and private messaging
+                </p>
+              </div>
+              <Badge className="bg-green-100 text-green-700 border-0 px-4 py-2">
+                <Users size={14} className="mr-1" />
+                Week {currentWeek}
+              </Badge>
+            </div>
+          </div>
+        </Container>
+      </div>
+
       <Container size="lg">
-        <PageHeader
-          heading="Accountability Partner"
-          description="Weekly check-ins and private messaging"
-        />
+        <div className="py-8">
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Partner Info & Check-ins */}
           <div className="space-y-6">
             {/* Partner Card */}
-            <Card>
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-rogue-sage/5">
               <CardHeader>
-                <CardTitle>Your Partner</CardTitle>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 bg-rogue-forest/10 rounded-lg">
+                    <Users className="h-5 w-5 text-rogue-forest" />
+                  </div>
+                </div>
+                <CardTitle className="text-xl">Your Partner</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -180,12 +214,14 @@ export default function PartnerPage() {
             </Card>
 
             {/* Weekly Check-in */}
-            <Card className="bg-rogue-cream/50 border-rogue-gold/20">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-rogue-gold/5 to-white">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-rogue-gold" />
-                  Week {currentWeek} Check-in
-                </CardTitle>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 bg-rogue-gold/10 rounded-lg">
+                    <Calendar className="h-5 w-5 text-rogue-gold" />
+                  </div>
+                </div>
+                <CardTitle className="text-xl">Week {currentWeek} Check-in</CardTitle>
                 <CardDescription>Share your progress and commitments</CardDescription>
               </CardHeader>
               <CardContent>
@@ -197,10 +233,15 @@ export default function PartnerPage() {
           </div>
 
           {/* Messages */}
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-2 border-0 shadow-xl">
             <CardHeader>
-              <CardTitle>Messages</CardTitle>
-              <CardDescription>Private conversation with your partner</CardDescription>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-rogue-copper/10 rounded-lg">
+                  <Send className="h-5 w-5 text-rogue-copper" />
+                </div>
+              </div>
+              <CardTitle className="text-2xl">Messages</CardTitle>
+              <CardDescription className="text-base">Private conversation with your partner</CardDescription>
             </CardHeader>
             <CardContent>
               {/* Messages List */}
@@ -266,6 +307,7 @@ export default function PartnerPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
         </div>
       </Container>
     </div>

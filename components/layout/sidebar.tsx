@@ -33,6 +33,7 @@ const participantNavItems = [
   { href: '/modules', label: 'Modules', icon: BookOpen },
   { href: '/discussions', label: 'Discussions', icon: MessageSquare },
   { href: '/calendar', label: 'Events', icon: Calendar },
+  { href: '/members', label: 'Members', icon: Users },
   { href: '/library', label: 'Library', icon: Library },
   { href: '/partner', label: 'My Partner', icon: Users },
   { href: '/capstone', label: 'Capstone', icon: Mountain },
@@ -84,20 +85,21 @@ export function Sidebar({ userRole }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 h-full w-64 bg-white border-r border-rogue-sage/20 z-40 transition-transform duration-200 flex flex-col',
+          'fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-rogue-forest to-rogue-pine border-r border-rogue-gold/20 z-40 transition-transform duration-200 flex flex-col shadow-2xl',
           isOpen ? 'translate-x-0' : '-translate-x-full',
           'md:translate-x-0'
         )}
       >
         {/* Logo */}
-        <div className="p-6 border-b border-rogue-sage/20">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-rogue-forest rounded-lg flex items-center justify-center">
-              <TreePine className="h-6 w-6 text-rogue-gold" />
-            </div>
-            <div>
-              <h1 className="font-semibold text-rogue-forest">RLTE</h1>
-              <p className="text-xs text-rogue-slate">Leadership Journey</p>
+        <div className="p-8 border-b border-white/10">
+          <Link href="/dashboard" className="flex justify-center group">
+            <div className="relative">
+              <div className="absolute inset-0 bg-rogue-gold/30 blur-2xl rounded-full"></div>
+              <img 
+                src="/RLTE-logo.png" 
+                alt="Rogue Leadership Training Experience" 
+                className="h-40 w-auto relative z-10 group-hover:scale-105 transition-transform duration-300"
+              />
             </div>
           </Link>
         </div>
@@ -114,10 +116,10 @@ export function Sidebar({ userRole }: SidebarProps) {
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+                  'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
                   isActive
-                    ? 'bg-rogue-forest text-white'
-                    : 'text-rogue-slate hover:bg-rogue-sage/10'
+                    ? 'bg-rogue-gold text-white shadow-lg shadow-rogue-gold/20'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white'
                 )}
               >
                 <Icon size={20} />
@@ -128,15 +130,15 @@ export function Sidebar({ userRole }: SidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-rogue-sage/20 space-y-1">
+        <div className="p-4 border-t border-white/10 space-y-1">
           <Link
             href="/profile"
             onClick={() => setIsOpen(false)}
             className={cn(
-              'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+              'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
               pathname === '/profile'
-                ? 'bg-rogue-forest text-white'
-                : 'text-rogue-slate hover:bg-rogue-sage/10'
+                ? 'bg-rogue-gold text-white shadow-lg shadow-rogue-gold/20'
+                : 'text-white/80 hover:bg-white/10 hover:text-white'
             )}
           >
             <Settings size={20} />
@@ -144,7 +146,7 @@ export function Sidebar({ userRole }: SidebarProps) {
           </Link>
           <Button
             variant="ghost"
-            className="w-full justify-start text-rogue-terracotta hover:text-rogue-copper hover:bg-rogue-terracotta/10"
+            className="w-full justify-start text-red-300 hover:text-red-200 hover:bg-red-500/10"
             onClick={handleSignOut}
           >
             <LogOut size={20} className="mr-3" />

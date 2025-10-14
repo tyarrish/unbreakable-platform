@@ -7,6 +7,7 @@ import { Container } from '@/components/layout/container'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { RoleBadge } from '@/components/ui/role-badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
@@ -47,7 +48,7 @@ export default function ThreadViewPage() {
     loadThread()
     loadPosts()
     
-    const { data: { user } } = supabase.auth.getUser().then(res => {
+    supabase.auth.getUser().then(res => {
       if (res.data.user) {
         setUserId(res.data.user.id)
       }

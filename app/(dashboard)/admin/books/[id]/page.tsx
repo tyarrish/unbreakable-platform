@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageLoader } from '@/components/ui/loading-spinner'
+import { BookCoverUpload } from '@/components/books/book-cover-upload'
 import { getBook, updateBook } from '@/lib/supabase/queries/books'
 import { toast } from 'sonner'
 import { ArrowLeft } from 'lucide-react'
@@ -25,10 +26,13 @@ export default function EditBookPage() {
   const [author, setAuthor] = useState('')
   const [description, setDescription] = useState('')
   const [isbn, setIsbn] = useState('')
+  const [coverImageUrl, setCoverImageUrl] = useState('')
   const [amazonLink, setAmazonLink] = useState('')
   const [goodreadsLink, setGoodreadsLink] = useState('')
   const [assignedMonth, setAssignedMonth] = useState<number | undefined>()
   const [isFeatured, setIsFeatured] = useState(false)
+  const [reasoning, setReasoning] = useState('')
+  const [keyTakeaways, setKeyTakeaways] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -44,10 +48,13 @@ export default function EditBookPage() {
       setAuthor(data.author)
       setDescription(data.description || '')
       setIsbn(data.isbn || '')
+      setCoverImageUrl(data.cover_image_url || '')
       setAmazonLink(data.amazon_link || '')
       setGoodreadsLink(data.goodreads_link || '')
       setAssignedMonth(data.assigned_month || undefined)
       setIsFeatured(data.is_featured)
+      setReasoning(data.reasoning || '')
+      setKeyTakeaways(data.key_takeaways?.join('\n') || '')
     } catch (error) {
       console.error('Error loading book:', error)
       toast.error('Failed to load book')
@@ -67,10 +74,13 @@ export default function EditBookPage() {
         author,
         description,
         isbn,
+        cover_image_url: coverImageUrl || null,
         amazon_link: amazonLink || null,
         goodreads_link: goodreadsLink || null,
         assigned_month: assignedMonth,
         is_featured: isFeatured,
+        reasoning: reasoning || null,
+        key_takeaways: keyTakeaways ? keyTakeaways.split('\n').filter(t => t.trim()) : null,
       })
 
       toast.success('Book updated successfully!')
@@ -147,6 +157,16 @@ export default function EditBookPage() {
                 />
               </div>
 
+              {/* Book Cover Upload Component */}
+              <BookCoverUpload
+                title={title}
+                author={author}
+                isbn={isbn}
+                coverImageUrl={coverImageUrl}
+                onCoverChange={setCoverImageUrl}
+                disabled={isSaving}
+              />
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="isbn">ISBN</Label>
@@ -192,6 +212,36 @@ export default function EditBookPage() {
                   onChange={(e) => setGoodreadsLink(e.target.value)}
                   disabled={isSaving}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reasoning">Why This Book?</Label>
+                <Textarea
+                  id="reasoning"
+                  placeholder="Explain why this book is included in the leadership library and what participants will gain from reading it..."
+                  value={reasoning}
+                  onChange={(e) => setReasoning(e.target.value)}
+                  rows={4}
+                  disabled={isSaving}
+                />
+                <p className="text-xs text-rogue-slate">
+                  This helps participants understand the value and context of the book
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="keyTakeaways">Key Leadership Takeaways</Label>
+                <Textarea
+                  id="keyTakeaways"
+                  placeholder="Enter each takeaway on a new line&#10;E.g., Understanding servant leadership principles&#10;Building trust through vulnerability&#10;Creating psychological safety in teams"
+                  value={keyTakeaways}
+                  onChange={(e) => setKeyTakeaways(e.target.value)}
+                  rows={6}
+                  disabled={isSaving}
+                />
+                <p className="text-xs text-rogue-slate">
+                  Enter one takeaway per line. These will be displayed as a numbered list.
+                </p>
               </div>
 
               <div className="flex items-center gap-3">

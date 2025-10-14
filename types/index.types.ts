@@ -81,6 +81,7 @@ export interface DiscussionPost {
 // Event types
 export type EventType = 'cohort_call' | 'workshop' | 'book_club' | 'office_hours'
 export type AttendanceStatus = 'registered' | 'attended' | 'missed'
+export type LocationType = 'in_person' | 'virtual' | 'hybrid'
 
 export interface Event {
   id: string
@@ -89,11 +90,16 @@ export interface Event {
   event_type: EventType
   start_time: string
   end_time: string
+  is_required: boolean
+  location_type: LocationType
+  location_address?: string
+  module_id?: string
   zoom_link?: string
   zoom_meeting_id?: string
   created_by: string
   max_attendees?: number
   created_at: string
+  updated_at: string
 }
 
 // Book types
@@ -110,6 +116,8 @@ export interface Book {
   goodreads_link?: string
   is_featured: boolean
   assigned_month?: number
+  reasoning?: string
+  key_takeaways?: string[]
   created_at: string
 }
 

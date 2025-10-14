@@ -142,3 +142,19 @@ export async function getUserReadingList(userId: string) {
   return data
 }
 
+/**
+ * Get books by assigned month (module number)
+ */
+export async function getBooksByMonth(month: number) {
+  const supabase = createClient()
+  
+  const { data, error } = await supabase
+    .from('books')
+    .select('*')
+    .eq('assigned_month', month)
+    .order('title', { ascending: true })
+  
+  if (error) throw error
+  return data as Book[]
+}
+

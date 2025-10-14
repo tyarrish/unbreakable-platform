@@ -12,6 +12,7 @@ export async function getEvents() {
     .select(`
       *,
       created_by_profile:profiles!events_created_by_fkey(full_name),
+      module:modules(id, title, order_number),
       attendance:event_attendance(count)
     `)
     .order('start_time', { ascending: true })
@@ -31,6 +32,7 @@ export async function getEvent(eventId: string) {
     .select(`
       *,
       created_by_profile:profiles!events_created_by_fkey(full_name),
+      module:modules(id, title, order_number),
       attendance:event_attendance(*, user:profiles(full_name, avatar_url))
     `)
     .eq('id', eventId)
@@ -149,5 +151,25 @@ export async function markAttendance(eventId: string, userId: string, status: 'a
     .eq('user_id', userId)
   
   if (error) throw error
+}
+
+/**
+ * Get events by module ID
+ */
+export async function getEventsByModule(moduleId: string) {
+  const supabase = createClient()
+  
+  const { data, error } = await supabase
+    .from('events')
+    .select(`
+      *,
+      created_by_profile:profiles!events_created_by_fkey(full_name),
+      attendance:event_attendance(count)
+    `)
+    .eq('module_id', moduleId)
+    .order('start_time', { ascending: true })
+  
+  if (error) throw error
+  return data
 }
 

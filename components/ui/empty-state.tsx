@@ -6,7 +6,7 @@ interface EmptyStateProps {
   icon?: React.ReactNode
   title: string
   description?: string
-  action?: {
+  action?: React.ReactNode | {
     label: string
     onClick: () => void
   }
@@ -26,9 +26,15 @@ export function EmptyState({ icon, title, description, action, className }: Empt
         <p className="text-rogue-slate max-w-md mb-6">{description}</p>
       )}
       {action && (
-        <Button onClick={action.onClick} variant="forest">
-          {action.label}
-        </Button>
+        <>
+          {React.isValidElement(action) ? (
+            action
+          ) : typeof action === 'object' && 'label' in action && 'onClick' in action ? (
+            <Button onClick={action.onClick}>
+              {action.label}
+            </Button>
+          ) : null}
+        </>
       )}
     </div>
   )

@@ -53,6 +53,13 @@ export const EVENT_TYPES = [
   { value: 'office_hours', label: 'Office Hours', color: 'rogue-sage' },
 ]
 
+// Event Location Types
+export const LOCATION_TYPES = [
+  { value: 'virtual', label: 'Virtual (Online)', icon: '💻' },
+  { value: 'in_person', label: 'In-Person', icon: '📍' },
+  { value: 'hybrid', label: 'Hybrid', icon: '🔗' },
+]
+
 // Reaction Types
 export const REACTION_TYPES = [
   { value: 'like', label: 'Like', icon: '👍' },

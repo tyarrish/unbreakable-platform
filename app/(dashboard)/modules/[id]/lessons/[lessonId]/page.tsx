@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Container } from '@/components/layout/container'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -26,7 +25,7 @@ import {
   getReflection,
   saveReflection,
 } from '@/lib/supabase/queries/modules'
-import { Clock, CheckCircle2, BookOpen, FileText } from 'lucide-react'
+import { Clock, CheckCircle2, BookOpen, FileText, ArrowLeft, Sparkles, Target, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Module, Lesson, LessonProgress } from '@/types/index.types'
 
@@ -74,7 +73,14 @@ export default function LessonViewPage() {
       setModule(moduleData)
       setLesson(lessonData)
       setProgress(progressData)
-      setReflection(reflectionData?.content || '')
+      setReflection('')
+      if (reflectionData) {
+        try {
+          setReflection((reflectionData as any).content || '')
+        } catch (e) {
+          console.log('No reflection data')
+        }
+      }
       setResources(resourcesData.data || [])
 
       // Load all modules with lessons for sidebar
@@ -184,7 +190,7 @@ export default function LessonViewPage() {
   const isCompleted = status === 'completed'
 
   return (
-    <div className="min-h-screen bg-rogue-cream">
+    <div className="min-h-screen bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
       {/* Curriculum Sidebar */}
       <CurriculumSidebar
         modules={allModules}
@@ -192,43 +198,57 @@ export default function LessonViewPage() {
         currentLessonId={lessonId}
       />
 
-      {/* Main Content (with sidebar offset) */}
-      <div className="lg:ml-80">
-        <div className="py-8">
-          <Container size="lg">
-            {/* Breadcrumb */}
-            <div className="flex items-center gap-2 text-sm text-rogue-slate mb-6">
-              <button 
-                onClick={() => router.push('/modules')}
-                className="hover:text-rogue-forest transition-colors"
-              >
-                Modules
-              </button>
-              <span>/</span>
-              <button 
-                onClick={() => router.push(`/modules/${moduleId}`)}
-                className="hover:text-rogue-forest transition-colors"
-              >
-                Module {module.order_number}
-              </button>
-              <span>/</span>
-              <span className="text-rogue-forest font-medium">Lesson {lesson.order_number}</span>
-            </div>
+      {/* Main Content (with sidebars offset) */}
+      <div className="lg:mr-80 py-8 px-6">
+        {/* Clean Lesson Header with Breadcrumb */}
+        <div className="mb-8">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-rogue-slate mb-4">
+            <button 
+              onClick={() => router.push('/modules')}
+              className="hover:text-rogue-forest transition-colors"
+            >
+              Modules
+            </button>
+            <span>/</span>
+            <button 
+              onClick={() => router.push(`/modules/${moduleId}`)}
+              className="hover:text-rogue-forest transition-colors"
+            >
+              Module {module.order_number}
+            </button>
+            <span>/</span>
+            <span className="text-rogue-forest font-medium">Lesson {lesson.order_number}</span>
+          </div>
 
-            {/* Lesson Header */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-3">
-                <LessonStatusBadge status={status} />
-                {lesson.duration_minutes && (
-                  <span className="text-sm text-rogue-slate flex items-center gap-1">
-                    <Clock size={14} />
-                    {lesson.duration_minutes} min
-                  </span>
-                )}
-              </div>
-              <h1 className="text-4xl font-semibold text-rogue-forest mb-2">{lesson.title}</h1>
-            </div>
-
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <Badge className={`${isCompleted ? 'bg-green-600' : 'bg-rogue-forest'} text-white border-0`}>
+              {isCompleted ? (
+                <>
+                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                  Completed
+                </>
+              ) : (
+                <>
+                  Lesson {lesson.order_number}
+                </>
+              )}
+            </Badge>
+            {lesson.duration_minutes && (
+              <Badge variant="outline" className="border-rogue-forest/20">
+                <Clock size={14} className="mr-1" />
+                {lesson.duration_minutes} min
+              </Badge>
+            )}
+            {progress?.time_spent_minutes && (
+              <Badge variant="outline" className="border-rogue-slate/20">
+                {Math.floor(progress.time_spent_minutes)} min spent
+              </Badge>
+            )}
+          </div>
+          
+          <h1 className="text-3xl md:text-4xl font-bold text-rogue-forest">{lesson.title}</h1>
+        </div>
             {/* Video Player */}
             {(lesson as any).video_url && (
               <div className="mb-8">
@@ -243,8 +263,16 @@ export default function LessonViewPage() {
 
             {/* Lesson Content */}
             {lesson.content && (
-              <Card className="mb-8">
-                <CardContent className="pt-6">
+              <Card className="mb-8 border-0 shadow-xl bg-white">
+                <CardHeader>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="p-2 bg-rogue-forest/10 rounded-lg">
+                      <BookOpen className="h-5 w-5 text-rogue-forest" />
+                    </div>
+                  </div>
+                  <CardTitle className="text-2xl">Lesson Content</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div
                     className="prose-rogue prose-lg max-w-none"
                     dangerouslySetInnerHTML={{ __html: (lesson.content as any)?.html || '' }}
@@ -255,82 +283,115 @@ export default function LessonViewPage() {
 
             {/* Resources Section */}
             {resources.length > 0 && (
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <FileText className="h-5 w-5 text-rogue-copper" />
-                  <h2 className="text-2xl font-semibold text-rogue-forest">Lesson Resources</h2>
-                </div>
-                <ResourceList resources={resources} />
-              </div>
+              <Card className="mb-8 border-0 shadow-xl bg-gradient-to-br from-white to-rogue-copper/5">
+                <CardHeader>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="p-2 bg-rogue-copper/10 rounded-lg">
+                      <FileText className="h-5 w-5 text-rogue-copper" />
+                    </div>
+                  </div>
+                  <CardTitle className="text-2xl">Lesson Resources</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResourceList resources={resources} />
+                </CardContent>
+              </Card>
             )}
 
             {/* Reflection Journal */}
-            <Card className="mb-8 bg-gradient-to-br from-rogue-cream to-white border-rogue-gold/30 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-rogue-gold/5 to-transparent">
-                <CardTitle className="flex items-center gap-2 text-rogue-forest">
-                  <BookOpen className="h-5 w-5 text-rogue-gold" />
-                  Reflection Journal
-                </CardTitle>
-                <p className="text-sm text-rogue-slate mt-2">
+            <Card className="mb-8 border-0 shadow-xl bg-gradient-to-br from-rogue-gold/5 to-white">
+              <CardHeader>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 bg-rogue-gold/10 rounded-lg">
+                    <FileText className="h-5 w-5 text-rogue-gold" />
+                  </div>
+                </div>
+                <CardTitle className="text-2xl">Reflection Journal</CardTitle>
+                <CardDescription className="text-base mt-2">
                   Take a moment to reflect on what you've learned and how you'll apply it.
-                </p>
+                </CardDescription>
               </CardHeader>
-              <CardContent className="pt-6 space-y-4">
+              <CardContent className="space-y-4">
                 <Textarea
                   value={reflection}
                   onChange={(e) => setReflection(e.target.value)}
-                  rows={8}
+                  rows={10}
                   placeholder="What insights stood out to you? What commitments will you make? How will you apply this learning?"
                   className="bg-white border-rogue-sage/20 focus:border-rogue-gold resize-none text-base leading-relaxed"
                   disabled={isSavingReflection}
                 />
-                {reflection && (
-                  <p className="text-xs text-rogue-slate">
-                    {reflection.trim().split(/\s+/).length} words
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-rogue-slate">
+                    {reflection.trim().split(/\s+/).filter(w => w).length} words
                   </p>
-                )}
+                  {reflection.trim().split(/\s+/).filter(w => w).length >= 100 && (
+                    <Badge className="bg-green-100 text-green-700 border-0">
+                      <Target className="w-3 h-3 mr-1" />
+                      Great depth!
+                    </Badge>
+                  )}
+                </div>
                 <Button
-                  variant="outline"
                   onClick={handleSaveReflection}
                   disabled={isSavingReflection || !reflection.trim()}
+                  size="lg"
+                  className="bg-rogue-gold hover:bg-rogue-gold/90"
                 >
+                  <Sparkles className="mr-2 h-4 w-4" />
                   {isSavingReflection ? 'Saving...' : 'Save Reflection'}
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Complete Lesson */}
-            <div className="flex justify-between items-center py-6">
-              <div>
-                {isCompleted && (
-                  <div className="flex items-center gap-2 text-rogue-sage">
-                    <CheckCircle2 className="h-5 w-5" />
-                    <span className="font-medium">
-                      Completed {progress.completed_at ? new Date(progress.completed_at).toLocaleDateString() : ''}
-                    </span>
-                  </div>
-                )}
-                {(lesson as any)?.video_url && (progress?.video_watch_percentage || 0) < 80 && !isCompleted && (
-                  <p className="text-sm text-rogue-slate">
+            {/* Video Progress Warning */}
+            {(lesson as any)?.video_url && (progress?.video_watch_percentage || 0) < 80 && !isCompleted && (
+              <Card className="mb-6 border-0 bg-amber-50 border-amber-200">
+                <CardContent className="pt-4 pb-4">
+                  <p className="text-sm text-amber-800 text-center">
+                    <Clock className="inline h-4 w-4 mr-1" />
                     Watch at least 80% of the video to complete ({progress?.video_watch_percentage || 0}% watched)
                   </p>
-                )}
-              </div>
-              {!isCompleted && (
-                <Button
-                  onClick={handleMarkComplete}
-                  disabled={isCompletingLesson}
-                  size="lg"
-                  variant="forest"
-                  className="shadow-lg hover:shadow-xl transition-all"
-                >
-                  {isCompletingLesson ? 'Completing...' : 'Mark as Complete'}
-                </Button>
-              )}
-            </div>
-          </Container>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Complete Lesson */}
+            {!isCompleted && (
+              <Card className="sticky bottom-4 border-0 shadow-2xl bg-gradient-to-r from-green-500 to-green-600 text-white">
+                <CardContent className="pt-6 pb-6">
+                  <Button
+                    onClick={handleMarkComplete}
+                    disabled={isCompletingLesson}
+                    className="w-full bg-white text-green-600 hover:bg-white/90 shadow-lg"
+                    size="lg"
+                  >
+                    <CheckCircle2 className="mr-2 h-5 w-5" />
+                    {isCompletingLesson ? 'Completing...' : 'Mark Lesson Complete'}
+                    <Sparkles className="ml-2 h-5 w-5" />
+                  </Button>
+                  <p className="text-center text-sm text-white/90 mt-3">
+                    Complete this lesson to continue your journey
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            
+            {isCompleted && (
+              <Card className="sticky bottom-4 border-0 shadow-xl bg-gradient-to-br from-green-50 to-white border-green-200">
+                <CardContent className="pt-5 pb-5">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-2 text-green-600">
+                      <CheckCircle2 className="h-6 w-6" />
+                      <span className="font-semibold text-lg">Lesson Completed!</span>
+                    </div>
+                    <p className="text-sm text-rogue-slate">
+                      {progress?.completed_at ? `Completed on ${new Date(progress.completed_at).toLocaleDateString()}` : 'Great work!'}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
         </div>
-      </div>
     </div>
   )
 }

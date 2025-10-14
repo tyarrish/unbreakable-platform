@@ -12,8 +12,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { getModule, updateModule, getLessons } from '@/lib/supabase/queries/modules'
+import { getEventsByModule } from '@/lib/supabase/queries/events'
+import { getBooksByMonth } from '@/lib/supabase/queries/books'
+import { ModuleEventsBanner } from '@/components/modules/module-events-banner'
+import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, BookOpen } from 'lucide-react'
 import type { Module, Lesson } from '@/types/index.types'
 import { LessonsList } from '@/components/modules/lessons-list'
 
@@ -22,8 +26,12 @@ export default function EditModulePage() {
   const router = useRouter()
   const moduleId = params.id as string
 
+  const supabase = createClient()
   const [module, setModule] = useState<Module | null>(null)
   const [lessons, setLessons] = useState<Lesson[]>([])
+  const [events, setEvents] = useState<any[]>([])
+  const [books, setBooks] = useState<any[]>([])
+  const [userRole, setUserRole] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -34,9 +42,23 @@ export default function EditModulePage() {
   const [isPublished, setIsPublished] = useState(false)
 
   useEffect(() => {
+    checkRole()
     loadModule()
     loadLessons()
+    loadResources()
   }, [moduleId])
+
+  async function checkRole() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      setUserRole(profile?.role || '')
+    }
+  }
 
   async function loadModule() {
     try {
@@ -62,6 +84,20 @@ export default function EditModulePage() {
       setLessons(data)
     } catch (error) {
       console.error('Error loading lessons:', error)
+    }
+  }
+
+  async function loadResources() {
+    try {
+      const data = await getModule(moduleId)
+      const [eventsData, booksData] = await Promise.all([
+        getEventsByModule(moduleId),
+        getBooksByMonth(data.order_number),
+      ])
+      setEvents(eventsData || [])
+      setBooks(booksData || [])
+    } catch (error) {
+      console.error('Error loading resources:', error)
     }
   }
 
@@ -111,10 +147,28 @@ export default function EditModulePage() {
           description="Update module details and manage lessons"
         />
 
+        {/* Events Banner */}
+        {events.length > 0 && (
+          <div className="space-y-4 mb-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-rogue-forest">Associated Events</h2>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => router.push('/admin/events')}
+              >
+                Manage Events
+              </Button>
+            </div>
+            <ModuleEventsBanner events={events} />
+          </div>
+        )}
+
         <Tabs defaultValue="details" className="space-y-6">
           <TabsList>
             <TabsTrigger value="details">Module Details</TabsTrigger>
             <TabsTrigger value="lessons">Lessons ({lessons.length})</TabsTrigger>
+            <TabsTrigger value="resources">Reading Materials ({books.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
@@ -223,6 +277,74 @@ export default function EditModulePage() {
                   moduleId={moduleId}
                   onUpdate={loadLessons}
                 />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="resources">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen size={20} />
+                      Reading Materials
+                    </CardTitle>
+                    <p className="text-sm text-rogue-slate mt-2">
+                      Books assigned to Module {module?.order_number}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push('/admin/books')}
+                  >
+                    Manage Books
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {books.length === 0 ? (
+                  <div className="py-12 text-center text-rogue-slate">
+                    No reading materials assigned to this module yet.
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {books.map((book: any) => (
+                      <Card key={book.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="pt-6">
+                          <div className="flex gap-4">
+                            {book.cover_image_url && (
+                              <div className="flex-shrink-0">
+                                <img
+                                  src={book.cover_image_url}
+                                  alt={book.title}
+                                  className="w-20 h-28 object-cover rounded-md shadow-sm"
+                                />
+                              </div>
+                            )}
+                            <div className="flex-1 space-y-2">
+                              <h4 className="font-semibold text-rogue-forest">{book.title}</h4>
+                              <p className="text-sm text-rogue-slate">{book.author}</p>
+                              {book.description && (
+                                <p className="text-sm text-rogue-slate line-clamp-2">{book.description}</p>
+                              )}
+                              <div className="flex gap-2 pt-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => router.push(`/admin/books/${book.id}`)}
+                                >
+                                  Edit Book
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

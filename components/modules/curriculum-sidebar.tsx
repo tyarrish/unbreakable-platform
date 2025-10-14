@@ -92,8 +92,8 @@ export function CurriculumSidebar({ modules, progressMap, currentLessonId, class
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 h-full w-80 bg-white border-r border-rogue-sage/20 z-40 transition-transform duration-300 flex flex-col overflow-hidden',
-          isOpen ? 'translate-x-0' : '-translate-x-full',
+          'fixed right-0 top-0 h-screen w-80 bg-white border-l border-rogue-sage/20 z-30 transition-transform duration-300 flex flex-col',
+          isOpen ? 'translate-x-0' : 'translate-x-full',
           'lg:translate-x-0',
           className
         )}
