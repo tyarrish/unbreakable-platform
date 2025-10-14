@@ -33,16 +33,16 @@ export const TARGET_LOGIN_RATE = 0.9 // 90%
 export const TARGET_COMPLETION_RATE = 0.8 // 80%
 export const TARGET_ENGAGEMENT_RATE = 0.75 // 75%
 
-// Nature-themed Progress Metaphors
+// Leadership Journey Progress Metaphors
 export const PROGRESS_METAPHORS = [
-  { min: 0, max: 12.5, label: 'Seedling', icon: '🌱' },
-  { min: 12.5, max: 25, label: 'Sprout', icon: '🌿' },
-  { min: 25, max: 37.5, label: 'Young Tree', icon: '🌳' },
-  { min: 37.5, max: 50, label: 'Growing Forest', icon: '🌲' },
-  { min: 50, max: 62.5, label: 'Thriving Woods', icon: '🏞️' },
-  { min: 62.5, max: 75, label: 'Deep Forest', icon: '🌲🌲' },
-  { min: 75, max: 87.5, label: 'Ancient Grove', icon: '🌳🌲' },
-  { min: 87.5, max: 100, label: 'Leadership Summit', icon: '⛰️' },
+  { min: 0, max: 12.5, label: 'Base Camp', icon: '🏕️' },
+  { min: 12.5, max: 25, label: 'Trailhead', icon: '🥾' },
+  { min: 25, max: 37.5, label: 'Ascending', icon: '⛰️' },
+  { min: 37.5, max: 50, label: 'Steady Climb', icon: '🧗' },
+  { min: 50, max: 62.5, label: 'Ridge Line', icon: '🏔️' },
+  { min: 62.5, max: 75, label: 'High Ground', icon: '⛰️' },
+  { min: 75, max: 87.5, label: 'Summit Push', icon: '🎯' },
+  { min: 87.5, max: 100, label: 'Leadership Summit', icon: '🏆' },
 ]
 
 // Event Types
