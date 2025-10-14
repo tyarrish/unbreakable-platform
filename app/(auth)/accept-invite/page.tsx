@@ -43,6 +43,22 @@ function AcceptInviteContent() {
       const fullUrl = window.location.href
       console.log('Full invite URL:', fullUrl)
       
+      // Check for error in URL hash (Supabase puts errors there)
+      const hash = window.location.hash
+      if (hash && hash.includes('error')) {
+        const hashParams = new URLSearchParams(hash.substring(1))
+        const error = hashParams.get('error')
+        const errorCode = hashParams.get('error_code')
+        const errorDescription = hashParams.get('error_description')
+        
+        console.error('Supabase returned error:', { error, errorCode, errorDescription })
+        
+        setIsValid(false)
+        setIsValidating(false)
+        toast.error(errorDescription || 'Invite link has expired or is invalid. Please request a new invite.')
+        return
+      }
+      
       // Log all URL parameters for debugging
       const allParams: { [key: string]: string } = {}
       searchParams.forEach((value, key) => {
