@@ -39,22 +39,51 @@ function AcceptInviteContent() {
     setIsValidating(true)
     
     try {
+      // Log all URL parameters for debugging
+      const allParams: { [key: string]: string } = {}
+      searchParams.forEach((value, key) => {
+        allParams[key] = value
+      })
+      console.log('All URL parameters:', allParams)
+      
       // Get the token_hash and type from URL params (from Supabase invite email)
       const tokenHash = searchParams.get('token_hash')
       const type = searchParams.get('type')
+      const token = searchParams.get('token') // Sometimes Supabase uses 'token' instead
       
       console.log('Accept invite - token_hash:', tokenHash ? 'present' : 'missing')
+      console.log('Accept invite - token:', token ? 'present' : 'missing')
       console.log('Accept invite - type:', type)
       
-      if (!tokenHash || type !== 'invite') {
-        console.error('Missing or invalid token parameters')
+      // Handle different URL formats Supabase might use
+      if (!tokenHash && !token) {
+        console.error('Missing token parameters - both token_hash and token are missing')
         setIsValid(false)
         setIsValidating(false)
-        toast.error('Invalid invite link format')
+        toast.error('Invalid invite link format - missing token')
+        return
+      }
+      
+      if (!type) {
+        console.error('Missing type parameter')
+        setIsValid(false)
+        setIsValidating(false)
+        toast.error('Invalid invite link format - missing type')
         return
       }
 
       // Verify the invite token with Supabase
+      // Note: Supabase always uses token_hash for invite links
+      if (!tokenHash) {
+        console.error('token_hash is required but not present')
+        setIsValid(false)
+        setIsValidating(false)
+        toast.error('Invalid invite link - missing token_hash parameter')
+        return
+      }
+      
+      console.log('Attempting verifyOtp with token_hash and type=invite')
+      
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         token_hash: tokenHash,
         type: 'invite',
