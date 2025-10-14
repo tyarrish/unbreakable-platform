@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'
-import { TreePine } from 'lucide-react'
+import Image from 'next/image'
 import type { UserRole } from '@/types/index.types'
 
 interface SignupFormProps {
@@ -72,8 +72,16 @@ export function SignupForm({ isAdmin = false }: SignupFormProps) {
     <Card className={isAdmin ? '' : 'border-0 shadow-2xl'}>
       <CardHeader className={isAdmin ? '' : 'space-y-4 text-center'}>
         {!isAdmin && (
-          <div className="mx-auto w-16 h-16 bg-rogue-forest rounded-full flex items-center justify-center">
-            <TreePine className="h-8 w-8 text-rogue-gold" />
+          <div className="mx-auto relative">
+            <div className="absolute inset-0 bg-rogue-gold/20 blur-2xl rounded-full"></div>
+            <Image
+              src="/RLTE-logo.png"
+              alt="Rogue Leadership Training Experience"
+              width={160}
+              height={160}
+              className="relative z-10"
+              priority
+            />
           </div>
         )}
         <div>

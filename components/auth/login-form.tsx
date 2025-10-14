@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { TreePine } from 'lucide-react'
+import Image from 'next/image'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
@@ -61,8 +61,16 @@ export function LoginForm() {
   return (
     <Card className="border-0 shadow-2xl">
       <CardHeader className="space-y-4 text-center">
-        <div className="mx-auto w-16 h-16 bg-rogue-forest rounded-full flex items-center justify-center">
-          <TreePine className="h-8 w-8 text-rogue-gold" />
+        <div className="mx-auto relative">
+          <div className="absolute inset-0 bg-rogue-gold/20 blur-2xl rounded-full"></div>
+          <Image
+            src="/RLTE-logo.png"
+            alt="Rogue Leadership Training Experience"
+            width={160}
+            height={160}
+            className="relative z-10"
+            priority
+          />
         </div>
         <div>
           <CardTitle className="text-2xl">Welcome Back</CardTitle>
