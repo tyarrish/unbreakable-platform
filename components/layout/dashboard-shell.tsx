@@ -43,14 +43,22 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         // Get user profile to determine role and user info
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('role, full_name, email, avatar_url')
+          .select('role, full_name, email, avatar_url, is_active, profile_completed')
           .eq('id', session.user.id)
-          .single<{ role: string; full_name: string; email: string; avatar_url: string | null }>()
+          .single<{ role: string; full_name: string; email: string; avatar_url: string | null; is_active: boolean; profile_completed: boolean }>()
 
         console.log('Dashboard: Profile data:', profile)
 
         if (error || !profile) {
           console.error('Dashboard: Profile error:', error)
+          router.push('/login')
+          return
+        }
+
+        // Check if user account is deactivated
+        if (!profile.is_active) {
+          console.log('Dashboard: User account is deactivated')
+          await supabase.auth.signOut()
           router.push('/login')
           return
         }
