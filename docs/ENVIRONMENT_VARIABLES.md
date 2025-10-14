@@ -15,8 +15,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # Site Configuration
+# This is used for invite email redirects - MUST be your production domain
 NEXT_PUBLIC_SITE_URL=https://yourdomain.com
-# For local development: http://localhost:3000
+# For local development, you can use: http://localhost:3000
+# For Vercel: https://your-project.vercel.app
 ```
 
 ## Where to Find These Values

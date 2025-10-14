@@ -96,7 +96,13 @@ export async function sendUserInvite(email: string, fullName: string, role: User
 
     // Use Supabase Admin API to invite user by email
     // This requires service role key which is only available server-side
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
+    const redirectUrl = siteUrl 
+      ? `https://${siteUrl.replace(/^https?:\/\//, '')}/accept-invite`
+      : 'http://localhost:3000/accept-invite'
+    
     console.log(`Attempting to send invite to ${email} with role ${role}`)
+    console.log(`Redirect URL will be: ${redirectUrl}`)
     
     const { data: inviteData, error: emailError } = await adminClient.auth.admin.inviteUserByEmail(email, {
       data: {
@@ -104,7 +110,7 @@ export async function sendUserInvite(email: string, fullName: string, role: User
         role,
         invite_id: invite.id,
       },
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/accept-invite`,
+      redirectTo: redirectUrl,
     })
 
     if (emailError) {
