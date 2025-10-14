@@ -10,6 +10,7 @@ import { ProgressTree } from '@/components/ui/progress-tree'
 import { Button } from '@/components/ui/button'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { ActivityFeed } from '@/components/social/activity-feed'
+import { ProfileSetupModal } from '@/components/auth/profile-setup-modal'
 import { 
   BookOpen, 
   MessageSquare, 
@@ -28,6 +29,8 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [showProfileSetup, setShowProfileSetup] = useState(false)
+  const [profileCompleted, setProfileCompleted] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
@@ -47,6 +50,12 @@ export default function DashboardPage() {
           .single() as any
 
         if (profile) {
+          // Check if profile setup is needed
+          setProfileCompleted(profile.profile_completed ?? true)
+          if (!profile.profile_completed) {
+            setShowProfileSetup(true)
+          }
+
           const userData = {
             id: profile.id,
             email: profile.email,
@@ -324,6 +333,20 @@ export default function DashboardPage() {
         </div>
         </div>
       </Container>
+
+      {/* Profile Setup Modal for first-time users */}
+      {user && showProfileSetup && (
+        <ProfileSetupModal
+          open={showProfileSetup}
+          onClose={() => {
+            setShowProfileSetup(false)
+            setProfileCompleted(true)
+          }}
+          userId={user.id}
+          userName={user.full_name || user.email}
+          userEmail={user.email}
+        />
+      )}
     </div>
   )
 }

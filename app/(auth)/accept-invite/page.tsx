@@ -1,0 +1,287 @@
+'use client'
+
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageLoader } from '@/components/ui/loading-spinner'
+import { toast } from 'sonner'
+import Image from 'next/image'
+import { CheckCircle, XCircle } from 'lucide-react'
+import { validateInvite, acceptInvite } from '@/lib/supabase/queries/users'
+import type { Invite } from '@/lib/supabase/queries/users'
+
+function AcceptInviteContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const supabase = createClient()
+  
+  const [invite, setInvite] = useState<Invite | null>(null)
+  const [isValidating, setIsValidating] = useState(true)
+  const [isValid, setIsValid] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    validateInviteToken()
+  }, [searchParams])
+
+  async function validateInviteToken() {
+    setIsValidating(true)
+    
+    // Get the token_hash from URL (Supabase auth magic link format)
+    const tokenHash = searchParams.get('token_hash')
+    const type = searchParams.get('type')
+    
+    if (!tokenHash || type !== 'magiclink') {
+      setIsValid(false)
+      setIsValidating(false)
+      return
+    }
+
+    try {
+      // Verify the magic link with Supabase Auth
+      const { data, error } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: 'magiclink',
+      })
+
+      if (error || !data.user) {
+        setIsValid(false)
+        toast.error('Invalid or expired invite link')
+        return
+      }
+
+      // Get invite data from user metadata
+      const inviteId = data.user.user_metadata?.invite_id
+      if (!inviteId) {
+        setIsValid(false)
+        toast.error('Invalid invite data')
+        return
+      }
+
+      // Validate the invite in our database
+      const inviteData = await validateInvite(inviteId)
+      if (!inviteData) {
+        setIsValid(false)
+        toast.error('This invite has expired or already been used')
+        return
+      }
+
+      setInvite(inviteData)
+      setIsValid(true)
+    } catch (error) {
+      console.error('Error validating invite:', error)
+      setIsValid(false)
+      toast.error('Failed to validate invite')
+    } finally {
+      setIsValidating(false)
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match')
+      return
+    }
+
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters')
+      return
+    }
+
+    if (!invite) return
+
+    setIsLoading(true)
+
+    try {
+      // Get current session
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('No authenticated user found')
+      }
+
+      // Update the user's password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: password,
+        data: {
+          full_name: invite.full_name,
+          role: invite.role,
+        }
+      })
+
+      if (updateError) throw updateError
+
+      // Update profile in database (profile should already exist from auth trigger)
+      const { error: profileError } = await (supabase as any)
+        .from('profiles')
+        .update({
+          full_name: invite.full_name,
+          role: invite.role,
+          profile_completed: false,
+        })
+        .eq('id', user.id)
+
+      if (profileError) throw profileError
+
+      // Mark invite as accepted
+      await acceptInvite(invite.id, user.id)
+
+      toast.success('Account created successfully! Welcome aboard.')
+      
+      // Small delay to ensure everything is saved
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Redirect to dashboard
+      router.push('/dashboard')
+    } catch (error: any) {
+      console.error('Error creating account:', error)
+      toast.error(error.message || 'Failed to create account')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isValidating) {
+    return <PageLoader />
+  }
+
+  if (!isValid || !invite) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-0 shadow-2xl">
+          <CardHeader className="space-y-4 text-center">
+            <div className="mx-auto relative">
+              <div className="absolute inset-0 bg-red-500/20 blur-2xl rounded-full"></div>
+              <div className="relative z-10 w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+                <XCircle className="h-10 w-10 text-red-600" />
+              </div>
+            </div>
+            <div>
+              <CardTitle className="text-2xl">Invalid Invite</CardTitle>
+              <CardDescription className="text-base">
+                This invite link is invalid or has expired
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-rogue-slate text-center">
+              Invite links expire after 7 days. Please contact your administrator to request a new invite.
+            </p>
+            <Button 
+              className="w-full" 
+              onClick={() => router.push('/login')}
+            >
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card className="border-0 shadow-2xl">
+        <CardHeader className="space-y-4 text-center">
+          <div className="mx-auto relative">
+            <div className="absolute inset-0 bg-rogue-gold/20 blur-2xl rounded-full"></div>
+            <Image
+              src="/RLTE-logo.png"
+              alt="Rogue Leadership Training Experience"
+              width={160}
+              height={160}
+              className="relative z-10"
+              priority
+            />
+          </div>
+          <div>
+            <CardTitle className="text-2xl">Welcome, {invite.full_name}!</CardTitle>
+            <CardDescription className="text-base">
+              Create your password to complete your account setup
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={invite.email}
+                disabled
+                className="bg-rogue-sage/5"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Input
+                id="role"
+                value={invite.role.charAt(0).toUpperCase() + invite.role.slice(1)}
+                disabled
+                className="bg-rogue-sage/5"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Create Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                disabled={isLoading}
+              />
+              <p className="text-xs text-rogue-slate">
+                Must be at least 6 characters
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+                disabled={isLoading}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              size="lg"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Creating Account...' : 'Create Account & Sign In'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default function AcceptInvitePage() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <AcceptInviteContent />
+    </Suspense>
+  )
+}
+

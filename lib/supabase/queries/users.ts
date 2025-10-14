@@ -1,0 +1,346 @@
+import { createClient } from '@/lib/supabase/client'
+import type { UserRole } from '@/types/index.types'
+
+export interface UserProfile {
+  id: string
+  email: string
+  full_name: string
+  role: UserRole
+  avatar_url?: string
+  is_active: boolean
+  invited_by?: string
+  profile_completed: boolean
+  created_at: string
+  deactivated_at?: string
+}
+
+export interface Invite {
+  id: string
+  email: string
+  full_name: string
+  role: UserRole
+  invited_by: string
+  status: 'pending' | 'accepted' | 'expired'
+  expires_at: string
+  accepted_at?: string
+  created_at: string
+}
+
+interface UserFilters {
+  role?: UserRole
+  isActive?: boolean
+  search?: string
+}
+
+/**
+ * Get all users with optional filters
+ */
+export async function getUsers(filters?: UserFilters): Promise<UserProfile[]> {
+  const supabase = createClient()
+  
+  let query = supabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (filters?.role) {
+    query = query.eq('role', filters.role)
+  }
+
+  if (filters?.isActive !== undefined) {
+    query = query.eq('is_active', filters.isActive)
+  }
+
+  if (filters?.search) {
+    query = query.or(`full_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw error
+  return data as UserProfile[]
+}
+
+/**
+ * Send an invite to a new user
+ */
+export async function sendInvite(email: string, fullName: string, role: UserRole) {
+  const supabase = createClient()
+
+  // Check if user already exists
+  const { data: existingUser } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .single()
+
+  if (existingUser) {
+    throw new Error('User with this email already exists')
+  }
+
+  // Check if there's a pending invite
+  const { data: existingInvite } = await supabase
+    .from('invites')
+    .select('id')
+    .eq('email', email)
+    .eq('status', 'pending')
+    .single()
+
+  if (existingInvite) {
+    throw new Error('An invite has already been sent to this email')
+  }
+
+  // Get current user ID
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  // Create invite record
+  const { data: invite, error: inviteError } = await (supabase as any)
+    .from('invites')
+    .insert({
+      email,
+      full_name: fullName,
+      role,
+      invited_by: user.id,
+    })
+    .select()
+    .single()
+
+  if (inviteError) throw inviteError
+
+  // Send magic link via Supabase Auth
+  const { error: emailError } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      data: {
+        full_name: fullName,
+        role,
+        invite_id: invite.id,
+      },
+      emailRedirectTo: `${window.location.origin}/accept-invite`,
+    },
+  })
+
+  if (emailError) throw emailError
+
+  return invite
+}
+
+/**
+ * Get all invites with optional status filter
+ */
+export async function getInvites(status?: 'pending' | 'accepted' | 'expired'): Promise<Invite[]> {
+  const supabase = createClient()
+
+  let query = supabase
+    .from('invites')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (status) {
+    query = query.eq('status', status)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw error
+  return data as Invite[]
+}
+
+/**
+ * Update a user's role
+ */
+export async function updateUserRole(userId: string, role: UserRole) {
+  const supabase = createClient()
+
+  // Prevent self-role change to avoid locking yourself out
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user?.id === userId) {
+    throw new Error('Cannot change your own role')
+  }
+
+  const { error } = await (supabase as any)
+    .from('profiles')
+    .update({ role })
+    .eq('id', userId)
+
+  if (error) throw error
+}
+
+/**
+ * Deactivate a user account
+ */
+export async function deactivateUser(userId: string) {
+  const supabase = createClient()
+
+  // Prevent self-deactivation
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user?.id === userId) {
+    throw new Error('Cannot deactivate your own account')
+  }
+
+  const { error } = await (supabase as any)
+    .from('profiles')
+    .update({ 
+      is_active: false,
+      deactivated_at: new Date().toISOString()
+    })
+    .eq('id', userId)
+
+  if (error) throw error
+}
+
+/**
+ * Reactivate a user account
+ */
+export async function reactivateUser(userId: string) {
+  const supabase = createClient()
+
+  const { error } = await (supabase as any)
+    .from('profiles')
+    .update({ 
+      is_active: true,
+      deactivated_at: null
+    })
+    .eq('id', userId)
+
+  if (error) throw error
+}
+
+/**
+ * Delete a user account
+ */
+export async function deleteUser(userId: string) {
+  const supabase = createClient()
+
+  // Prevent self-deletion
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user?.id === userId) {
+    throw new Error('Cannot delete your own account')
+  }
+
+  // Note: This will cascade delete due to foreign key constraints
+  const { error } = await supabase
+    .from('profiles')
+    .delete()
+    .eq('id', userId)
+
+  if (error) throw error
+}
+
+/**
+ * Bulk deactivate multiple users
+ */
+export async function bulkDeactivateUsers(userIds: string[]) {
+  const supabase = createClient()
+
+  // Get current user to prevent self-deactivation
+  const { data: { user } } = await supabase.auth.getUser()
+  const filteredIds = userIds.filter(id => id !== user?.id)
+
+  if (filteredIds.length === 0) {
+    throw new Error('Cannot deactivate selected users')
+  }
+
+  const { error } = await (supabase as any)
+    .from('profiles')
+    .update({ 
+      is_active: false,
+      deactivated_at: new Date().toISOString()
+    })
+    .in('id', filteredIds)
+
+  if (error) throw error
+}
+
+/**
+ * Validate an invite token
+ */
+export async function validateInvite(inviteId: string): Promise<Invite | null> {
+  const supabase = createClient()
+
+  const { data: invite, error } = await (supabase as any)
+    .from('invites')
+    .select('*')
+    .eq('id', inviteId)
+    .eq('status', 'pending')
+    .single()
+
+  if (error || !invite) return null
+
+  // Check if expired
+  const expiresAt = new Date(invite.expires_at)
+  if (expiresAt < new Date()) {
+    // Mark as expired
+    await (supabase as any)
+      .from('invites')
+      .update({ status: 'expired' })
+      .eq('id', inviteId)
+    
+    return null
+  }
+
+  return invite as Invite
+}
+
+/**
+ * Mark invite as accepted
+ */
+export async function acceptInvite(inviteId: string, userId: string) {
+  const supabase = createClient()
+
+  const { error } = await (supabase as any)
+    .from('invites')
+    .update({ 
+      status: 'accepted',
+      accepted_at: new Date().toISOString()
+    })
+    .eq('id', inviteId)
+
+  if (error) throw error
+
+  // Update profile with invited_by relationship
+  const { data: invite } = await (supabase as any)
+    .from('invites')
+    .select('invited_by')
+    .eq('id', inviteId)
+    .single()
+
+  if (invite?.invited_by) {
+    await (supabase as any)
+      .from('profiles')
+      .update({ invited_by: invite.invited_by })
+      .eq('id', userId)
+  }
+}
+
+/**
+ * Mark user profile as completed
+ */
+export async function markProfileComplete(userId: string) {
+  const supabase = createClient()
+
+  const { error } = await (supabase as any)
+    .from('profiles')
+    .update({ profile_completed: true })
+    .eq('id', userId)
+
+  if (error) throw error
+}
+
+/**
+ * Get user by ID
+ */
+export async function getUserById(userId: string): Promise<UserProfile | null> {
+  const supabase = createClient()
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single()
+
+  if (error) return null
+  return data as UserProfile
+}
+
