@@ -5,6 +5,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { 
   TreePine, 
   LayoutDashboard, 
@@ -18,14 +26,23 @@ import {
   Menu,
   X,
   LogOut,
-  UserCog
+  UserCog,
+  MoreVertical
 } from 'lucide-react'
 import { signOut } from '@/app/actions/auth'
 import { toast } from 'sonner'
 import type { UserRole } from '@/types/index.types'
 
+interface UserProfile {
+  full_name: string
+  email: string
+  avatar_url?: string
+  role: UserRole
+}
+
 interface SidebarProps {
   userRole: UserRole
+  userProfile: UserProfile
 }
 
 const participantNavItems = [
@@ -44,13 +61,23 @@ const adminNavItems = [
   { href: '/admin', label: 'Admin', icon: UserCog },
 ]
 
-export function Sidebar({ userRole }: SidebarProps) {
+export function Sidebar({ userRole, userProfile }: SidebarProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   
   const navItems = userRole === 'admin' || userRole === 'facilitator' 
     ? adminNavItems 
     : participantNavItems
+
+  // Get user initials for avatar fallback
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
 
   async function handleSignOut() {
     try {
@@ -129,29 +156,61 @@ export function Sidebar({ userRole }: SidebarProps) {
           })}
         </nav>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-white/10 space-y-1">
-          <Link
-            href="/profile"
-            onClick={() => setIsOpen(false)}
-            className={cn(
-              'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
-              pathname === '/profile'
-                ? 'bg-rogue-gold text-white shadow-lg shadow-rogue-gold/20'
-                : 'text-white/80 hover:bg-white/10 hover:text-white'
-            )}
-          >
-            <Settings size={20} />
-            <span className="font-medium">Settings</span>
-          </Link>
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-red-300 hover:text-red-200 hover:bg-red-500/10"
-            onClick={handleSignOut}
-          >
-            <LogOut size={20} className="mr-3" />
-            Sign Out
-          </Button>
+        {/* User Area Footer */}
+        <div className="p-4 border-t border-white/10">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 backdrop-blur-sm">
+            <Avatar className="h-10 w-10 border-2 border-rogue-gold/30">
+              <AvatarImage src={userProfile.avatar_url} alt={userProfile.full_name} />
+              <AvatarFallback className="bg-rogue-gold text-white font-semibold">
+                {getInitials(userProfile.full_name)}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">
+                {userProfile.full_name}
+              </p>
+              <p className="text-xs text-white/60 truncate">
+                {userProfile.email}
+              </p>
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="flex-shrink-0 h-8 w-8 text-white/80 hover:text-white hover:bg-white/10"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="end" 
+                side="top"
+                className="w-56 bg-white border-rogue-sage/20"
+              >
+                <DropdownMenuItem asChild>
+                  <Link 
+                    href="/profile" 
+                    className="flex items-center cursor-pointer"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={handleSignOut}
+                  className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sign Out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </aside>
     </>
