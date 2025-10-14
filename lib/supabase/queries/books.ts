@@ -39,8 +39,8 @@ export async function getBook(bookId: string) {
 export async function createBook(book: Partial<Book>) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('books')
+  const { data, error } = await (supabase
+    .from('books') as any)
     .insert(book)
     .select()
     .single()
@@ -55,8 +55,8 @@ export async function createBook(book: Partial<Book>) {
 export async function updateBook(bookId: string, updates: Partial<Book>) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('books')
+  const { data, error } = await (supabase
+    .from('books') as any)
     .update(updates)
     .eq('id', bookId)
     .select()
@@ -72,8 +72,8 @@ export async function updateBook(bookId: string, updates: Partial<Book>) {
 export async function deleteBook(bookId: string) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('books')
+  const { error } = await (supabase
+    .from('books') as any)
     .delete()
     .eq('id', bookId)
   
@@ -86,12 +86,12 @@ export async function deleteBook(bookId: string) {
 export async function getReadingProgress(userId: string, bookId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('reading_progress')
     .select('*')
     .eq('user_id', userId)
     .eq('book_id', bookId)
-    .single()
+    .single()) as any
   
   if (error && error.code !== 'PGRST116') throw error
   return data
@@ -113,8 +113,8 @@ export async function updateReadingProgress(
 ) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('reading_progress')
+  const { data, error } = await (supabase
+    .from('reading_progress') as any)
     .upsert({
       user_id: userId,
       book_id: bookId,
@@ -133,10 +133,10 @@ export async function updateReadingProgress(
 export async function getUserReadingList(userId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('reading_progress')
     .select('*, book:books(*)')
-    .eq('user_id', userId)
+    .eq('user_id', userId)) as any
   
   if (error) throw error
   return data
@@ -148,11 +148,11 @@ export async function getUserReadingList(userId: string) {
 export async function getBooksByMonth(month: number) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('books')
     .select('*')
     .eq('assigned_month', month)
-    .order('title', { ascending: true })
+    .order('title', { ascending: true })) as any
   
   if (error) throw error
   return data as Book[]

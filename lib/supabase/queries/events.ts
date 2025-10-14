@@ -48,8 +48,8 @@ export async function getEvent(eventId: string) {
 export async function createEvent(event: Partial<Event>) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('events')
+  const { data, error } = await (supabase
+    .from('events') as any)
     .insert(event)
     .select()
     .single()
@@ -64,8 +64,8 @@ export async function createEvent(event: Partial<Event>) {
 export async function updateEvent(eventId: string, updates: Partial<Event>) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('events')
+  const { data, error } = await (supabase
+    .from('events') as any)
     .update(updates)
     .eq('id', eventId)
     .select()
@@ -81,8 +81,8 @@ export async function updateEvent(eventId: string, updates: Partial<Event>) {
 export async function deleteEvent(eventId: string) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('events')
+  const { error } = await (supabase
+    .from('events') as any)
     .delete()
     .eq('id', eventId)
   
@@ -95,8 +95,8 @@ export async function deleteEvent(eventId: string) {
 export async function registerForEvent(eventId: string, userId: string) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('event_attendance')
+  const { error } = await (supabase
+    .from('event_attendance') as any)
     .insert({
       event_id: eventId,
       user_id: userId,
@@ -112,8 +112,8 @@ export async function registerForEvent(eventId: string, userId: string) {
 export async function unregisterFromEvent(eventId: string, userId: string) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('event_attendance')
+  const { error } = await (supabase
+    .from('event_attendance') as any)
     .delete()
     .eq('event_id', eventId)
     .eq('user_id', userId)
@@ -127,12 +127,12 @@ export async function unregisterFromEvent(eventId: string, userId: string) {
 export async function isRegisteredForEvent(eventId: string, userId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('event_attendance')
     .select('*')
     .eq('event_id', eventId)
     .eq('user_id', userId)
-    .single()
+    .single()) as any
   
   if (error && error.code !== 'PGRST116') throw error
   return !!data
@@ -144,8 +144,8 @@ export async function isRegisteredForEvent(eventId: string, userId: string) {
 export async function markAttendance(eventId: string, userId: string, status: 'attended' | 'missed') {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('event_attendance')
+  const { error } = await (supabase
+    .from('event_attendance') as any)
     .update({ status })
     .eq('event_id', eventId)
     .eq('user_id', userId)
@@ -159,7 +159,7 @@ export async function markAttendance(eventId: string, userId: string, status: 'a
 export async function getEventsByModule(moduleId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('events')
     .select(`
       *,
@@ -167,7 +167,7 @@ export async function getEventsByModule(moduleId: string) {
       attendance:event_attendance(count)
     `)
     .eq('module_id', moduleId)
-    .order('start_time', { ascending: true })
+    .order('start_time', { ascending: true })) as any
   
   if (error) throw error
   return data

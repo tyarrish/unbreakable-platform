@@ -18,12 +18,12 @@ export async function getTodayEngagement(userId: string): Promise<UserEngagement
   const supabase = createClient()
   const today = new Date().toISOString().split('T')[0]
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('user_engagement')
     .select('*')
     .eq('user_id', userId)
     .eq('date', today)
-    .single()
+    .single()) as any
   
   if (error && error.code !== 'PGRST116') throw error
   return data
@@ -37,17 +37,17 @@ export async function updateEngagement(
   const today = new Date().toISOString().split('T')[0]
   
   // Get today's engagement
-  const { data: existing } = await supabase
+  const { data: existing } = await (supabase
     .from('user_engagement')
     .select('*')
     .eq('user_id', userId)
     .eq('date', today)
-    .single()
+    .single()) as any
   
   if (existing) {
     // Update existing record
-    const { error } = await supabase
-      .from('user_engagement')
+    const { error } = await (supabase
+      .from('user_engagement') as any)
       .update({
         ...updates,
         updated_at: new Date().toISOString()
@@ -57,8 +57,8 @@ export async function updateEngagement(
     if (error) throw error
   } else {
     // Create new record
-    const { error } = await supabase
-      .from('user_engagement')
+    const { error } = await (supabase
+      .from('user_engagement') as any)
       .insert({
         user_id: userId,
         date: today,
@@ -81,16 +81,16 @@ export async function incrementEngagementMetric(
   const supabase = createClient()
   const today = new Date().toISOString().split('T')[0]
   
-  const { data: existing } = await supabase
+  const { data: existing } = await (supabase
     .from('user_engagement')
     .select('*')
     .eq('user_id', userId)
     .eq('date', today)
-    .single()
+    .single()) as any
   
   if (existing) {
-    const { error } = await supabase
-      .from('user_engagement')
+    const { error } = await (supabase
+      .from('user_engagement') as any)
       .update({
         [metric]: existing[metric] + 1,
         updated_at: new Date().toISOString()
@@ -99,8 +99,8 @@ export async function incrementEngagementMetric(
     
     if (error) throw error
   } else {
-    const { error } = await supabase
-      .from('user_engagement')
+    const { error } = await (supabase
+      .from('user_engagement') as any)
       .insert({
         user_id: userId,
         date: today,
@@ -116,12 +116,12 @@ export async function getCurrentStreak(userId: string): Promise<number> {
   const supabase = createClient()
   
   // Get all engagement records ordered by date desc
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('user_engagement')
     .select('date')
     .eq('user_id', userId)
     .order('date', { ascending: false })
-    .limit(100)
+    .limit(100)) as any
   
   if (error) throw error
   if (!data || data.length === 0) return 0
@@ -156,12 +156,12 @@ export async function getEngagementHistory(
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('user_engagement')
     .select('*')
     .eq('user_id', userId)
     .gte('date', startDate.toISOString().split('T')[0])
-    .order('date', { ascending: false })
+    .order('date', { ascending: false })) as any
   
   if (error) throw error
   return data || []
@@ -177,18 +177,18 @@ export async function getTotalEngagementStats(userId: string): Promise<{
 }> {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('user_engagement')
     .select('*')
     .eq('user_id', userId)
-    .order('date', { ascending: false })
+    .order('date', { ascending: false })) as any
   
   if (error) throw error
   
-  const total_lessons = data?.reduce((sum, item) => sum + item.lessons_completed, 0) || 0
-  const total_discussions = data?.reduce((sum, item) => sum + item.discussions_posted, 0) || 0
-  const total_events = data?.reduce((sum, item) => sum + item.events_attended, 0) || 0
-  const total_points = data?.reduce((sum, item) => sum + item.total_points, 0) || 0
+  const total_lessons = data?.reduce((sum: number, item: any) => sum + item.lessons_completed, 0) || 0
+  const total_discussions = data?.reduce((sum: number, item: any) => sum + item.discussions_posted, 0) || 0
+  const total_events = data?.reduce((sum: number, item: any) => sum + item.events_attended, 0) || 0
+  const total_points = data?.reduce((sum: number, item: any) => sum + item.total_points, 0) || 0
   
   // Calculate longest streak
   let longest_streak = 0

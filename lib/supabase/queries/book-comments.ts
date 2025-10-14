@@ -26,20 +26,20 @@ export interface BookComment {
 export async function getBookComments(bookId: string, userId?: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('book_comments')
     .select(`
       *,
       user:profiles!book_comments_user_id_fkey(id, full_name, avatar_url, role)
     `)
     .eq('book_id', bookId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: true })) as any
   
   if (error) throw error
   
   // Get like counts and user likes for each comment
   const commentsWithLikes = await Promise.all(
-    (data || []).map(async (comment) => {
+    (data || []).map(async (comment: any) => {
       const { count } = await supabase
         .from('book_comment_likes')
         .select('*', { count: 'exact', head: true })
@@ -98,8 +98,8 @@ export async function createBookComment(
 ) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('book_comments')
+  const { data, error } = await (supabase
+    .from('book_comments') as any)
     .insert({
       book_id: bookId,
       user_id: userId,
@@ -119,8 +119,8 @@ export async function createBookComment(
 export async function updateBookComment(commentId: string, content: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('book_comments')
+  const { data, error } = await (supabase
+    .from('book_comments') as any)
     .update({ content, is_edited: true })
     .eq('id', commentId)
     .select()
@@ -136,8 +136,8 @@ export async function updateBookComment(commentId: string, content: string) {
 export async function deleteBookComment(commentId: string) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('book_comments')
+  const { error } = await (supabase
+    .from('book_comments') as any)
     .delete()
     .eq('id', commentId)
   
@@ -150,8 +150,8 @@ export async function deleteBookComment(commentId: string) {
 export async function likeBookComment(commentId: string, userId: string) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('book_comment_likes')
+  const { error } = await (supabase
+    .from('book_comment_likes') as any)
     .insert({ comment_id: commentId, user_id: userId })
   
   if (error) throw error
@@ -163,8 +163,8 @@ export async function likeBookComment(commentId: string, userId: string) {
 export async function unlikeBookComment(commentId: string, userId: string) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('book_comment_likes')
+  const { error } = await (supabase
+    .from('book_comment_likes') as any)
     .delete()
     .eq('comment_id', commentId)
     .eq('user_id', userId)

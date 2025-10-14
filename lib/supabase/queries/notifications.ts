@@ -15,12 +15,12 @@ export interface Notification {
 export async function getNotifications(userId: string, limit: number = 20): Promise<Notification[]> {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('notifications')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(limit)
+    .limit(limit)) as any
   
   if (error) throw error
   return data || []
@@ -42,8 +42,8 @@ export async function getUnreadCount(userId: string): Promise<number> {
 export async function markAsRead(notificationId: string): Promise<void> {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('notifications')
+  const { error } = await (supabase
+    .from('notifications') as any)
     .update({ is_read: true })
     .eq('id', notificationId)
   
@@ -53,8 +53,8 @@ export async function markAsRead(notificationId: string): Promise<void> {
 export async function markAllAsRead(userId: string): Promise<void> {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('notifications')
+  const { error } = await (supabase
+    .from('notifications') as any)
     .update({ is_read: true })
     .eq('user_id', userId)
     .eq('is_read', false)
@@ -72,8 +72,8 @@ export async function createNotification(
 ): Promise<void> {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('notifications')
+  const { error } = await (supabase
+    .from('notifications') as any)
     .insert({
       user_id: userId,
       type,

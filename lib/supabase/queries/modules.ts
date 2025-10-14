@@ -44,8 +44,8 @@ export async function getModule(moduleId: string) {
 export async function createModule(module: Partial<Module>) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('modules')
+  const { data, error } = await (supabase
+    .from('modules') as any)
     .insert(module)
     .select()
     .single()
@@ -60,8 +60,8 @@ export async function createModule(module: Partial<Module>) {
 export async function updateModule(moduleId: string, updates: Partial<Module>) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('modules')
+  const { data, error } = await (supabase
+    .from('modules') as any)
     .update(updates)
     .eq('id', moduleId)
     .select()
@@ -77,8 +77,8 @@ export async function updateModule(moduleId: string, updates: Partial<Module>) {
 export async function deleteModule(moduleId: string) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('modules')
+  const { error } = await (supabase
+    .from('modules') as any)
     .delete()
     .eq('id', moduleId)
   
@@ -91,11 +91,11 @@ export async function deleteModule(moduleId: string) {
 export async function getLessons(moduleId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('lessons')
     .select('*')
     .eq('module_id', moduleId)
-    .order('order_number', { ascending: true })
+    .order('order_number', { ascending: true })) as any
   
   if (error) throw error
   return data as Lesson[]
@@ -107,11 +107,11 @@ export async function getLessons(moduleId: string) {
 export async function getLesson(lessonId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('lessons')
     .select('*')
     .eq('id', lessonId)
-    .single()
+    .single()) as any
   
   if (error) throw error
   return data as Lesson
@@ -123,8 +123,8 @@ export async function getLesson(lessonId: string) {
 export async function createLesson(lesson: Partial<Lesson>) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('lessons')
+  const { data, error } = await (supabase
+    .from('lessons') as any)
     .insert(lesson)
     .select()
     .single()
@@ -139,8 +139,8 @@ export async function createLesson(lesson: Partial<Lesson>) {
 export async function updateLesson(lessonId: string, updates: Partial<Lesson>) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('lessons')
+  const { data, error } = await (supabase
+    .from('lessons') as any)
     .update(updates)
     .eq('id', lessonId)
     .select()
@@ -156,8 +156,8 @@ export async function updateLesson(lessonId: string, updates: Partial<Lesson>) {
 export async function deleteLesson(lessonId: string) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('lessons')
+  const { error } = await (supabase
+    .from('lessons') as any)
     .delete()
     .eq('id', lessonId)
   
@@ -170,12 +170,12 @@ export async function deleteLesson(lessonId: string) {
 export async function getLessonProgress(userId: string, lessonId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('lesson_progress')
     .select('*')
     .eq('user_id', userId)
     .eq('lesson_id', lessonId)
-    .single()
+    .single()) as any
   
   if (error && error.code !== 'PGRST116') throw error
   return data as LessonProgress | null
@@ -191,8 +191,8 @@ export async function updateLessonProgress(
 ) {
   const supabase = createClient()
   
-  const { data, error} = await supabase
-    .from('lesson_progress')
+  const { data, error} = await (supabase
+    .from('lesson_progress') as any)
     .upsert({
       user_id: userId,
       lesson_id: lessonId,
@@ -219,8 +219,8 @@ export async function markLessonComplete(userId: string, lessonId: string) {
   // Get existing progress to preserve time spent
   const existing = await getLessonProgress(userId, lessonId)
   
-  const { data, error } = await supabase
-    .from('lesson_progress')
+  const { data, error } = await (supabase
+    .from('lesson_progress') as any)
     .upsert({
       user_id: userId,
       lesson_id: lessonId,
@@ -244,10 +244,10 @@ export async function markLessonComplete(userId: string, lessonId: string) {
 export async function getUserProgress(userId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('lesson_progress')
     .select('*, lessons(*)')
-    .eq('user_id', userId)
+    .eq('user_id', userId)) as any
   
   if (error) throw error
   return data
@@ -259,12 +259,12 @@ export async function getUserProgress(userId: string) {
 export async function getReflection(userId: string, lessonId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('reflections')
     .select('*')
     .eq('user_id', userId)
     .eq('lesson_id', lessonId)
-    .single()
+    .single()) as any
   
   if (error && error.code !== 'PGRST116') throw error
   return data
@@ -276,8 +276,8 @@ export async function getReflection(userId: string, lessonId: string) {
 export async function saveReflection(userId: string, lessonId: string, content: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('reflections')
+  const { data, error } = await (supabase
+    .from('reflections') as any)
     .upsert({
       user_id: userId,
       lesson_id: lessonId,

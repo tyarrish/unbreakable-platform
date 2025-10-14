@@ -28,11 +28,11 @@ export interface UserFollow {
 export async function getAllMembers(limit: number = 50, offset: number = 0): Promise<UserProfile[]> {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+    .range(offset, offset + limit - 1)) as any
   
   if (error) throw error
   return data || []
@@ -41,11 +41,11 @@ export async function getAllMembers(limit: number = 50, offset: number = 0): Pro
 export async function searchMembers(query: string): Promise<UserProfile[]> {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('profiles')
     .select('*')
     .or(`full_name.ilike.%${query}%,email.ilike.%${query}%,bio.ilike.%${query}%`)
-    .limit(20)
+    .limit(20)) as any
   
   if (error) throw error
   return data || []
@@ -63,7 +63,7 @@ export async function getMembersByLocation(city?: string, state?: string): Promi
     query = query.ilike('state', `%${state}%`)
   }
   
-  const { data, error } = await query.limit(50)
+  const { data, error } = await (query.limit(50)) as any
   
   if (error) throw error
   return data || []
@@ -72,11 +72,11 @@ export async function getMembersByLocation(city?: string, state?: string): Promi
 export async function getMemberProfile(userId: string): Promise<UserProfile | null> {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single()
+    .single()) as any
   
   if (error) throw error
   return data
@@ -86,8 +86,8 @@ export async function getMemberProfile(userId: string): Promise<UserProfile | nu
 export async function followUser(followerId: string, followingId: string): Promise<void> {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('user_follows')
+  const { error } = await (supabase
+    .from('user_follows') as any)
     .insert({
       follower_id: followerId,
       following_id: followingId
@@ -99,8 +99,8 @@ export async function followUser(followerId: string, followingId: string): Promi
 export async function unfollowUser(followerId: string, followingId: string): Promise<void> {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('user_follows')
+  const { error } = await (supabase
+    .from('user_follows') as any)
     .delete()
     .eq('follower_id', followerId)
     .eq('following_id', followingId)
@@ -111,12 +111,12 @@ export async function unfollowUser(followerId: string, followingId: string): Pro
 export async function isFollowing(followerId: string, followingId: string): Promise<boolean> {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('user_follows')
     .select('id')
     .eq('follower_id', followerId)
     .eq('following_id', followingId)
-    .single()
+    .single()) as any
   
   if (error && error.code !== 'PGRST116') throw error
   return !!data
@@ -125,29 +125,29 @@ export async function isFollowing(followerId: string, followingId: string): Prom
 export async function getFollowers(userId: string): Promise<UserProfile[]> {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('user_follows')
     .select(`
       follower:profiles!user_follows_follower_id_fkey(*)
     `)
-    .eq('following_id', userId)
+    .eq('following_id', userId)) as any
   
   if (error) throw error
-  return data?.map(item => item.follower).filter(Boolean) || []
+  return data?.map((item: any) => item.follower).filter(Boolean) || []
 }
 
 export async function getFollowing(userId: string): Promise<UserProfile[]> {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('user_follows')
     .select(`
       following:profiles!user_follows_following_id_fkey(*)
     `)
-    .eq('follower_id', userId)
+    .eq('follower_id', userId)) as any
   
   if (error) throw error
-  return data?.map(item => item.following).filter(Boolean) || []
+  return data?.map((item: any) => item.following).filter(Boolean) || []
 }
 
 export async function getFollowerCount(userId: string): Promise<number> {
@@ -183,8 +183,8 @@ export async function updateUserLocation(
 ): Promise<void> {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('profiles')
+  const { error } = await (supabase
+    .from('profiles') as any)
     .update({ city, state, country })
     .eq('id', userId)
   
@@ -194,8 +194,8 @@ export async function updateUserLocation(
 export async function updateUserInterests(userId: string, interests: string[]): Promise<void> {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('profiles')
+  const { error } = await (supabase
+    .from('profiles') as any)
     .update({ interests })
     .eq('id', userId)
   
@@ -209,8 +209,8 @@ export async function updateUserSocialLinks(
 ): Promise<void> {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('profiles')
+  const { error } = await (supabase
+    .from('profiles') as any)
     .update({ linkedin_url: linkedinUrl, twitter_url: twitterUrl })
     .eq('id', userId)
   

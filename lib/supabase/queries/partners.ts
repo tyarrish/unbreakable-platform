@@ -6,11 +6,11 @@ import { createClient } from '@/lib/supabase/client'
 export async function getPartnerQuestionnaire(userId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('partner_questionnaire')
     .select('*')
     .eq('user_id', userId)
-    .single()
+    .single()) as any
   
   if (error && error.code !== 'PGRST116') throw error
   return data
@@ -22,8 +22,8 @@ export async function getPartnerQuestionnaire(userId: string) {
 export async function submitPartnerQuestionnaire(userId: string, responses: Record<string, any>) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('partner_questionnaire')
+  const { data, error } = await (supabase
+    .from('partner_questionnaire') as any)
     .upsert({
       user_id: userId,
       responses,
@@ -41,11 +41,11 @@ export async function submitPartnerQuestionnaire(userId: string, responses: Reco
 export async function getPartner(partnerId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('profiles')
     .select('id, full_name, avatar_url, bio, email')
     .eq('id', partnerId)
-    .single()
+    .single()) as any
   
   if (error) throw error
   return data
@@ -57,11 +57,11 @@ export async function getPartner(partnerId: string) {
 export async function getPartnerCheckIns(userId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('partner_checkins')
     .select('*')
     .eq('user_id', userId)
-    .order('week_number', { ascending: false })
+    .order('week_number', { ascending: false })) as any
   
   if (error) throw error
   return data
@@ -73,8 +73,8 @@ export async function getPartnerCheckIns(userId: string) {
 export async function submitCheckIn(userId: string, partnerId: string, weekNumber: number, response: string, prompt?: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('partner_checkins')
+  const { data, error } = await (supabase
+    .from('partner_checkins') as any)
     .upsert({
       user_id: userId,
       partner_id: partnerId,
@@ -95,12 +95,12 @@ export async function submitCheckIn(userId: string, partnerId: string, weekNumbe
 export async function getPartnerMessages(userId: string, partnerId: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('partner_messages')
     .select('*')
     .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
     .or(`sender_id.eq.${partnerId},receiver_id.eq.${partnerId}`)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: true })) as any
   
   if (error) throw error
   return data
@@ -112,8 +112,8 @@ export async function getPartnerMessages(userId: string, partnerId: string) {
 export async function sendPartnerMessage(senderId: string, receiverId: string, message: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('partner_messages')
+  const { data, error } = await (supabase
+    .from('partner_messages') as any)
     .insert({
       sender_id: senderId,
       receiver_id: receiverId,
@@ -132,8 +132,8 @@ export async function sendPartnerMessage(senderId: string, receiverId: string, m
 export async function markMessagesAsRead(userId: string) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('partner_messages')
+  const { error } = await (supabase
+    .from('partner_messages') as any)
     .update({ is_read: true })
     .eq('receiver_id', userId)
     .eq('is_read', false)

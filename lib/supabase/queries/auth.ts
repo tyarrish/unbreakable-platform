@@ -40,11 +40,11 @@ export async function getCurrentUser(): Promise<User | null> {
 export async function getUserProfile(userId: string): Promise<User | null> {
   const supabase = await createServerClient()
   
-  const { data: profile, error } = await supabase
+  const { data: profile, error } = await (supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single()
+    .single()) as any
   
   if (error || !profile) return null
   
@@ -68,8 +68,8 @@ export async function getUserProfile(userId: string): Promise<User | null> {
 export async function updateUserProfile(userId: string, updates: Partial<User>) {
   const supabase = createBrowserClient()
   
-  const { data, error } = await supabase
-    .from('profiles')
+  const { data, error } = await (supabase
+    .from('profiles') as any)
     .update(updates)
     .eq('id', userId)
     .select()
@@ -87,11 +87,11 @@ export async function uploadAvatar(userId: string, file: File) {
   const supabase = createBrowserClient()
   
   // Delete old avatar if exists
-  const { data: oldProfile } = await supabase
+  const { data: oldProfile } = await (supabase
     .from('profiles')
     .select('avatar_url')
     .eq('id', userId)
-    .single()
+    .single()) as any
   
   if (oldProfile?.avatar_url) {
     const oldPath = oldProfile.avatar_url.split('/').pop()

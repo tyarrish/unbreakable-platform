@@ -1,3 +1,5 @@
+'use client'
+
 import { Container } from '@/components/layout/container'
 import { PageHeader } from '@/components/layout/page-header'
 import { Button } from '@/components/ui/button'

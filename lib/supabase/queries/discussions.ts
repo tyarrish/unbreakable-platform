@@ -76,8 +76,8 @@ export async function createThread(thread: {
 }) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('discussion_threads')
+  const { data, error } = await (supabase
+    .from('discussion_threads') as any)
     .insert(thread)
     .select()
     .single()
@@ -98,8 +98,8 @@ export async function createPost(post: {
 }) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('discussion_posts')
+  const { data, error } = await (supabase
+    .from('discussion_posts') as any)
     .insert(post)
     .select(`
       *,
@@ -117,8 +117,8 @@ export async function createPost(post: {
 export async function updatePost(postId: string, content: string) {
   const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('discussion_posts')
+  const { data, error } = await (supabase
+    .from('discussion_posts') as any)
     .update({ content, is_edited: true })
     .eq('id', postId)
     .select()
@@ -134,8 +134,8 @@ export async function updatePost(postId: string, content: string) {
 export async function deletePost(postId: string) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('discussion_posts')
+  const { error } = await (supabase
+    .from('discussion_posts') as any)
     .delete()
     .eq('id', postId)
   
@@ -149,18 +149,18 @@ export async function toggleReaction(postId: string, userId: string, reactionTyp
   const supabase = createClient()
   
   // Check if reaction exists
-  const { data: existing } = await supabase
+  const { data: existing } = await (supabase
     .from('post_reactions')
     .select('*')
     .eq('post_id', postId)
     .eq('user_id', userId)
     .eq('reaction_type', reactionType)
-    .single()
+    .single()) as any
   
   if (existing) {
     // Remove reaction
-    const { error } = await supabase
-      .from('post_reactions')
+    const { error } = await (supabase
+      .from('post_reactions') as any)
       .delete()
       .eq('id', existing.id)
     
@@ -168,8 +168,8 @@ export async function toggleReaction(postId: string, userId: string, reactionTyp
     return { action: 'removed' }
   } else {
     // Add reaction
-    const { error } = await supabase
-      .from('post_reactions')
+    const { error } = await (supabase
+      .from('post_reactions') as any)
       .insert({
         post_id: postId,
         user_id: userId,
@@ -187,8 +187,8 @@ export async function toggleReaction(postId: string, userId: string, reactionTyp
 export async function togglePinThread(threadId: string, isPinned: boolean) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('discussion_threads')
+  const { error } = await (supabase
+    .from('discussion_threads') as any)
     .update({ is_pinned: isPinned })
     .eq('id', threadId)
   
@@ -201,8 +201,8 @@ export async function togglePinThread(threadId: string, isPinned: boolean) {
 export async function toggleLockThread(threadId: string, isLocked: boolean) {
   const supabase = createClient()
   
-  const { error } = await supabase
-    .from('discussion_threads')
+  const { error } = await (supabase
+    .from('discussion_threads') as any)
     .update({ is_locked: isLocked })
     .eq('id', threadId)
   

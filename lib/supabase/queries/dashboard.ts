@@ -33,17 +33,17 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
 
   try {
     // Get modules progress
-    const { data: moduleProgress } = await supabase
+    const { data: moduleProgress } = await (supabase
       .from('user_progress')
       .select('module_id, completion_percentage')
-      .eq('user_id', userId)
+      .eq('user_id', userId)) as any
 
-    const { data: allModules } = await supabase
+    const { data: allModules } = await (supabase
       .from('modules')
       .select('id')
-      .eq('is_published', true)
+      .eq('is_published', true)) as any
 
-    const completedModules = moduleProgress?.filter(m => m.completion_percentage >= 100).length || 0
+    const completedModules = moduleProgress?.filter((m: any) => m.completion_percentage >= 100).length || 0
     const totalModules = allModules?.length || 8
 
     // Get discussion posts count
@@ -67,56 +67,56 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
       .like('thread_id', '%partner%') // This is a simple approximation
 
     // Get reflections submitted (from lesson completions with reflections)
-    const { data: reflections } = await supabase
+    const { data: reflections } = await (supabase
       .from('lesson_completions')
       .select('reflection_text')
       .eq('user_id', userId)
-      .not('reflection_text', 'is', null)
+      .not('reflection_text', 'is', null)) as any
 
-    const reflectionsCount = reflections?.filter(r => r.reflection_text && r.reflection_text.trim().length > 0).length || 0
+    const reflectionsCount = reflections?.filter((r: any) => r.reflection_text && r.reflection_text.trim().length > 0).length || 0
 
     // Get books read (from user_progress where book_id is not null)
-    const { data: booksProgress } = await supabase
+    const { data: booksProgress } = await (supabase
       .from('user_progress')
       .select('book_id, completion_percentage')
       .eq('user_id', userId)
-      .not('book_id', 'is', null)
+      .not('book_id', 'is', null)) as any
 
-    const { data: allBooks } = await supabase
+    const { data: allBooks } = await (supabase
       .from('books')
-      .select('id')
+      .select('id')) as any
 
-    const booksCompleted = booksProgress?.filter(b => b.completion_percentage >= 100).length || 0
+    const booksCompleted = booksProgress?.filter((b: any) => b.completion_percentage >= 100).length || 0
     const totalBooks = allBooks?.length || 8
 
     // Calculate overall progress (average of module completion)
     const avgProgress = moduleProgress && moduleProgress.length > 0
-      ? Math.round(moduleProgress.reduce((sum, m) => sum + (m.completion_percentage || 0), 0) / totalModules)
+      ? Math.round(moduleProgress.reduce((sum: number, m: any) => sum + (m.completion_percentage || 0), 0) / totalModules)
       : 0
 
     // Calculate time spent learning (sum of video watch time and estimated reading time)
-    const { data: videoProgress } = await supabase
+    const { data: videoProgress } = await (supabase
       .from('video_progress')
       .select('watched_duration')
-      .eq('user_id', userId)
+      .eq('user_id', userId)) as any
 
-    const totalVideoTime = videoProgress?.reduce((sum, v) => sum + (v.watched_duration || 0), 0) || 0
+    const totalVideoTime = videoProgress?.reduce((sum: number, v: any) => sum + (v.watched_duration || 0), 0) || 0
     const timeSpentHours = Math.round(totalVideoTime / 3600) // Convert seconds to hours
 
     // Calculate days active (count distinct days with any activity)
-    const { data: progressDays } = await supabase
+    const { data: progressDays } = await (supabase
       .from('user_progress')
       .select('updated_at')
-      .eq('user_id', userId)
+      .eq('user_id', userId)) as any
 
-    const { data: postDays } = await supabase
+    const { data: postDays } = await (supabase
       .from('discussion_posts')
       .select('created_at')
-      .eq('author_id', userId)
+      .eq('author_id', userId)) as any
 
     const allActivityDates = [
-      ...(progressDays?.map(p => new Date(p.updated_at).toDateString()) || []),
-      ...(postDays?.map(p => new Date(p.created_at).toDateString()) || [])
+      ...(progressDays?.map((p: any) => new Date(p.updated_at).toDateString()) || []),
+      ...(postDays?.map((p: any) => new Date(p.created_at).toDateString()) || [])
     ]
     const uniqueDays = new Set(allActivityDates).size
 
@@ -163,7 +163,7 @@ export async function getRecentActivity(userId: string, limit = 10): Promise<Act
 
   try {
     // Get recent lesson completions
-    const { data: lessonCompletions } = await supabase
+    const { data: lessonCompletions } = await (supabase
       .from('lesson_completions')
       .select(`
         id,
@@ -172,21 +172,21 @@ export async function getRecentActivity(userId: string, limit = 10): Promise<Act
       `)
       .eq('user_id', userId)
       .order('completed_at', { ascending: false })
-      .limit(5)
+      .limit(5)) as any
 
-    lessonCompletions?.forEach(completion => {
+    lessonCompletions?.forEach((completion: any) => {
       activities.push({
         id: completion.id,
         type: 'module',
         title: 'Completed Lesson',
-        description: `${(completion as any).lessons?.title || 'Lesson'}`,
+        description: `${completion.lessons?.title || 'Lesson'}`,
         timestamp: completion.completed_at || new Date().toISOString(),
         icon: 'BookOpen'
       })
     })
 
     // Get recent discussion posts
-    const { data: posts } = await supabase
+    const { data: posts } = await (supabase
       .from('discussion_posts')
       .select(`
         id,
@@ -196,21 +196,21 @@ export async function getRecentActivity(userId: string, limit = 10): Promise<Act
       `)
       .eq('author_id', userId)
       .order('created_at', { ascending: false })
-      .limit(5)
+      .limit(5)) as any
 
-    posts?.forEach(post => {
+    posts?.forEach((post: any) => {
       activities.push({
         id: post.id,
         type: 'discussion',
         title: 'Posted in Discussion',
-        description: (post as any).threads?.title || 'Discussion',
+        description: post.threads?.title || 'Discussion',
         timestamp: post.created_at,
         icon: 'MessageSquare'
       })
     })
 
     // Get recent book progress
-    const { data: bookProgress } = await supabase
+    const { data: bookProgress } = await (supabase
       .from('user_progress')
       .select(`
         id,
@@ -222,9 +222,9 @@ export async function getRecentActivity(userId: string, limit = 10): Promise<Act
       .not('book_id', 'is', null)
       .gte('completion_percentage', 100)
       .order('updated_at', { ascending: false })
-      .limit(3)
+      .limit(3)) as any
 
-    bookProgress?.forEach(progress => {
+    bookProgress?.forEach((progress: any) => {
       activities.push({
         id: progress.id,
         type: 'book',
