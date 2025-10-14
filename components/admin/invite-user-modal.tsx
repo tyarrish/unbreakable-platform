@@ -21,7 +21,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Mail, CheckCircle, Clock, XCircle } from 'lucide-react'
-import { sendInvite, getInvites } from '@/lib/supabase/queries/users'
+import { getInvites } from '@/lib/supabase/queries/users'
+import { sendUserInvite } from '@/app/actions/users'
 import { formatDate } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
 import type { UserRole } from '@/types/index.types'
@@ -64,7 +65,13 @@ export function InviteUserModal({ open, onClose, onSuccess }: InviteUserModalPro
     setIsLoading(true)
 
     try {
-      await sendInvite(email, fullName, role)
+      const result = await sendUserInvite(email, fullName, role)
+      
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
       toast.success(`Invite sent to ${email}`)
       
       // Reset form

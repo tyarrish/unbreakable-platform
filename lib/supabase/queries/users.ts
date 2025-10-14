@@ -108,20 +108,26 @@ export async function sendInvite(email: string, fullName: string, role: UserRole
 
   if (inviteError) throw inviteError
 
-  // Send magic link via Supabase Auth
-  const { error: emailError } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      data: {
-        full_name: fullName,
-        role,
-        invite_id: invite.id,
-      },
-      emailRedirectTo: `${window.location.origin}/accept-invite`,
+  // Use Supabase Admin API to invite user by email
+  // This sends a proper invite email (not a confirmation email)
+  const { error: emailError } = await supabase.auth.admin.inviteUserByEmail(email, {
+    data: {
+      full_name: fullName,
+      role,
+      invite_id: invite.id,
     },
+    redirectTo: `${window.location.origin}/accept-invite`,
   })
 
-  if (emailError) throw emailError
+  if (emailError) {
+    // If invite fails, delete the invite record
+    await (supabase as any)
+      .from('invites')
+      .delete()
+      .eq('id', invite.id)
+    
+    throw emailError
+  }
 
   return invite
 }

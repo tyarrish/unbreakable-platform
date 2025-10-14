@@ -33,34 +33,24 @@ function AcceptInviteContent() {
   async function validateInviteToken() {
     setIsValidating(true)
     
-    // Get the token_hash from URL (Supabase auth magic link format)
-    const tokenHash = searchParams.get('token_hash')
-    const type = searchParams.get('type')
-    
-    if (!tokenHash || type !== 'magiclink') {
-      setIsValid(false)
-      setIsValidating(false)
-      return
-    }
-
+    // For Supabase inviteUserByEmail, we need to check for the session
+    // The user will arrive here after clicking the invite link
     try {
-      // Verify the magic link with Supabase Auth
-      const { data, error } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash,
-        type: 'magiclink',
-      })
-
-      if (error || !data.user) {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session || !session.user) {
         setIsValid(false)
+        setIsValidating(false)
         toast.error('Invalid or expired invite link')
         return
       }
 
       // Get invite data from user metadata
-      const inviteId = data.user.user_metadata?.invite_id
+      const inviteId = session.user.user_metadata?.invite_id
       if (!inviteId) {
         setIsValid(false)
         toast.error('Invalid invite data')
+        setIsValidating(false)
         return
       }
 
@@ -69,6 +59,7 @@ function AcceptInviteContent() {
       if (!inviteData) {
         setIsValid(false)
         toast.error('This invite has expired or already been used')
+        setIsValidating(false)
         return
       }
 
