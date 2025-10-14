@@ -35,17 +35,27 @@ export async function sendUserInvite(email: string, fullName: string, role: User
     return { error: 'Failed to check for existing users. Ensure SUPABASE_SERVICE_ROLE_KEY is set.' }
   }
 
-  const existingAuthUser = authUsers?.users?.find(u => u.email === email)
+  const existingAuthUser = authUsers?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase())
   
   if (existingAuthUser) {
-    console.log(`Found orphaned auth user for ${email}, deleting...`)
+    console.log(`Found orphaned auth user for ${email} (ID: ${existingAuthUser.id}), attempting to delete...`)
+    
     // Delete the orphaned auth user so we can send a fresh invite
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(existingAuthUser.id)
+    
     if (deleteError) {
       console.error('Error deleting orphaned auth user:', deleteError)
-      return { error: `Cannot send invite - orphaned user exists. Error: ${deleteError.message}` }
+      return { 
+        error: `Cannot send invite - orphaned user exists (ID: ${existingAuthUser.id}). ` +
+               `Please delete them manually from Supabase Dashboard > Authentication > Users. ` +
+               `Error: ${deleteError.message}` 
+      }
     }
+    
     console.log(`Successfully deleted orphaned auth user for ${email}`)
+    
+    // Wait a moment for the deletion to propagate
+    await new Promise(resolve => setTimeout(resolve, 1000))
   }
 
   // Check if there's a pending invite
@@ -86,6 +96,8 @@ export async function sendUserInvite(email: string, fullName: string, role: User
 
     // Use Supabase Admin API to invite user by email
     // This requires service role key which is only available server-side
+    console.log(`Attempting to send invite to ${email} with role ${role}`)
+    
     const { data: inviteData, error: emailError } = await adminClient.auth.admin.inviteUserByEmail(email, {
       data: {
         full_name: fullName,
@@ -97,6 +109,7 @@ export async function sendUserInvite(email: string, fullName: string, role: User
 
     if (emailError) {
       console.error('Invite email error:', emailError)
+      console.error('Full error object:', JSON.stringify(emailError, null, 2))
       
       // If invite fails, delete the invite record
       await (supabase as any)
@@ -104,10 +117,17 @@ export async function sendUserInvite(email: string, fullName: string, role: User
         .delete()
         .eq('id', invite.id)
       
+      // Provide helpful error message based on the error
+      if (emailError.message?.includes('User not allowed') || emailError.message?.includes('not allowed')) {
+        return { 
+          error: `User already exists in authentication system. Please go to Supabase Dashboard > Authentication > Users and manually delete the user with email: ${email}, then try again.` 
+        }
+      }
+      
       return { error: `Failed to send invite: ${emailError.message}` }
     }
 
-    console.log('Invite sent successfully to:', email)
+    console.log('Invite sent successfully to:', email, 'User ID:', inviteData?.user?.id)
 
     revalidatePath('/admin/users')
     return { success: true, invite }
@@ -193,6 +213,48 @@ export async function deletePendingInvite(inviteId: string, email: string) {
   } catch (error: any) {
     console.error('Error deleting invite:', error)
     return { error: error.message || 'Failed to delete invite' }
+  }
+}
+
+/**
+ * Manual cleanup of orphaned auth user by email (server action)
+ * Use this when auto-cleanup fails
+ */
+export async function cleanupOrphanedAuthUser(email: string) {
+  const adminClient = createAdminClient()
+
+  try {
+    console.log(`Manual cleanup requested for email: ${email}`)
+    
+    const { data: authUsers, error: listError } = await adminClient.auth.admin.listUsers()
+    
+    if (listError) {
+      console.error('Error listing users:', listError)
+      return { error: `Failed to list users: ${listError.message}` }
+    }
+
+    const orphanedUser = authUsers?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase())
+    
+    if (!orphanedUser) {
+      return { error: `No auth user found with email: ${email}` }
+    }
+
+    console.log(`Found auth user ID: ${orphanedUser.id} for email: ${email}`)
+    
+    // Attempt to delete
+    const { error: deleteError } = await adminClient.auth.admin.deleteUser(orphanedUser.id)
+    
+    if (deleteError) {
+      console.error('Error deleting user:', deleteError)
+      return { error: `Failed to delete user: ${deleteError.message}` }
+    }
+
+    console.log(`Successfully deleted orphaned auth user: ${email}`)
+    return { success: true, message: `Cleaned up orphaned user: ${email}. You can now send a new invite.` }
+    
+  } catch (error: any) {
+    console.error('Unexpected error cleaning up user:', error)
+    return { error: error.message || 'Failed to cleanup user' }
   }
 }
 
