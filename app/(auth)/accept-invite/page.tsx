@@ -11,7 +11,7 @@ import { PageLoader } from '@/components/ui/loading-spinner'
 import { toast } from 'sonner'
 import Image from 'next/image'
 import { CheckCircle, XCircle } from 'lucide-react'
-import { validateInvite, acceptInvite } from '@/lib/supabase/queries/users'
+import { validateInviteByToken, acceptInvite } from '@/lib/supabase/queries/users'
 import type { Invite } from '@/lib/supabase/queries/users'
 
 function AcceptInviteContent() {
@@ -39,188 +39,34 @@ function AcceptInviteContent() {
     setIsValidating(true)
     
     try {
-      // Get full URL for debugging
-      const fullUrl = window.location.href
-      console.log('Full invite URL:', fullUrl)
+      // Get the simple token parameter from URL
+      const token = searchParams.get('token')
       
-      // Check for error in URL hash (Supabase puts errors there)
-      const hash = window.location.hash
-      if (hash && hash.includes('error')) {
-        const hashParams = new URLSearchParams(hash.substring(1))
-        const error = hashParams.get('error')
-        const errorCode = hashParams.get('error_code')
-        const errorDescription = hashParams.get('error_description')
-        
-        console.error('Supabase returned error:', { error, errorCode, errorDescription })
-        
+      console.log('Invite token from URL:', token ? 'present' : 'missing')
+      
+      if (!token) {
+        console.error('No invite token in URL')
         setIsValid(false)
         setIsValidating(false)
-        toast.error(errorDescription || 'Invite link has expired or is invalid. Please request a new invite.')
+        toast.error('Invalid invite link - missing token')
         return
       }
+
+      // Validate the invite using our custom token
+      console.log('Validating invite with token...')
+      const inviteData = await validateInviteByToken(token)
       
-      // Log all URL parameters for debugging
-      const allParams: { [key: string]: string } = {}
-      searchParams.forEach((value, key) => {
-        allParams[key] = value
-      })
-      console.log('All URL parameters:', allParams)
-      console.log('Number of parameters:', Object.keys(allParams).length)
-      
-      // Check if we have a session (user clicked invite link and was redirected here)
-      const { data: { session } } = await supabase.auth.getSession()
-      console.log('Has session after redirect:', !!session)
-      console.log('Session user ID:', session?.user?.id)
-      console.log('Session user email:', session?.user?.email)
-      console.log('User metadata:', session?.user?.user_metadata)
-      
-      // If we have a session but no URL params, user arrived via Supabase redirect
-      // This is the expected flow for inviteUserByEmail
-      if (session && session.user) {
-        console.log('User has session - checking for invite via email')
-        
-        // Get invite ID from user metadata
-        const inviteId = session.user.user_metadata?.invite_id
-        console.log('Invite ID from session metadata:', inviteId)
-        
-        // Try to find invite by email as fallback
-        const { data: invites } = await (supabase as any)
-          .from('invites')
-          .select('*')
-          .eq('email', session.user.email)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false })
-          .limit(1)
-        
-        console.log('Invites found for email:', invites?.length || 0)
-        if (invites && invites.length > 0) {
-          console.log('Using invite:', invites[0])
-        }
-        
-        if (inviteId) {
-          // Use the invite ID from metadata
-          const inviteData = await validateInvite(inviteId)
-          if (inviteData) {
-            setInvite(inviteData)
-            setIsValid(true)
-            setIsValidating(false)
-            return
-          }
-        } else if (invites && invites.length > 0) {
-          // Fallback to email-matched invite
-          const inviteData = invites[0]
-          // Check if expired
-          const expiresAt = new Date(inviteData.expires_at)
-          if (expiresAt > new Date()) {
-            setInvite(inviteData)
-            setIsValid(true)
-            setIsValidating(false)
-            return
-          }
-        }
-        
-        // If we get here, session exists but no valid invite found
-        console.error('Session exists but no valid invite found')
-        setIsValid(false)
-        toast.error('No valid invite found for your account')
-        setIsValidating(false)
-        return
-      }
-      
-      // If there are no URL parameters and no session, the link is incomplete
-      if (Object.keys(allParams).length === 0 && !session) {
-        console.error('No URL parameters and no session - invite flow failed')
+      if (!inviteData) {
+        console.error('Invalid or expired invite token')
         setIsValid(false)
         setIsValidating(false)
-        toast.error('Invite link error. Please request a new invite or contact support.')
+        toast.error('This invite link is invalid or has expired (7 days)')
         return
       }
-      
-      // Legacy flow: If we have URL parameters (token_hash/type), try to verify
-      const tokenHash = searchParams.get('token_hash')
-      const type = searchParams.get('type')
-      
-      if (tokenHash && type === 'invite') {
-        console.log('Attempting verifyOtp with token_hash and type=invite')
-        
-        const { data, error: verifyError } = await supabase.auth.verifyOtp({
-          token_hash: tokenHash,
-          type: 'invite',
-        })
 
-        console.log('Verify OTP result:', { 
-          hasData: !!data, 
-          hasUser: !!data?.user,
-          userId: data?.user?.id,
-          metadata: data?.user?.user_metadata,
-          error: verifyError?.message 
-        })
-
-        if (verifyError) {
-          console.error('Token verification error:', verifyError)
-          setIsValid(false)
-          setIsValidating(false)
-          toast.error(`Verification failed: ${verifyError.message}`)
-          return
-        }
-
-        if (!data?.user) {
-          console.error('No user data after verification')
-          setIsValid(false)
-          setIsValidating(false)
-          toast.error('Invalid or expired invite link')
-          return
-        }
-
-        // Get invite ID from user metadata
-        const inviteId = data.user.user_metadata?.invite_id
-        console.log('Invite ID from metadata:', inviteId)
-        console.log('Full user metadata:', data.user.user_metadata)
-        
-        if (!inviteId) {
-          console.error('No invite_id in user metadata')
-          // Still try to get invite from email match as fallback
-          const { data: invites } = await (supabase as any)
-            .from('invites')
-            .select('*')
-            .eq('email', data.user.email)
-            .eq('status', 'pending')
-            .limit(1)
-          
-          if (invites && invites.length > 0) {
-            console.log('Found invite by email match:', invites[0])
-            setInvite(invites[0])
-            setIsValid(true)
-            setIsValidating(false)
-            return
-          }
-          
-          setIsValid(false)
-          toast.error('Invalid invite data - missing invite_id')
-          setIsValidating(false)
-          return
-        }
-
-        // Validate the invite in our database
-        const inviteData = await validateInvite(inviteId)
-        console.log('Invite validation result:', inviteData ? 'valid' : 'invalid')
-        
-        if (!inviteData) {
-          setIsValid(false)
-          toast.error('This invite has expired or already been used')
-          setIsValidating(false)
-          return
-        }
-
-        setInvite(inviteData)
-        setIsValid(true)
-        return
-      }
-      
-      // If we get here, something went wrong
-      console.error('No valid invite flow detected')
-      setIsValid(false)
-      toast.error('Unable to validate invite')
+      console.log('Invite validated successfully:', inviteData.email)
+      setInvite(inviteData)
+      setIsValid(true)
     } catch (error: any) {
       console.error('Error validating invite:', error)
       setIsValid(false)
@@ -248,45 +94,58 @@ function AcceptInviteContent() {
     setIsLoading(true)
 
     try {
-      // Get current session
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        throw new Error('No authenticated user found')
-      }
+      console.log('Creating account for:', invite.email)
 
-      // Update the user's password
-      const { error: updateError } = await supabase.auth.updateUser({
+      // Create a new user account via normal signup
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: invite.email,
         password: password,
-        data: {
-          full_name: invite.full_name,
-          role: invite.role,
-        }
+        options: {
+          data: {
+            full_name: invite.full_name,
+            role: invite.role,
+          },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
       })
 
-      if (updateError) throw updateError
+      if (signUpError) {
+        console.error('SignUp error:', signUpError)
+        throw signUpError
+      }
 
-      // Update profile in database (profile should already exist from auth trigger)
+      if (!data.user) {
+        throw new Error('No user created')
+      }
+
+      console.log('User account created:', data.user.id)
+
+      // Update profile with correct role and mark as incomplete
       const { error: profileError } = await (supabase as any)
         .from('profiles')
         .update({
           full_name: invite.full_name,
           role: invite.role,
           profile_completed: false,
+          invited_by: invite.invited_by,
         })
-        .eq('id', user.id)
+        .eq('id', data.user.id)
 
-      if (profileError) throw profileError
+      if (profileError) {
+        console.error('Profile update error:', profileError)
+        // Don't fail - profile will be set up later
+      }
 
       // Mark invite as accepted
-      await acceptInvite(invite.id, user.id)
+      await acceptInvite(invite.id, data.user.id)
 
       toast.success('Account created successfully! Welcome aboard.')
       
       // Small delay to ensure everything is saved
       await new Promise(resolve => setTimeout(resolve, 500))
       
-      // Redirect to dashboard
-      router.push('/dashboard')
+      // Force full page reload to ensure session is established
+      window.location.href = '/dashboard'
     } catch (error: any) {
       console.error('Error creating account:', error)
       toast.error(error.message || 'Failed to create account')

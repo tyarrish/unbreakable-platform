@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Mail, CheckCircle, Clock, XCircle, Trash2 } from 'lucide-react'
+import { Mail, CheckCircle, Clock, XCircle, Trash2, Copy, CheckCheck } from 'lucide-react'
 import { getInvites } from '@/lib/supabase/queries/users'
 import { sendUserInvite, deletePendingInvite } from '@/app/actions/users'
 import { formatDate } from '@/lib/utils/format-date'
@@ -41,6 +41,8 @@ export function InviteUserModal({ open, onClose, onSuccess }: InviteUserModalPro
   const [isLoading, setIsLoading] = useState(false)
   const [pendingInvites, setPendingInvites] = useState<Invite[]>([])
   const [loadingInvites, setLoadingInvites] = useState(false)
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -72,13 +74,15 @@ export function InviteUserModal({ open, onClose, onSuccess }: InviteUserModalPro
         return
       }
 
-      toast.success(`Invite sent to ${email}`)
+      // Store the invite URL to display
+      if (result.inviteUrl) {
+        setInviteUrl(result.inviteUrl)
+        toast.success(`Invite created! Copy the link below and send it to ${email}`)
+      } else {
+        toast.success(`Invite created for ${email}`)
+      }
       
-      // Reset form
-      setFullName('')
-      setEmail('')
-      setRole('participant')
-      
+      // Don't reset form yet - let them see the invite link
       // Reload pending invites
       await loadPendingInvites()
       
@@ -89,6 +93,30 @@ export function InviteUserModal({ open, onClose, onSuccess }: InviteUserModalPro
       toast.error(error.message || 'Failed to send invite')
     } finally {
       setIsLoading(false)
+    }
+  }
+  
+  function handleCreateAnother() {
+    // Reset form for next invite
+    setFullName('')
+    setEmail('')
+    setRole('participant')
+    setInviteUrl(null)
+    setCopied(false)
+  }
+  
+  async function copyInviteLink() {
+    if (!inviteUrl) return
+    
+    try {
+      await navigator.clipboard.writeText(inviteUrl)
+      setCopied(true)
+      toast.success('Invite link copied to clipboard!')
+      
+      // Reset copied state after 3 seconds
+      setTimeout(() => setCopied(false), 3000)
+    } catch (error) {
+      toast.error('Failed to copy link')
     }
   }
 
@@ -193,12 +221,82 @@ export function InviteUserModal({ open, onClose, onSuccess }: InviteUserModalPro
             <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading || !!inviteUrl}>
               <Mail className="mr-2 h-4 w-4" />
-              {isLoading ? 'Sending...' : 'Send Invite'}
+              {isLoading ? 'Creating...' : 'Create Invite'}
             </Button>
           </DialogFooter>
         </form>
+
+        {/* Invite Link Display */}
+        {inviteUrl && (
+          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg space-y-3">
+            <div className="flex items-start gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h4 className="font-semibold text-green-800 mb-1">Invite Created Successfully!</h4>
+                <p className="text-sm text-green-700 mb-3">
+                  Copy the link below and send it to <strong>{email}</strong> via email, Slack, or any messaging platform.
+                </p>
+                
+                <div className="flex gap-2">
+                  <Input
+                    value={inviteUrl}
+                    readOnly
+                    className="font-mono text-xs bg-white"
+                    onClick={(e) => e.currentTarget.select()}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={copyInviteLink}
+                    className="flex-shrink-0"
+                  >
+                    {copied ? (
+                      <>
+                        <CheckCheck className="mr-2 h-4 w-4" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="mr-2 h-4 w-4" />
+                        Copy Link
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                <p className="text-xs text-green-600 mt-2">
+                  This link expires in 7 days
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2 pt-2 border-t border-green-200">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCreateAnother}
+                className="flex-1"
+              >
+                Create Another Invite
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  onClose()
+                  handleCreateAnother()
+                }}
+                className="flex-1"
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Pending Invites */}
         {pendingInvites.length > 0 && (

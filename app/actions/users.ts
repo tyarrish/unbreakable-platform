@@ -27,37 +27,6 @@ export async function sendUserInvite(email: string, fullName: string, role: User
     }
   }
 
-  // Check if user exists in auth.users (but not in profiles - orphaned auth user)
-  const { data: authUsers, error: listError } = await adminClient.auth.admin.listUsers()
-  
-  if (listError) {
-    console.error('Error listing users:', listError)
-    return { error: 'Failed to check for existing users. Ensure SUPABASE_SERVICE_ROLE_KEY is set.' }
-  }
-
-  const existingAuthUser = authUsers?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase())
-  
-  if (existingAuthUser) {
-    console.log(`Found orphaned auth user for ${email} (ID: ${existingAuthUser.id}), attempting to delete...`)
-    
-    // Delete the orphaned auth user so we can send a fresh invite
-    const { error: deleteError } = await adminClient.auth.admin.deleteUser(existingAuthUser.id)
-    
-    if (deleteError) {
-      console.error('Error deleting orphaned auth user:', deleteError)
-      return { 
-        error: `Cannot send invite - orphaned user exists (ID: ${existingAuthUser.id}). ` +
-               `Please delete them manually from Supabase Dashboard > Authentication > Users. ` +
-               `Error: ${deleteError.message}` 
-      }
-    }
-    
-    console.log(`Successfully deleted orphaned auth user for ${email}`)
-    
-    // Wait a moment for the deletion to propagate
-    await new Promise(resolve => setTimeout(resolve, 1000))
-  }
-
   // Check if there's a pending invite
   const { data: existingInvite } = await (supabase as any)
     .from('invites')
@@ -77,7 +46,14 @@ export async function sendUserInvite(email: string, fullName: string, role: User
   }
 
   try {
-    // Create invite record
+    // Generate a secure random invite token
+    const inviteToken = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+    
+    console.log(`Generated invite token for ${email}`)
+
+    // Create invite record with our custom token
     const { data: invite, error: inviteError } = await (supabase as any)
       .from('invites')
       .insert({
@@ -85,6 +61,7 @@ export async function sendUserInvite(email: string, fullName: string, role: User
         full_name: fullName,
         role,
         invited_by: user.id,
+        invite_token: inviteToken,
       })
       .select()
       .single()
@@ -94,57 +71,26 @@ export async function sendUserInvite(email: string, fullName: string, role: User
       return { error: inviteError.message }
     }
 
-    // Use Supabase Admin API to invite user by email
-    // This requires service role key which is only available server-side
+    // Construct the invite link with our custom token
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
     
-    // Properly construct URL handling trailing slashes
-    let redirectUrl: string
+    let inviteUrl: string
     if (siteUrl) {
-      // Remove any trailing slashes and protocol, then rebuild
       const cleanDomain = siteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
-      redirectUrl = `https://${cleanDomain}/accept-invite`
+      inviteUrl = `https://${cleanDomain}/accept-invite?token=${inviteToken}`
     } else {
-      redirectUrl = 'http://localhost:3000/accept-invite'
+      inviteUrl = `http://localhost:3000/accept-invite?token=${inviteToken}`
     }
     
-    console.log(`Attempting to send invite to ${email} with role ${role}`)
-    console.log(`Site URL from env: ${siteUrl}`)
-    console.log(`Constructed redirect URL: ${redirectUrl}`)
-    
-    const { data: inviteData, error: emailError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-      data: {
-        full_name: fullName,
-        role,
-        invite_id: invite.id,
-      },
-      redirectTo: redirectUrl,
-    })
-
-    if (emailError) {
-      console.error('Invite email error:', emailError)
-      console.error('Full error object:', JSON.stringify(emailError, null, 2))
-      
-      // If invite fails, delete the invite record
-      await (supabase as any)
-        .from('invites')
-        .delete()
-        .eq('id', invite.id)
-      
-      // Provide helpful error message based on the error
-      if (emailError.message?.includes('User not allowed') || emailError.message?.includes('not allowed')) {
-        return { 
-          error: `User already exists in authentication system. Please go to Supabase Dashboard > Authentication > Users and manually delete the user with email: ${email}, then try again.` 
-        }
-      }
-      
-      return { error: `Failed to send invite: ${emailError.message}` }
-    }
-
-    console.log('Invite sent successfully to:', email, 'User ID:', inviteData?.user?.id)
+    console.log(`Created invite for ${email}`)
+    console.log(`Invite URL: ${inviteUrl}`)
 
     revalidatePath('/admin/users')
-    return { success: true, invite }
+    return { 
+      success: true, 
+      invite,
+      inviteUrl // Return the URL so UI can display it
+    }
   } catch (error: any) {
     console.error('Unexpected error sending invite:', error)
     return { error: error.message || 'Failed to send invite' }

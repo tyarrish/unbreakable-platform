@@ -290,6 +290,40 @@ export async function validateInvite(inviteId: string): Promise<Invite | null> {
 }
 
 /**
+ * Validate an invite by token (new custom flow)
+ */
+export async function validateInviteByToken(token: string): Promise<Invite | null> {
+  const supabase = createClient()
+
+  const { data: invite, error } = await (supabase as any)
+    .from('invites')
+    .select('*')
+    .eq('invite_token', token)
+    .eq('status', 'pending')
+    .single()
+
+  if (error || !invite) {
+    console.error('Invite not found for token:', error)
+    return null
+  }
+
+  // Check if expired
+  const expiresAt = new Date(invite.expires_at)
+  if (expiresAt < new Date()) {
+    // Mark as expired
+    await (supabase as any)
+      .from('invites')
+      .update({ status: 'expired' })
+      .eq('invite_token', token)
+    
+    console.log('Invite expired for token')
+    return null
+  }
+
+  return invite as Invite
+}
+
+/**
  * Mark invite as accepted
  */
 export async function acceptInvite(inviteId: string, userId: string) {
