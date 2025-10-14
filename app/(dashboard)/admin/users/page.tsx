@@ -45,7 +45,8 @@ import {
   Trash2,
   Mail,
 } from 'lucide-react'
-import { getUsers, deactivateUser, reactivateUser, deleteUser, bulkDeactivateUsers } from '@/lib/supabase/queries/users'
+import { getUsers, deactivateUser, reactivateUser, bulkDeactivateUsers } from '@/lib/supabase/queries/users'
+import { deleteUserCompletely } from '@/app/actions/users'
 import { InviteUserModal } from '@/components/admin/invite-user-modal'
 import { EditRoleModal } from '@/components/admin/edit-role-modal'
 import { formatDate } from '@/lib/utils/format-date'
@@ -176,8 +177,14 @@ export default function AdminUsersPage() {
     if (!deleteConfirm) return
 
     try {
-      await deleteUser(deleteConfirm.id)
-      toast.success('User deleted successfully')
+      const result = await deleteUserCompletely(deleteConfirm.id, deleteConfirm.email)
+      
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
+      toast.success('User deleted successfully from both auth and database')
       setDeleteConfirm(null)
       loadUsers()
     } catch (error: any) {

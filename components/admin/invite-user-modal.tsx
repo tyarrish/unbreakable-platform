@@ -20,9 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Mail, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { Mail, CheckCircle, Clock, XCircle, Trash2 } from 'lucide-react'
 import { getInvites } from '@/lib/supabase/queries/users'
-import { sendUserInvite } from '@/app/actions/users'
+import { sendUserInvite, deletePendingInvite } from '@/app/actions/users'
 import { formatDate } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
 import type { UserRole } from '@/types/index.types'
@@ -115,6 +115,22 @@ export function InviteUserModal({ open, onClose, onSuccess }: InviteUserModalPro
         return <XCircle className="h-4 w-4 text-red-500" />
       default:
         return null
+    }
+  }
+
+  async function handleDeleteInvite(inviteId: string, email: string) {
+    try {
+      const result = await deletePendingInvite(inviteId, email)
+      
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
+      toast.success('Invite deleted successfully')
+      await loadPendingInvites()
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete invite')
     }
   }
 
@@ -212,6 +228,15 @@ export function InviteUserModal({ open, onClose, onSuccess }: InviteUserModalPro
                   </div>
                   <div className="flex items-center gap-2 ml-3">
                     {getStatusIcon(invite.status)}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={() => handleDeleteInvite(invite.id, invite.email)}
+                      title="Delete invite"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
               ))}
