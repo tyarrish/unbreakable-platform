@@ -553,7 +553,7 @@ export default function ThreadDetailPage() {
                 <>
                   {thread.content_html ? (
                     <div 
-                      className="prose prose-sm max-w-none text-rogue-forest"
+                      className="tiptap-content"
                       dangerouslySetInnerHTML={{ __html: thread.content_html }}
                     />
                   ) : (

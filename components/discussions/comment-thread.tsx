@@ -258,7 +258,7 @@ function CommentItem({
               </div>
             ) : (
               <div 
-                className="prose prose-sm max-w-none text-rogue-forest"
+                className="tiptap-content"
                 dangerouslySetInnerHTML={{ __html: comment.content_html || comment.content }}
               />
             )}

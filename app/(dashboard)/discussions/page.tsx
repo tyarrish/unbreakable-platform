@@ -394,7 +394,7 @@ function ThreadCard({ thread, userId }: ThreadCardProps) {
             {/* Thread Preview */}
             {thread.content_html && (
               <div 
-                className="prose prose-sm max-w-none text-rogue-slate line-clamp-2 mt-2"
+                className="tiptap-content text-rogue-slate line-clamp-2 mt-2"
                 dangerouslySetInnerHTML={{ __html: thread.content_html }}
               />
             )}
