@@ -53,16 +53,17 @@ const participantNavItems = [
   { href: '/members', label: 'Members', icon: Users },
   { href: '/library', label: 'Library', icon: Library },
   { href: '/partner', label: 'My Partner', icon: Users },
-  { href: '/capstone', label: 'Capstone', icon: Mountain },
 ]
 
 const facilitatorNavItems = [
   ...participantNavItems,
+  { href: '/capstone', label: 'Capstone', icon: Mountain },
   { href: '/admin', label: 'Manage', icon: UserCog },
 ]
 
 const adminNavItems = [
   ...participantNavItems,
+  { href: '/capstone', label: 'Capstone', icon: Mountain },
   { href: '/admin', label: 'Admin', icon: UserCog },
 ]
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/components/layout/container'
 import { PageHeader } from '@/components/layout/page-header'
@@ -23,11 +24,32 @@ export default function CapstonePage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
+    checkAccess()
     loadCapstone()
   }, [])
+
+  async function checkAccess() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      router.push('/login')
+      return
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single<{ role: string }>()
+
+    // Only admins and facilitators can access capstone
+    if (profile?.role === 'participant') {
+      router.push('/dashboard')
+    }
+  }
 
   async function loadCapstone() {
     try {
