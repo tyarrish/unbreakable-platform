@@ -191,15 +191,21 @@ export async function updateLessonProgress(
 ) {
   const supabase = createClient()
   
+  // Get existing progress to preserve values
+  const existing = await getLessonProgress(userId, lessonId)
+  
   const { data, error} = await (supabase
     .from('lesson_progress') as any)
     .upsert({
       user_id: userId,
       lesson_id: lessonId,
-      status: updates.status || 'not_started',
-      started_at: updates.started_at || null,
-      completed_at: updates.completed_at || null,
-      time_spent_minutes: updates.time_spent_minutes || 0,
+      status: updates.status || existing?.status || 'in_progress',
+      started_at: updates.started_at || existing?.started_at || new Date().toISOString(),
+      completed_at: updates.completed_at || existing?.completed_at || null,
+      time_spent_minutes: updates.time_spent_minutes ?? existing?.time_spent_minutes ?? 0,
+      video_watch_percentage: updates.video_watch_percentage ?? existing?.video_watch_percentage ?? 0,
+      reflection: updates.reflection !== undefined ? updates.reflection : existing?.reflection,
+      reflection_word_count: updates.reflection_word_count ?? existing?.reflection_word_count ?? 0,
     }, {
       onConflict: 'user_id,lesson_id',
     })
@@ -216,7 +222,7 @@ export async function updateLessonProgress(
 export async function markLessonComplete(userId: string, lessonId: string) {
   const supabase = createClient()
   
-  // Get existing progress to preserve time spent
+  // Get existing progress to preserve all fields
   const existing = await getLessonProgress(userId, lessonId)
   
   const { data, error } = await (supabase
@@ -228,6 +234,9 @@ export async function markLessonComplete(userId: string, lessonId: string) {
       started_at: existing?.started_at || new Date().toISOString(),
       completed_at: new Date().toISOString(),
       time_spent_minutes: existing?.time_spent_minutes || 0,
+      video_watch_percentage: existing?.video_watch_percentage || 0,
+      reflection: existing?.reflection || null,
+      reflection_word_count: existing?.reflection_word_count || 0,
     }, {
       onConflict: 'user_id,lesson_id',
     })
@@ -257,17 +266,9 @@ export async function getUserProgress(userId: string) {
  * Get user's reflection for a lesson
  */
 export async function getReflection(userId: string, lessonId: string) {
-  const supabase = createClient()
-  
-  const { data, error } = await (supabase
-    .from('reflections')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('lesson_id', lessonId)
-    .single()) as any
-  
-  if (error && error.code !== 'PGRST116') throw error
-  return data
+  // Reflections are now stored in lesson_progress table
+  const progress = await getLessonProgress(userId, lessonId)
+  return progress?.reflection || null
 }
 
 /**
@@ -276,17 +277,31 @@ export async function getReflection(userId: string, lessonId: string) {
 export async function saveReflection(userId: string, lessonId: string, content: string) {
   const supabase = createClient()
   
+  // Calculate word count
+  const wordCount = content.trim().split(/\s+/).filter(w => w).length
+  
+  // Get existing progress
+  const existing = await getLessonProgress(userId, lessonId)
+  
   const { data, error } = await (supabase
-    .from('reflections') as any)
+    .from('lesson_progress') as any)
     .upsert({
       user_id: userId,
       lesson_id: lessonId,
-      content,
+      status: existing?.status || 'in_progress',
+      started_at: existing?.started_at || new Date().toISOString(),
+      completed_at: existing?.completed_at || null,
+      time_spent_minutes: existing?.time_spent_minutes || 0,
+      video_watch_percentage: existing?.video_watch_percentage || 0,
+      reflection: content,
+      reflection_word_count: wordCount,
+    }, {
+      onConflict: 'user_id,lesson_id',
     })
     .select()
     .single()
   
   if (error) throw error
-  return data
+  return data as LessonProgress
 }
 

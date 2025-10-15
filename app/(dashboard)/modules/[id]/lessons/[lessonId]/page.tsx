@@ -22,7 +22,6 @@ import {
   getLessonProgress,
   updateLessonProgress,
   markLessonComplete,
-  getReflection,
   saveReflection,
 } from '@/lib/supabase/queries/modules'
 import { Clock, CheckCircle2, BookOpen, FileText, ArrowLeft, Sparkles, Target, TrendingUp } from 'lucide-react'
@@ -62,25 +61,19 @@ export default function LessonViewPage() {
       setUserId(user.id)
 
       // Load current lesson data
-      const [moduleData, lessonData, progressData, reflectionData, resourcesData] = await Promise.all([
+      const [moduleData, lessonData, progressData, resourcesData] = await Promise.all([
         getModule(moduleId),
         getLesson(lessonId),
         getLessonProgress(user.id, lessonId),
-        getReflection(user.id, lessonId),
         supabase.from('lesson_attachments').select('*').eq('lesson_id', lessonId),
       ])
 
       setModule(moduleData)
       setLesson(lessonData)
       setProgress(progressData)
-      setReflection('')
-      if (reflectionData) {
-        try {
-          setReflection((reflectionData as any).content || '')
-        } catch (e) {
-          console.log('No reflection data')
-        }
-      }
+      
+      // Set reflection from progress data
+      setReflection(progressData?.reflection || '')
       setResources(resourcesData.data || [])
 
       // Load all modules with lessons for sidebar
@@ -138,14 +131,10 @@ export default function LessonViewPage() {
     setIsSavingReflection(true)
     try {
       await saveReflection(userId, lessonId, reflection)
-      
-      // Update word count
-      const wordCount = reflection.trim().split(/\s+/).length
-      await updateLessonProgress(userId, lessonId, {
-        reflection_word_count: wordCount,
-      })
-
       toast.success('Reflection saved successfully!')
+      
+      // Reload to update progress
+      await loadLessonData()
     } catch (error) {
       console.error('Error saving reflection:', error)
       toast.error('Failed to save reflection')
@@ -168,12 +157,14 @@ export default function LessonViewPage() {
       await markLessonComplete(userId, lessonId)
       toast.success('Lesson marked as complete! 🎉')
       
-      // Reload to update sidebar
-      loadLessonData()
-    } catch (error) {
+      // Refresh the page to show updated state
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    } catch (error: any) {
       console.error('Error completing lesson:', error)
-      toast.error('Failed to complete lesson')
-    } finally {
+      console.error('Error details:', JSON.stringify(error, null, 2))
+      toast.error(error?.message || 'Failed to complete lesson')
       setIsCompletingLesson(false)
     }
   }
@@ -357,19 +348,19 @@ export default function LessonViewPage() {
 
             {/* Complete Lesson */}
             {!isCompleted && (
-              <Card className="sticky bottom-4 border-0 shadow-2xl bg-gradient-to-r from-green-500 to-green-600 text-white">
+              <Card className="sticky bottom-4 border-0 shadow-2xl bg-gradient-to-r from-rogue-forest to-rogue-pine text-white">
                 <CardContent className="pt-6 pb-6">
                   <Button
                     onClick={handleMarkComplete}
                     disabled={isCompletingLesson}
-                    className="w-full bg-white text-green-600 hover:bg-white/90 shadow-lg"
+                    className="w-full bg-white text-rogue-forest hover:bg-rogue-cream shadow-lg font-semibold"
                     size="lg"
                   >
                     <CheckCircle2 className="mr-2 h-5 w-5" />
                     {isCompletingLesson ? 'Completing...' : 'Mark Lesson Complete'}
                     <Sparkles className="ml-2 h-5 w-5" />
                   </Button>
-                  <p className="text-center text-sm text-white/90 mt-3">
+                  <p className="text-center text-sm text-white/95 mt-3">
                     Complete this lesson to continue your journey
                   </p>
                 </CardContent>
@@ -377,10 +368,10 @@ export default function LessonViewPage() {
             )}
             
             {isCompleted && (
-              <Card className="sticky bottom-4 border-0 shadow-xl bg-gradient-to-br from-green-50 to-white border-green-200">
+              <Card className="sticky bottom-4 border-0 shadow-xl bg-gradient-to-br from-rogue-sage/20 to-white border-rogue-sage/30">
                 <CardContent className="pt-5 pb-5">
                   <div className="flex flex-col items-center gap-2">
-                    <div className="flex items-center gap-2 text-green-600">
+                    <div className="flex items-center gap-2 text-rogue-forest">
                       <CheckCircle2 className="h-6 w-6" />
                       <span className="font-semibold text-lg">Lesson Completed!</span>
                     </div>
