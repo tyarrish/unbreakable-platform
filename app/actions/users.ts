@@ -80,6 +80,24 @@ export async function sendUserInvite(email: string, fullName: string, role: User
     
     console.log('Invite created successfully with ID:', invite.id)
     console.log('Saved invite_token:', invite.invite_token ? invite.invite_token.substring(0, 10) + '...' : 'NULL/MISSING!')
+    
+    // CRITICAL: Verify the token was actually saved
+    if (!invite.invite_token) {
+      console.error('ERROR: invite_token was not saved to database!')
+      // Delete the broken invite
+      await (supabase as any).from('invites').delete().eq('id', invite.id)
+      return { error: 'Failed to create invite - token not saved. Please try again.' }
+    }
+    
+    // Double-check the token matches what we generated
+    if (invite.invite_token !== inviteToken) {
+      console.error('ERROR: Saved token does not match generated token!')
+      console.error('Generated:', inviteToken.substring(0, 20))
+      console.error('Saved:', invite.invite_token.substring(0, 20))
+      return { error: 'Token mismatch error. Please try again.' }
+    }
+    
+    console.log('✅ Token verified - matches generated token')
 
     // Construct the invite link with our custom token
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
@@ -87,18 +105,21 @@ export async function sendUserInvite(email: string, fullName: string, role: User
     let inviteUrl: string
     if (siteUrl) {
       const cleanDomain = siteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
-      inviteUrl = `https://${cleanDomain}/accept-invite?token=${inviteToken}`
+      inviteUrl = `https://${cleanDomain}/accept-invite?token=${invite.invite_token}`
     } else {
-      inviteUrl = `http://localhost:3000/accept-invite?token=${inviteToken}`
+      inviteUrl = `http://localhost:3000/accept-invite?token=${invite.invite_token}`
     }
     
     console.log(`Created invite for ${email}`)
     console.log(`Invite URL: ${inviteUrl}`)
+    console.log(`Token in URL: ${invite.invite_token.substring(0, 20)}...`)
 
     // Send invite email via Resend (if configured)
     if (process.env.RESEND_API_KEY) {
       try {
         console.log(`Sending invite email to ${email} via Resend...`)
+        console.log(`Email will contain URL: ${inviteUrl}`)
+        console.log(`URL token matches DB token: ${inviteUrl.includes(invite.invite_token)}`)
         
         const { data: emailData, error: emailError } = await resend.emails.send({
           from: EMAIL_CONFIG.from,
@@ -107,7 +128,7 @@ export async function sendUserInvite(email: string, fullName: string, role: User
           subject: `You're Invited to Join Rogue Leadership Training Experience`,
           react: InviteEmail({
             fullName,
-            inviteUrl,
+            inviteUrl, // This MUST use invite.invite_token from DB, not generated inviteToken
             role,
           }),
         })
