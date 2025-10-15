@@ -42,7 +42,8 @@ function AcceptInviteContent() {
       // Get the simple token parameter from URL
       const token = searchParams.get('token')
       
-      console.log('Invite token from URL:', token ? 'present' : 'missing')
+      console.log('Invite token from URL:', token ? `present (${token.substring(0, 10)}...)` : 'missing')
+      console.log('Full URL:', window.location.href)
       
       if (!token) {
         console.error('No invite token in URL')
@@ -56,15 +57,21 @@ function AcceptInviteContent() {
       console.log('Validating invite with token...')
       const inviteData = await validateInviteByToken(token)
       
+      console.log('Validation result:', inviteData ? 'found' : 'not found')
+      
       if (!inviteData) {
         console.error('Invalid or expired invite token')
+        console.error('This could mean:')
+        console.error('1. The invite was created before the token system was deployed')
+        console.error('2. The token has expired (>7 days old)')
+        console.error('3. The invite was already accepted')
         setIsValid(false)
         setIsValidating(false)
-        toast.error('This invite link is invalid or has expired (7 days)')
+        toast.error('This invite link is invalid or has expired. Please request a new invite.')
         return
       }
 
-      console.log('Invite validated successfully:', inviteData.email)
+      console.log('Invite validated successfully for:', inviteData.email)
       setInvite(inviteData)
       setIsValid(true)
     } catch (error: any) {
