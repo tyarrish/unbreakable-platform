@@ -53,25 +53,33 @@ export async function sendUserInvite(email: string, fullName: string, role: User
       .map(b => b.toString(16).padStart(2, '0'))
       .join('')
     
-    console.log(`Generated invite token for ${email}`)
+    console.log(`Generated invite token for ${email}: ${inviteToken.substring(0, 10)}...`)
 
     // Create invite record with our custom token
+    const inviteData = {
+      email,
+      full_name: fullName,
+      role,
+      invited_by: user.id,
+      invite_token: inviteToken,
+    }
+    
+    console.log('Inserting invite with data:', { ...inviteData, invite_token: inviteToken.substring(0, 10) + '...' })
+
     const { data: invite, error: inviteError } = await (supabase as any)
       .from('invites')
-      .insert({
-        email,
-        full_name: fullName,
-        role,
-        invited_by: user.id,
-        invite_token: inviteToken,
-      })
+      .insert(inviteData)
       .select()
       .single()
 
     if (inviteError) {
       console.error('Invite insert error:', inviteError)
+      console.error('Full error:', JSON.stringify(inviteError, null, 2))
       return { error: inviteError.message }
     }
+    
+    console.log('Invite created successfully with ID:', invite.id)
+    console.log('Saved invite_token:', invite.invite_token ? invite.invite_token.substring(0, 10) + '...' : 'NULL/MISSING!')
 
     // Construct the invite link with our custom token
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL
