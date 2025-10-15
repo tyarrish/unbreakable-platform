@@ -53,6 +53,7 @@ export function RichTextEditor({ content, onChange, placeholder = 'Write your po
   const supabase = createClient()
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: {
