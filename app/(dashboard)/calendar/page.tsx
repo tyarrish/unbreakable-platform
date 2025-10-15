@@ -153,19 +153,41 @@ export default function CalendarPage() {
                   </div>
 
                   {/* Required Events - Prominent */}
-                  {required.map((event) => {
+                  {required.map((event, index) => {
                     const isRegistered = registrations.has(event.id)
+                    
+                    // Cycle through marketing page colors
+                    const accentColors = [
+                      { border: 'border-emerald-500', bg: 'bg-emerald-500', badge: 'bg-emerald-600' }, // Teal
+                      { border: 'border-blue-500', bg: 'bg-blue-500', badge: 'bg-blue-600' }, // Blue
+                      { border: 'border-purple-500', bg: 'bg-purple-500', badge: 'bg-purple-600' }, // Purple
+                      { border: 'border-orange-500', bg: 'bg-orange-500', badge: 'bg-orange-600' }, // Orange
+                    ]
+                    const colors = accentColors[index % accentColors.length]
                     
                     return (
                       <Card 
                         key={event.id} 
-                        className="border-l-4 border-red-500 shadow-lg hover:shadow-xl transition-all bg-white"
+                        className={`border-l-4 ${colors.border} shadow-lg hover:shadow-xl transition-all bg-white`}
                       >
                         <CardContent className="p-5">
                           <div className="flex items-start gap-4">
+                            {/* Date Block - Prominent */}
+                            <div className={`flex-shrink-0 text-center p-3 rounded-lg ${colors.bg} text-white min-w-[80px]`}>
+                              <div className="text-xs uppercase font-semibold opacity-90">
+                                {formatDate(event.start_time, { month: 'short' })}
+                              </div>
+                              <div className="text-3xl font-bold leading-none my-1">
+                                {formatDate(event.start_time, { day: 'numeric' })}
+                              </div>
+                              <div className="text-xs opacity-90">
+                                {formatDate(event.start_time, { year: 'numeric' })}
+                              </div>
+                            </div>
+
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
-                                <Badge className="bg-red-600 text-white border-0 px-2.5 py-0.5 text-xs">
+                                <Badge className={`${colors.badge} text-white border-0 px-2.5 py-0.5 text-xs`}>
                                   Required
                                 </Badge>
                                 <Badge className="bg-rogue-forest text-white border-0 px-2.5 py-0.5 text-xs">
@@ -178,16 +200,12 @@ export default function CalendarPage() {
 
                               <h3 className="font-bold text-xl text-rogue-forest mb-3">{event.title}</h3>
 
-                              <div className="grid sm:grid-cols-3 gap-3 mb-3">
-                                <div className="flex items-center gap-2 text-sm">
-                                  <Calendar className="h-4 w-4 text-rogue-copper" />
-                                  <span className="text-rogue-slate">{formatDate(event.start_time, { month: 'short', day: 'numeric' })}</span>
+                              <div className="flex flex-wrap gap-4 mb-3 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-rogue-slate" />
+                                  <span className="text-rogue-slate font-medium">{formatEventTime(event.start_time, event.end_time)}</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-sm">
-                                  <Clock className="h-4 w-4 text-rogue-copper" />
-                                  <span className="text-rogue-slate">{formatEventTime(event.start_time, event.end_time)}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm">
+                                <div className="flex items-center gap-2">
                                   {event.location_type === 'virtual' ? (
                                     <><Video className="h-4 w-4 text-blue-600" /><span className="text-rogue-slate">Virtual</span></>
                                   ) : event.location_type === 'in_person' ? (
@@ -199,7 +217,7 @@ export default function CalendarPage() {
                               </div>
 
                               {event.location_address && (
-                                <div className="flex items-start gap-2 text-sm text-rogue-slate mb-3">
+                                <div className="flex items-start gap-2 text-sm text-rogue-slate mb-3 bg-rogue-sage/5 p-2 rounded">
                                   <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
                                   <span>{event.location_address}</span>
                                 </div>
@@ -210,7 +228,7 @@ export default function CalendarPage() {
                                   size="sm"
                                   variant={isRegistered ? 'outline' : 'default'}
                                   onClick={() => handleRegister(event.id)}
-                                  className={!isRegistered ? 'bg-red-600 hover:bg-red-700' : ''}
+                                  className={!isRegistered ? `${colors.bg} hover:opacity-90` : ''}
                                 >
                                   {isRegistered ? 'Registered ✓' : 'Register'}
                                 </Button>
@@ -218,7 +236,7 @@ export default function CalendarPage() {
                                   <Button size="sm" variant="outline" className="text-blue-600 hover:text-blue-700" asChild>
                                     <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
                                       <Video className="h-3 w-3 mr-1" />
-                                      Join
+                                      Join Zoom
                                     </a>
                                   </Button>
                                 )}
@@ -242,7 +260,17 @@ export default function CalendarPage() {
                             className="border-l-2 border-rogue-sage/40 shadow-sm hover:shadow-md transition-all bg-white/80"
                           >
                             <CardContent className="p-3">
-                              <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3">
+                                {/* Compact Date */}
+                                <div className="flex-shrink-0 text-center p-2 rounded bg-rogue-sage/10 min-w-[50px]">
+                                  <div className="text-xs font-semibold text-rogue-forest uppercase">
+                                    {formatDate(event.start_time, { month: 'short' })}
+                                  </div>
+                                  <div className="text-lg font-bold text-rogue-forest leading-none">
+                                    {formatDate(event.start_time, { day: 'numeric' })}
+                                  </div>
+                                </div>
+
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
                                     <h4 className="font-semibold text-rogue-forest text-sm">{event.title}</h4>
@@ -250,11 +278,7 @@ export default function CalendarPage() {
                                   </div>
                                   
                                   <div className="flex items-center gap-3 text-xs text-rogue-slate">
-                                    <span className="flex items-center gap-1">
-                                      <Calendar className="h-3 w-3" />
-                                      {formatDate(event.start_time, { month: 'short', day: 'numeric' })}
-                                    </span>
-                                    <span className="flex items-center gap-1">
+                                    <span className="flex items-center gap-1 font-medium">
                                       <Clock className="h-3 w-3" />
                                       {formatEventTime(event.start_time, event.end_time)}
                                     </span>
@@ -263,6 +287,7 @@ export default function CalendarPage() {
                                        event.event_type === 'book_club' ? 'Book Club' : 
                                        event.event_type === 'office_hours' ? 'Office Hours' : event.event_type}
                                     </Badge>
+                                    {event.location_type === 'virtual' && <Video className="h-3 w-3 text-blue-600" />}
                                   </div>
                                 </div>
 
