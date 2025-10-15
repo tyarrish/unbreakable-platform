@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/components/layout/container'
 import { PageHeader } from '@/components/layout/page-header'
@@ -14,11 +15,32 @@ import { toast } from 'sonner'
 export default function AnalyticsPage() {
   const [stats, setStats] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
+    checkAdminAccess()
     loadAnalytics()
   }, [])
+
+  async function checkAdminAccess() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      router.push('/login')
+      return
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single<{ role: string }>()
+
+    // Only admins can access analytics
+    if (profile?.role !== 'admin') {
+      router.push('/admin')
+    }
+  }
 
   async function loadAnalytics() {
     try {

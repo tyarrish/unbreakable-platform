@@ -58,21 +58,32 @@ export default function AdminPage() {
     return null
   }
 
+  const isAdmin = userRole === 'admin'
+  const isFacilitator = userRole === 'facilitator'
+
   return (
     <div className="py-8">
       <Container>
         <PageHeader
-          heading="Admin Dashboard"
-          description="Manage users, content, and monitor cohort progress"
+          heading={isAdmin ? "Admin Dashboard" : "Facilitator Dashboard"}
+          description={isAdmin 
+            ? "Manage users, content, and monitor cohort progress"
+            : "Manage content and moderate discussions"
+          }
         />
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AdminCard
-            icon={<Users className="h-6 w-6" />}
-            title="User Management"
-            description="Manage participants, facilitators, and roles"
-            href="/admin/users"
-          />
+          {/* User Management - Admin Only */}
+          {isAdmin && (
+            <AdminCard
+              icon={<Users className="h-6 w-6" />}
+              title="User Management"
+              description="Manage participants, facilitators, and roles"
+              href="/admin/users"
+            />
+          )}
+          
+          {/* Content Management - All */}
           <AdminCard
             icon={<BookOpen className="h-6 w-6" />}
             title="Modules"
@@ -103,18 +114,26 @@ export default function AdminPage() {
             description="Pair accountability partners"
             href="/admin/partners"
           />
-          <AdminCard
-            icon={<BarChart className="h-6 w-6" />}
-            title="Analytics"
-            description="Track engagement and completion"
-            href="/admin/analytics"
-          />
-          <AdminCard
-            icon={<Settings className="h-6 w-6" />}
-            title="Settings"
-            description="Platform configuration"
-            href="/admin/settings"
-          />
+          
+          {/* Analytics - Admin Only */}
+          {isAdmin && (
+            <AdminCard
+              icon={<BarChart className="h-6 w-6" />}
+              title="Analytics"
+              description="Track engagement and completion"
+              href="/admin/analytics"
+            />
+          )}
+          
+          {/* Settings - Admin Only */}
+          {isAdmin && (
+            <AdminCard
+              icon={<Settings className="h-6 w-6" />}
+              title="Settings"
+              description="Platform configuration"
+              href="/admin/settings"
+            />
+          )}
         </div>
       </Container>
     </div>

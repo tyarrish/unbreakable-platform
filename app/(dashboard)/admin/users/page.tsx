@@ -91,8 +91,9 @@ export default function AdminUsersPage() {
       .eq('id', user.id)
       .single<{ role: string }>()
 
-    if (profile?.role !== 'admin' && profile?.role !== 'facilitator') {
-      router.push('/dashboard')
+    // Only admins can access user management
+    if (profile?.role !== 'admin') {
+      router.push('/admin')
     }
   }
 

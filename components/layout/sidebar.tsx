@@ -56,6 +56,11 @@ const participantNavItems = [
   { href: '/capstone', label: 'Capstone', icon: Mountain },
 ]
 
+const facilitatorNavItems = [
+  ...participantNavItems,
+  { href: '/admin', label: 'Manage', icon: UserCog },
+]
+
 const adminNavItems = [
   ...participantNavItems,
   { href: '/admin', label: 'Admin', icon: UserCog },
@@ -65,8 +70,10 @@ export function Sidebar({ userRole, userProfile }: SidebarProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   
-  const navItems = userRole === 'admin' || userRole === 'facilitator' 
-    ? adminNavItems 
+  const navItems = userRole === 'admin'
+    ? adminNavItems
+    : userRole === 'facilitator'
+    ? facilitatorNavItems
     : participantNavItems
 
   // Get user initials for avatar fallback
