@@ -14,7 +14,8 @@ import {
   Reply,
   Trash2,
   Edit,
-  Smile
+  ThumbsUp,
+  Zap
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -177,18 +178,18 @@ function CommentItem({
   }
 
   const reactionIcons: Record<string, any> = {
-    like: Heart,
+    like: ThumbsUp,
     love: Heart,
-    surprise: Smile,
+    surprise: Zap,
     helpful: Lightbulb,
     insightful: Star,
   }
   
   const reactionColors: Record<string, string> = {
-    like: 'text-red-500',
-    love: 'text-pink-500',
+    like: 'text-blue-500',
+    love: 'text-red-500',
     surprise: 'text-yellow-500',
-    helpful: 'text-blue-500',
+    helpful: 'text-green-500',
     insightful: 'text-purple-500',
   }
 

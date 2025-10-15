@@ -22,7 +22,9 @@ import {
   Star,
   Smile,
   Edit,
-  MoreVertical
+  MoreVertical,
+  ThumbsUp,
+  Zap
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -561,9 +563,9 @@ export default function ThreadDetailPage() {
                   {/* Thread Reactions */}
                   <div className="flex items-center gap-3 pt-3 border-t border-rogue-sage/10">
                     {[
-                      { type: 'like', icon: Heart, label: 'Like', color: 'text-red-500' },
-                      { type: 'love', icon: Heart, label: 'Love', color: 'text-pink-500' },
-                      { type: 'surprise', icon: Smile, label: 'Surprise', color: 'text-yellow-500' },
+                      { type: 'like', icon: ThumbsUp, label: 'Like', color: 'text-blue-500' },
+                      { type: 'love', icon: Heart, label: 'Love', color: 'text-red-500' },
+                      { type: 'surprise', icon: Zap, label: 'Surprise', color: 'text-yellow-500' },
                     ].map(({ type, icon: Icon, label, color }) => {
                       const reaction = threadReactions.find(r => r.reaction_type === type)
                       const count = reaction?.count || 0
