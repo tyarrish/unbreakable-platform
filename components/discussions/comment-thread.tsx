@@ -13,7 +13,8 @@ import {
   MoreVertical,
   Reply,
   Trash2,
-  Edit
+  Edit,
+  Smile
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -175,10 +176,20 @@ function CommentItem({
     }
   }
 
-  const reactionIcons = {
+  const reactionIcons: Record<string, any> = {
     like: Heart,
+    love: Heart,
+    surprise: Smile,
     helpful: Lightbulb,
     insightful: Star,
+  }
+  
+  const reactionColors: Record<string, string> = {
+    like: 'text-red-500',
+    love: 'text-pink-500',
+    surprise: 'text-yellow-500',
+    helpful: 'text-blue-500',
+    insightful: 'text-purple-500',
   }
 
   return (
@@ -261,24 +272,32 @@ function CommentItem({
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-4 mt-2 px-2">
-            {comment.reactions?.map((reaction) => {
-              const Icon = reactionIcons[reaction.reaction_type as keyof typeof reactionIcons]
+          <div className="flex items-center gap-3 mt-2 px-2">
+            {/* Show all reaction types */}
+            {['like', 'love', 'surprise'].map((type) => {
+              const reaction = comment.reactions?.find(r => r.reaction_type === type)
+              const Icon = reactionIcons[type]
+              const color = reactionColors[type]
+              const count = reaction?.count || 0
+              const userReacted = reaction?.user_reacted || false
+
               return (
                 <button
-                  key={reaction.reaction_type}
-                  onClick={() => onReact(comment.id, reaction.reaction_type)}
+                  key={type}
+                  onClick={() => onReact(comment.id, type)}
                   className={`flex items-center gap-1 text-xs transition-colors ${
-                    reaction.user_reacted
-                      ? 'text-rogue-gold font-semibold'
+                    userReacted
+                      ? `${color} font-semibold`
                       : 'text-rogue-slate hover:text-rogue-forest'
                   }`}
                 >
-                  <Icon className={`h-3 w-3 ${reaction.user_reacted ? 'fill-current' : ''}`} />
-                  {reaction.count > 0 && <span>{reaction.count}</span>}
+                  <Icon className={`h-3.5 w-3.5 ${userReacted ? 'fill-current' : ''}`} />
+                  {count > 0 && <span>{count}</span>}
                 </button>
               )
             })}
+
+            <span className="text-rogue-slate/30">|</span>
 
             {canReply && (
               <button

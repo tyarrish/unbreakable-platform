@@ -19,8 +19,17 @@ import {
   MessageCircle,
   Heart,
   Lightbulb,
-  Star
+  Star,
+  Smile,
+  Edit,
+  MoreVertical
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { formatRelativeTime } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
 
@@ -76,6 +85,14 @@ export default function ThreadDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [newCommentContent, setNewCommentContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isEditingThread, setIsEditingThread] = useState(false)
+  const [editThreadContent, setEditThreadContent] = useState('')
+  const [threadReactions, setThreadReactions] = useState<Array<{
+    reaction_type: string
+    count: number
+    user_reacted: boolean
+  }>>([])
+
 
   useEffect(() => {
     loadThread()
@@ -95,10 +112,35 @@ export default function ThreadDetailPage() {
         .from('discussion_threads')
         .select('*, created_by_profile:profiles!created_by(full_name, avatar_url, role)')
         .eq('id', threadId)
-        .single()
+        .single() as any
 
       if (threadError) throw threadError
       setThread(threadData)
+      setEditThreadContent(threadData.content_html || threadData.content)
+
+      // Get thread reactions
+      const { data: reactions } = await supabase
+        .from('thread_reactions')
+        .select('reaction_type, user_id')
+        .eq('thread_id', threadId)
+
+      // Group reactions by type
+      const reactionCounts = reactions?.reduce((acc: any, r: any) => {
+        if (!acc[r.reaction_type]) {
+          acc[r.reaction_type] = { count: 0, users: [] }
+        }
+        acc[r.reaction_type].count++
+        acc[r.reaction_type].users.push(r.user_id)
+        return acc
+      }, {}) || {}
+
+      setThreadReactions(
+        Object.entries(reactionCounts).map(([type, data]: [string, any]) => ({
+          reaction_type: type,
+          count: data.count,
+          user_reacted: user ? data.users.includes(user.id) : false,
+        }))
+      )
 
       // Get all posts for this thread
       const { data: postsData, error: postsError } = await supabase
@@ -287,6 +329,71 @@ export default function ThreadDetailPage() {
     if (error) throw error
   }
 
+  async function handleEditThread() {
+    if (!editThreadContent.trim()) return
+
+    setIsSubmitting(true)
+
+    try {
+      const { error } = await (supabase as any)
+        .from('discussion_threads')
+        .update({
+          content_html: editThreadContent,
+          content: editThreadContent,
+        })
+        .eq('id', threadId)
+
+      if (error) throw error
+
+      toast.success('Post updated!')
+      setIsEditingThread(false)
+      loadThread()
+    } catch (error: any) {
+      console.error('Error updating thread:', error)
+      toast.error(error.message || 'Failed to update post')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  async function handleReactToThread(reactionType: string) {
+    if (!userId) return
+
+    try {
+      // Check if user already reacted with this type
+      const { data: existingReaction } = await supabase
+        .from('thread_reactions')
+        .select('id')
+        .eq('thread_id', threadId)
+        .eq('user_id', userId)
+        .eq('reaction_type', reactionType)
+        .single()
+
+      if (existingReaction) {
+        // Remove reaction
+        await supabase
+          .from('thread_reactions')
+          .delete()
+          .eq('thread_id', threadId)
+          .eq('user_id', userId)
+          .eq('reaction_type', reactionType)
+      } else {
+        // Add reaction
+        await (supabase as any)
+          .from('thread_reactions')
+          .insert({
+            thread_id: threadId,
+            user_id: userId,
+            reaction_type: reactionType,
+          })
+      }
+
+      loadThread() // Reload to update counts
+    } catch (error: any) {
+      console.error('Error toggling thread reaction:', error)
+    }
+  }
+
   async function handleReact(commentId: string, reactionType: string) {
     if (!userId) return
 
@@ -382,9 +489,27 @@ export default function ThreadDetailPage() {
                     )}
                   </div>
 
-                  <h1 className="text-2xl md:text-3xl font-bold text-rogue-forest mb-2">
-                    {thread.title}
-                  </h1>
+                  <div className="flex items-start justify-between gap-3">
+                    <h1 className="text-2xl md:text-3xl font-bold text-rogue-forest mb-2">
+                      {thread.title}
+                    </h1>
+                    
+                    {thread.created_by === userId && !isEditingThread && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setIsEditingThread(true)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Post
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
 
                   <div className="flex items-center gap-2 text-sm text-rogue-slate">
                     <span className="font-medium">{thread.created_by_profile?.full_name}</span>
@@ -399,14 +524,69 @@ export default function ThreadDetailPage() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              {thread.content_html ? (
-                <div 
-                  className="prose prose-sm max-w-none text-rogue-forest"
-                  dangerouslySetInnerHTML={{ __html: thread.content_html }}
-                />
+            <CardContent className="space-y-4">
+              {isEditingThread ? (
+                <div className="space-y-3">
+                  <RichTextEditor
+                    content={editThreadContent}
+                    onChange={setEditThreadContent}
+                    placeholder="Edit your post..."
+                  />
+                  <div className="flex gap-2">
+                    <Button onClick={handleEditThread} disabled={isSubmitting}>
+                      {isSubmitting ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditingThread(false)
+                        setEditThreadContent(thread.content_html || thread.content)
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
               ) : (
-                <p className="text-rogue-forest whitespace-pre-wrap">{thread.content}</p>
+                <>
+                  {thread.content_html ? (
+                    <div 
+                      className="prose prose-sm max-w-none text-rogue-forest"
+                      dangerouslySetInnerHTML={{ __html: thread.content_html }}
+                    />
+                  ) : (
+                    <p className="text-rogue-forest whitespace-pre-wrap">{thread.content}</p>
+                  )}
+
+                  {/* Thread Reactions */}
+                  <div className="flex items-center gap-3 pt-3 border-t border-rogue-sage/10">
+                    {[
+                      { type: 'like', icon: Heart, label: 'Like', color: 'text-red-500' },
+                      { type: 'love', icon: Heart, label: 'Love', color: 'text-pink-500' },
+                      { type: 'surprise', icon: Smile, label: 'Surprise', color: 'text-yellow-500' },
+                    ].map(({ type, icon: Icon, label, color }) => {
+                      const reaction = threadReactions.find(r => r.reaction_type === type)
+                      const count = reaction?.count || 0
+                      const userReacted = reaction?.user_reacted || false
+
+                      return (
+                        <button
+                          key={type}
+                          onClick={() => handleReactToThread(type)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all ${
+                            userReacted
+                              ? `border-${color.split('-')[1]}-300 bg-${color.split('-')[1]}-50 ${color} font-semibold`
+                              : 'border-rogue-sage/20 text-rogue-slate hover:border-rogue-sage/40 hover:bg-rogue-sage/5'
+                          }`}
+                          title={label}
+                        >
+                          <Icon className={`h-4 w-4 ${userReacted ? 'fill-current' : ''}`} />
+                          {count > 0 && <span className="text-sm">{count}</span>}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
