@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { resend, EMAIL_CONFIG } from '@/lib/email/resend'
+import { InviteEmail } from '@/lib/email/templates/invite-email'
 import { revalidatePath } from 'next/cache'
 import type { UserRole } from '@/types/index.types'
 
@@ -85,11 +87,44 @@ export async function sendUserInvite(email: string, fullName: string, role: User
     console.log(`Created invite for ${email}`)
     console.log(`Invite URL: ${inviteUrl}`)
 
+    // Send invite email via Resend (if configured)
+    if (process.env.RESEND_API_KEY) {
+      try {
+        console.log(`Sending invite email to ${email} via Resend...`)
+        
+        const { data: emailData, error: emailError } = await resend.emails.send({
+          from: EMAIL_CONFIG.from,
+          to: email,
+          replyTo: EMAIL_CONFIG.replyTo,
+          subject: `You're Invited to Join Rogue Leadership Training Experience`,
+          react: InviteEmail({
+            fullName,
+            inviteUrl,
+            role,
+          }),
+        })
+
+        if (emailError) {
+          console.error('Resend email error:', emailError)
+          // Don't fail the invite creation, just log the error
+          console.warn('Invite created but email failed to send')
+        } else {
+          console.log('Invite email sent successfully via Resend:', emailData?.id)
+        }
+      } catch (emailError) {
+        console.error('Unexpected email error:', emailError)
+        // Continue - invite is created even if email fails
+      }
+    } else {
+      console.log('RESEND_API_KEY not set - skipping automatic email')
+    }
+
     revalidatePath('/admin/users')
     return { 
       success: true, 
       invite,
-      inviteUrl // Return the URL so UI can display it
+      inviteUrl, // Return the URL so UI can display it
+      emailSent: !!process.env.RESEND_API_KEY // Indicate if email was attempted
     }
   } catch (error: any) {
     console.error('Unexpected error sending invite:', error)

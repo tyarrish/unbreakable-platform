@@ -43,6 +43,7 @@ export function InviteUserModal({ open, onClose, onSuccess }: InviteUserModalPro
   const [loadingInvites, setLoadingInvites] = useState(false)
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -74,10 +75,16 @@ export function InviteUserModal({ open, onClose, onSuccess }: InviteUserModalPro
         return
       }
 
-      // Store the invite URL to display
+      // Store the invite URL and email status to display
       if (result.inviteUrl) {
         setInviteUrl(result.inviteUrl)
-        toast.success(`Invite created! Copy the link below and send it to ${email}`)
+        setEmailSent(result.emailSent || false)
+        
+        if (result.emailSent) {
+          toast.success(`Invite email sent to ${email}! Link also available below.`)
+        } else {
+          toast.success(`Invite created! Copy the link below and send it to ${email}`)
+        }
       } else {
         toast.success(`Invite created for ${email}`)
       }
@@ -103,6 +110,7 @@ export function InviteUserModal({ open, onClose, onSuccess }: InviteUserModalPro
     setRole('participant')
     setInviteUrl(null)
     setCopied(false)
+    setEmailSent(false)
   }
   
   async function copyInviteLink() {
@@ -235,9 +243,15 @@ export function InviteUserModal({ open, onClose, onSuccess }: InviteUserModalPro
               <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <h4 className="font-semibold text-green-800 mb-1">Invite Created Successfully!</h4>
-                <p className="text-sm text-green-700 mb-3">
-                  Copy the link below and send it to <strong>{email}</strong> via email, Slack, or any messaging platform.
-                </p>
+                {emailSent ? (
+                  <p className="text-sm text-green-700 mb-3">
+                    ✅ Invite email sent to <strong>{email}</strong>! You can also copy the link below as a backup.
+                  </p>
+                ) : (
+                  <p className="text-sm text-green-700 mb-3">
+                    Copy the link below and send it to <strong>{email}</strong> via email, Slack, or any messaging platform.
+                  </p>
+                )}
                 
                 <div className="flex gap-2">
                   <Input
