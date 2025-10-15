@@ -561,29 +561,43 @@ export default function ThreadDetailPage() {
                   )}
 
                   {/* Thread Reactions */}
-                  <div className="flex items-center gap-3 pt-3 border-t border-rogue-sage/10">
+                  <div className="flex items-center gap-2 pt-3 border-t border-rogue-sage/10 group">
                     {[
-                      { type: 'like', icon: ThumbsUp, label: 'Like', color: 'text-blue-500' },
-                      { type: 'love', icon: Heart, label: 'Love', color: 'text-red-500' },
-                      { type: 'surprise', icon: Zap, label: 'Surprise', color: 'text-yellow-500' },
-                    ].map(({ type, icon: Icon, label, color }) => {
+                      { type: 'like', icon: ThumbsUp, label: 'Like' },
+                      { type: 'love', icon: Heart, label: 'Love' },
+                      { type: 'surprise', icon: Zap, label: 'Surprise' },
+                    ].map(({ type, icon: Icon, label }) => {
                       const reaction = threadReactions.find(r => r.reaction_type === type)
                       const count = reaction?.count || 0
                       const userReacted = reaction?.user_reacted || false
+                      
+                      // Only show counter if count > 0, otherwise show on hover
+                      if (count === 0) {
+                        return (
+                          <button
+                            key={type}
+                            onClick={() => handleReactToThread(type)}
+                            className="flex items-center gap-1 px-2 py-1 rounded-md text-rogue-slate/60 hover:text-rogue-forest hover:bg-rogue-sage/10 transition-all opacity-0 group-hover:opacity-100"
+                            title={label}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </button>
+                        )
+                      }
 
                       return (
                         <button
                           key={type}
                           onClick={() => handleReactToThread(type)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all ${
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all ${
                             userReacted
-                              ? `border-${color.split('-')[1]}-300 bg-${color.split('-')[1]}-50 ${color} font-semibold`
-                              : 'border-rogue-sage/20 text-rogue-slate hover:border-rogue-sage/40 hover:bg-rogue-sage/5'
+                              ? 'bg-rogue-forest/10 text-rogue-forest border border-rogue-forest/20'
+                              : 'bg-rogue-sage/10 text-rogue-slate hover:bg-rogue-sage/20'
                           }`}
-                          title={label}
+                          title={`${label} (${count})`}
                         >
-                          <Icon className={`h-4 w-4 ${userReacted ? 'fill-current' : ''}`} />
-                          {count > 0 && <span className="text-sm">{count}</span>}
+                          <Icon className={`h-4 w-4 ${userReacted ? 'fill-current text-rogue-forest' : ''}`} />
+                          <span className="text-sm font-medium">{count}</span>
                         </button>
                       )
                     })}

@@ -184,14 +184,6 @@ function CommentItem({
     helpful: Lightbulb,
     insightful: Star,
   }
-  
-  const reactionColors: Record<string, string> = {
-    like: 'text-blue-500',
-    love: 'text-red-500',
-    surprise: 'text-yellow-500',
-    helpful: 'text-green-500',
-    insightful: 'text-purple-500',
-  }
 
   return (
     <div className="group">
@@ -273,40 +265,54 @@ function CommentItem({
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-3 mt-2 px-2">
+          <div className="flex items-center gap-2 mt-2 px-2">
             {/* Show all reaction types */}
             {['like', 'love', 'surprise'].map((type) => {
               const reaction = comment.reactions?.find(r => r.reaction_type === type)
               const Icon = reactionIcons[type]
-              const color = reactionColors[type]
               const count = reaction?.count || 0
               const userReacted = reaction?.user_reacted || false
+
+              // Only show button if there are reactions or user is hovering
+              if (count === 0) {
+                return (
+                  <button
+                    key={type}
+                    onClick={() => onReact(comment.id, type)}
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-rogue-slate/60 hover:text-rogue-forest hover:bg-rogue-sage/10 transition-all opacity-0 group-hover:opacity-100"
+                    title={type.charAt(0).toUpperCase() + type.slice(1)}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                  </button>
+                )
+              }
 
               return (
                 <button
                   key={type}
                   onClick={() => onReact(comment.id, type)}
-                  className={`flex items-center gap-1 text-xs transition-colors ${
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-full transition-all ${
                     userReacted
-                      ? `${color} font-semibold`
-                      : 'text-rogue-slate hover:text-rogue-forest'
+                      ? 'bg-rogue-forest/10 text-rogue-forest border border-rogue-forest/20'
+                      : 'bg-rogue-sage/10 text-rogue-slate hover:bg-rogue-sage/20'
                   }`}
+                  title={`${type.charAt(0).toUpperCase() + type.slice(1)} (${count})`}
                 >
-                  <Icon className={`h-3.5 w-3.5 ${userReacted ? 'fill-current' : ''}`} />
-                  {count > 0 && <span>{count}</span>}
+                  <Icon className={`h-3.5 w-3.5 ${userReacted ? 'fill-current text-rogue-forest' : ''}`} />
+                  <span className="text-xs font-medium">{count}</span>
                 </button>
               )
             })}
 
-            <span className="text-rogue-slate/30">|</span>
+            <span className="text-rogue-slate/30 mx-1">·</span>
 
             {canReply && (
               <button
                 onClick={() => setShowReplyBox(!showReplyBox)}
-                className="flex items-center gap-1 text-xs text-rogue-slate hover:text-rogue-forest transition-colors font-medium"
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-rogue-slate hover:text-rogue-forest hover:bg-rogue-sage/10 transition-all"
               >
-                <Reply className="h-3 w-3" />
-                Reply
+                <Reply className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Reply</span>
               </button>
             )}
           </div>
