@@ -24,7 +24,8 @@ import {
   Edit,
   MoreVertical,
   ThumbsUp,
-  Zap
+  Zap,
+  Trash2
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -84,11 +85,13 @@ export default function ThreadDetailPage() {
   const [thread, setThread] = useState<Thread | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
   const [userId, setUserId] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [newCommentContent, setNewCommentContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isEditingThread, setIsEditingThread] = useState(false)
   const [editThreadContent, setEditThreadContent] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
   const [threadReactions, setThreadReactions] = useState<Array<{
     reaction_type: string
     count: number
@@ -107,6 +110,17 @@ export default function ThreadDetailPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         setUserId(user.id)
+        
+        // Get user role
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        
+        if (profile) {
+          setUserRole(profile.role)
+        }
       }
 
       // Get thread
@@ -358,6 +372,36 @@ export default function ThreadDetailPage() {
     }
   }
 
+  async function handleDeleteThread() {
+    if (!userId || userRole !== 'admin') {
+      toast.error('Only admins can delete discussions')
+      return
+    }
+
+    // Confirm deletion
+    if (!confirm('Are you sure you want to delete this discussion? This will permanently delete the thread and all comments. This action cannot be undone.')) {
+      return
+    }
+
+    setIsDeleting(true)
+
+    try {
+      const { error } = await supabase
+        .from('discussion_threads')
+        .delete()
+        .eq('id', threadId)
+
+      if (error) throw error
+
+      toast.success('Discussion deleted successfully')
+      router.push('/discussions')
+    } catch (error: any) {
+      console.error('Error deleting thread:', error)
+      toast.error(error?.message || 'Failed to delete discussion')
+      setIsDeleting(false)
+    }
+  }
+
   async function handleReactToThread(reactionType: string) {
     if (!userId) return
 
@@ -496,18 +540,29 @@ export default function ThreadDetailPage() {
                       {thread.title}
                     </h1>
                     
-                    {thread.created_by === userId && !isEditingThread && (
+                    {(thread.created_by === userId || userRole === 'admin') && !isEditingThread && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isDeleting}>
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setIsEditingThread(true)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Post
-                          </DropdownMenuItem>
+                          {thread.created_by === userId && (
+                            <DropdownMenuItem onClick={() => setIsEditingThread(true)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit Post
+                            </DropdownMenuItem>
+                          )}
+                          {userRole === 'admin' && (
+                            <DropdownMenuItem 
+                              onClick={handleDeleteThread}
+                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete Discussion
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
