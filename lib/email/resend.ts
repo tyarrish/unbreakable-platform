@@ -5,7 +5,7 @@ export const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Email configuration
 export const EMAIL_CONFIG = {
-  from: 'Rogue Leadership <noreply@rogueleadership.org>',
-  replyTo: 'info@rogueleadership.org',
+  from: 'Rogue Leadership <noreply@thehivve.com>',
+  replyTo: 'info@thehivve.com',
 }
 
