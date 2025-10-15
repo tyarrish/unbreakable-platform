@@ -41,12 +41,14 @@ export function AchievementsPreview({ userId }: AchievementsPreviewProps) {
         .from('achievements')
         .select('*')
         .order('points', { ascending: false })
+        .returns<Array<{ id: string; name: string; description: string; points: number; icon: string | null; category: 'learning' | 'community' | 'consistency' | 'special' }>>()
 
       // Get user's earned achievements
       const { data: userAchievements } = await supabase
         .from('user_achievements')
         .select('achievement_id, earned_at')
         .eq('user_id', userId)
+        .returns<Array<{ achievement_id: string; earned_at: string }>>()
 
       const earnedIds = new Set(userAchievements?.map(ua => ua.achievement_id) || [])
       const earnedMap = new Map(userAchievements?.map(ua => [ua.achievement_id, ua.earned_at]))

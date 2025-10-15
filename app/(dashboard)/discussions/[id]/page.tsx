@@ -116,10 +116,10 @@ export default function ThreadDetailPage() {
           .from('profiles')
           .select('role')
           .eq('id', user.id)
-          .single()
+          .single<{ role: string }>()
         
-        if (profile) {
-          setUserRole(profile.role)
+        if (profile?.role) {
+          setUserRole(profile.role as 'admin' | 'facilitator' | 'participant')
         }
       }
 

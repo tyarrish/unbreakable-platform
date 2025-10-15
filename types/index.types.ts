@@ -51,6 +51,7 @@ export interface LessonProgress {
   time_spent_minutes: number
   video_watch_percentage?: number
   resources_downloaded?: string[]
+  reflection?: string
   reflection_word_count?: number
 }
 
