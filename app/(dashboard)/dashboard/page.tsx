@@ -341,6 +341,8 @@ export default function DashboardPage() {
           onClose={() => {
             setShowProfileSetup(false)
             setProfileCompleted(true)
+            // Reload the page to show updated profile data
+            window.location.reload()
           }}
           userId={user.id}
           userName={user.full_name || user.email}
