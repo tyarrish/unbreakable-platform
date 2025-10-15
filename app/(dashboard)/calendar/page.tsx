@@ -4,16 +4,15 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/components/layout/container'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Calendar, Clock, MapPin, Users, ExternalLink, Video, Building2, AlertCircle, CheckCircle, Sparkles, CalendarDays } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Video, Building2, CheckCircle, Sparkles, CalendarDays } from 'lucide-react'
 import { getEvents, registerForEvent, unregisterFromEvent, isRegisteredForEvent } from '@/lib/supabase/queries/events'
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
-import { EVENT_TYPES, LOCATION_TYPES } from '@/lib/constants'
 import type { Event } from '@/types/index.types'
 
 export default function CalendarPage() {
@@ -88,28 +87,46 @@ export default function CalendarPage() {
     return <PageLoader />
   }
 
+  // Group events by month and separate required from optional
   const upcomingEvents = events.filter(e => new Date(e.end_time) >= new Date())
-  const pastEvents = events.filter(e => new Date(e.end_time) < new Date())
+  
+  // Group by month
+  const eventsByMonth: { [key: string]: { required: Event[], optional: Event[] } } = {}
+  
+  upcomingEvents.forEach(event => {
+    const monthKey = formatDate(event.start_time, { month: 'long', year: 'numeric' })
+    
+    if (!eventsByMonth[monthKey]) {
+      eventsByMonth[monthKey] = { required: [], optional: [] }
+    }
+    
+    if (event.is_required) {
+      eventsByMonth[monthKey].required.push(event)
+    } else {
+      eventsByMonth[monthKey].optional.push(event)
+    }
+  })
+
+  const totalUpcoming = upcomingEvents.length
+  const totalRegistered = events.filter(e => registrations.has(e.id)).length
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
-      {/* Subtle header background */}
+      {/* Header */}
       <div className="bg-white/40 backdrop-blur-sm border-b border-rogue-sage/10">
         <Container>
-          <div className="py-8">
+          <div className="py-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-rogue-forest mb-2">Events Calendar</h1>
-                <p className="text-lg text-rogue-slate">
-                  Cohort calls, workshops, and book clubs
-                </p>
+                <h1 className="text-3xl md:text-4xl font-bold text-rogue-forest mb-1">Events Calendar</h1>
+                <p className="text-rogue-slate">Cohort calls, workshops, and book clubs</p>
               </div>
-              <div className="flex gap-3">
-                <Badge className="bg-rogue-copper/10 text-rogue-copper border-0 px-4 py-2">
-                  {upcomingEvents.length} Upcoming
+              <div className="flex gap-2">
+                <Badge className="bg-orange-100 text-orange-700 border-0 px-3 py-1.5">
+                  {totalUpcoming} Upcoming
                 </Badge>
-                <Badge className="bg-green-100 text-green-700 border-0 px-4 py-2">
-                  {events.filter(e => registrations.has(e.id)).length} Registered
+                <Badge className="bg-green-100 text-green-700 border-0 px-3 py-1.5">
+                  {totalRegistered} Registered
                 </Badge>
               </div>
             </div>
@@ -118,215 +135,154 @@ export default function CalendarPage() {
       </div>
 
       <Container>
-        <div className="py-8">
-          {events.length === 0 ? (
-            <Card className="border-0 shadow-xl">
-              <EmptyState
-                icon={<Calendar size={64} />}
-                title="No Events Scheduled"
-                description="Events and cohort calls will appear here. Stay tuned for upcoming sessions!"
-              />
-            </Card>
+        <div className="py-8 max-w-5xl mx-auto">
+          {upcomingEvents.length === 0 ? (
+            <EmptyState
+              icon={<Calendar size={64} />}
+              title="No Events Scheduled"
+              description="Events and cohort calls will appear here. Stay tuned for upcoming sessions!"
+            />
           ) : (
-            <div className="space-y-12">
-              {/* Upcoming Events */}
-              {upcomingEvents.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-rogue-copper/10 rounded-lg">
-                      <Sparkles className="h-5 w-5 text-rogue-copper" />
-                    </div>
-                    <h2 className="text-3xl font-bold text-rogue-forest">Upcoming Events</h2>
+            <div className="space-y-8">
+              {Object.entries(eventsByMonth).map(([month, { required, optional }]) => (
+                <div key={month} className="space-y-4">
+                  {/* Month Header */}
+                  <div className="flex items-center gap-3 sticky top-0 bg-gradient-to-r from-rogue-cream to-transparent py-3 z-10">
+                    <CalendarDays className="h-5 w-5 text-rogue-gold" />
+                    <h2 className="text-xl font-bold text-rogue-forest">{month}</h2>
                   </div>
-                  
-                  <div className="grid gap-6">
-                    {upcomingEvents.map((event) => {
-                      const eventType = EVENT_TYPES.find(t => t.value === event.event_type)
-                      const locationType = LOCATION_TYPES.find(l => l.value === event.location_type)
-                      const isRegistered = registrations.has(event.id)
-                      const attendeeCount = (event as any).attendance?.[0]?.count || 0
-                      const isCapacityReached = !!(event.max_attendees && attendeeCount >= event.max_attendees)
 
-                      return (
-                        <Card key={event.id} className="border-0 shadow-xl hover:shadow-2xl transition-all bg-gradient-to-br from-white to-rogue-copper/5">
-                          <CardHeader className="pb-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                  <Badge className={`bg-${eventType?.color || 'rogue-copper'} text-white border-0`}>
-                                    {eventType?.label || event.event_type}
-                                  </Badge>
-                                  {event.is_required ? (
-                                    <Badge className="bg-red-600 text-white flex items-center gap-1 border-0">
-                                      <AlertCircle size={12} />
-                                      Required
-                                    </Badge>
+                  {/* Required Events - Prominent */}
+                  {required.map((event) => {
+                    const isRegistered = registrations.has(event.id)
+                    
+                    return (
+                      <Card 
+                        key={event.id} 
+                        className="border-l-4 border-red-500 shadow-lg hover:shadow-xl transition-all bg-white"
+                      >
+                        <CardContent className="p-5">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge className="bg-red-600 text-white border-0 px-2.5 py-0.5 text-xs">
+                                  Required
+                                </Badge>
+                                <Badge className="bg-rogue-forest text-white border-0 px-2.5 py-0.5 text-xs">
+                                  {event.event_type === 'cohort_call' ? 'Cohort Call' : event.event_type}
+                                </Badge>
+                                {isRegistered && (
+                                  <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />
+                                )}
+                              </div>
+
+                              <h3 className="font-bold text-xl text-rogue-forest mb-3">{event.title}</h3>
+
+                              <div className="grid sm:grid-cols-3 gap-3 mb-3">
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Calendar className="h-4 w-4 text-rogue-copper" />
+                                  <span className="text-rogue-slate">{formatDate(event.start_time, { month: 'short', day: 'numeric' })}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Clock className="h-4 w-4 text-rogue-copper" />
+                                  <span className="text-rogue-slate">{formatEventTime(event.start_time, event.end_time)}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm">
+                                  {event.location_type === 'virtual' ? (
+                                    <><Video className="h-4 w-4 text-blue-600" /><span className="text-rogue-slate">Virtual</span></>
+                                  ) : event.location_type === 'in_person' ? (
+                                    <><Building2 className="h-4 w-4 text-rogue-forest" /><span className="text-rogue-slate">In-Person</span></>
                                   ) : (
-                                    <Badge variant="secondary" className="flex items-center gap-1">
-                                      <CheckCircle size={12} />
-                                      Optional
-                                    </Badge>
-                                  )}
-                                  <Badge variant="outline" className="flex items-center gap-1">
-                                    {locationType?.icon} {locationType?.label}
-                                  </Badge>
-                                  {isCapacityReached && !isRegistered && (
-                                    <Badge className="bg-red-600 text-white border-0">Full</Badge>
-                                  )}
-                                  {(event as any).module && (
-                                    <Badge variant="outline">
-                                      Module {(event as any).module.order_number}
-                                    </Badge>
+                                    <><MapPin className="h-4 w-4 text-rogue-gold" /><span className="text-rogue-slate">Hybrid</span></>
                                   )}
                                 </div>
-                                <CardTitle className="text-2xl mb-2">{event.title}</CardTitle>
-                                {event.description && (
-                                  <CardDescription className="text-base leading-relaxed">{event.description}</CardDescription>
-                                )}
                               </div>
-                              {isRegistered && (
-                                <div className="ml-4 p-3 bg-green-50 rounded-full">
-                                  <CheckCircle className="h-6 w-6 text-green-600" />
+
+                              {event.location_address && (
+                                <div className="flex items-start gap-2 text-sm text-rogue-slate mb-3">
+                                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                  <span>{event.location_address}</span>
                                 </div>
                               )}
-                            </div>
-                          </CardHeader>
-                          
-                          <CardContent className="space-y-6">
-                            <div className="grid sm:grid-cols-2 gap-4">
-                              <div className="flex items-center gap-3 p-3 bg-rogue-sage/5 rounded-lg">
-                                <div className="p-2 bg-rogue-forest/10 rounded-lg">
-                                  <Calendar size={16} className="text-rogue-forest" />
-                                </div>
-                                <div>
-                                  <div className="text-xs text-rogue-slate">Date</div>
-                                  <div className="font-medium text-rogue-forest">{formatDate(event.start_time)}</div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3 p-3 bg-rogue-sage/5 rounded-lg">
-                                <div className="p-2 bg-rogue-forest/10 rounded-lg">
-                                  <Clock size={16} className="text-rogue-forest" />
-                                </div>
-                                <div>
-                                  <div className="text-xs text-rogue-slate">Time</div>
-                                  <div className="font-medium text-rogue-forest">{formatEventTime(event.start_time, event.end_time)}</div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3 p-3 bg-rogue-sage/5 rounded-lg">
-                                <div className="p-2 bg-rogue-forest/10 rounded-lg">
-                                  <Users size={16} className="text-rogue-forest" />
-                                </div>
-                                <div>
-                                  <div className="text-xs text-rogue-slate">Attendees</div>
-                                  <div className="font-medium text-rogue-forest">
-                                    {attendeeCount}{event.max_attendees && ` / ${event.max_attendees}`}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
 
-                            {/* Location Details */}
-                            {event.location_type === 'virtual' && event.zoom_link && (
-                              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <Video size={20} className="text-blue-600" />
-                                <span className="text-sm font-medium text-blue-900">Virtual event via Zoom</span>
-                              </div>
-                            )}
-
-                            {event.location_type === 'in_person' && event.location_address && (
-                              <div className="flex items-start gap-3 p-4 bg-rogue-sage/10 rounded-lg">
-                                <Building2 size={20} className="text-rogue-forest mt-0.5" />
-                                <div>
-                                  <div className="font-medium text-rogue-forest mb-1">Location</div>
-                                  <div className="text-sm text-rogue-slate">{event.location_address}</div>
-                                </div>
-                              </div>
-                            )}
-
-                            {event.location_type === 'hybrid' && (
-                              <div className="space-y-3 p-4 bg-gradient-to-br from-rogue-sage/10 to-blue-50 rounded-lg">
-                                <div className="font-medium text-rogue-forest flex items-center gap-2">
-                                  <MapPin size={18} />
-                                  Hybrid Event - Choose Your Format
-                                </div>
-                                {event.location_address && (
-                                  <div className="flex items-start gap-2 pl-6 text-sm">
-                                    <Building2 size={14} className="text-rogue-slate mt-0.5" />
-                                    <span className="text-rogue-slate">{event.location_address}</span>
-                                  </div>
-                                )}
-                                {event.zoom_link && (
-                                  <div className="flex items-center gap-2 pl-6 text-sm">
-                                    <Video size={14} className="text-rogue-slate" />
-                                    <span className="text-rogue-slate">Virtual option available</span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
-                            <div className="flex gap-3">
-                              <Button
-                                size="lg"
-                                variant={isRegistered ? 'outline' : 'default'}
-                                onClick={() => handleRegister(event.id)}
-                                disabled={isCapacityReached && !isRegistered}
-                                className={isRegistered ? '' : 'bg-gradient-to-r from-rogue-copper to-rogue-terracotta hover:from-rogue-terracotta hover:to-rogue-copper'}
-                              >
-                                {isRegistered ? (
-                                  <>
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    Registered
-                                  </>
-                                ) : isCapacityReached ? (
-                                  'Full'
-                                ) : (
-                                  <>
-                                    <Sparkles className="mr-2 h-4 w-4" />
-                                    Register Now
-                                  </>
-                                )}
-                              </Button>
-                              {event.zoom_link && isRegistered && (
-                                <Button size="lg" className="bg-blue-600 hover:bg-blue-700" asChild>
-                                  <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
-                                    <Video size={16} className="mr-2" />
-                                    Join Zoom
-                                    <ExternalLink size={16} className="ml-2" />
-                                  </a>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant={isRegistered ? 'outline' : 'default'}
+                                  onClick={() => handleRegister(event.id)}
+                                  className={!isRegistered ? 'bg-red-600 hover:bg-red-700' : ''}
+                                >
+                                  {isRegistered ? 'Registered ✓' : 'Register'}
                                 </Button>
-                              )}
+                                {event.zoom_link && isRegistered && (
+                                  <Button size="sm" variant="outline" className="text-blue-600 hover:text-blue-700" asChild>
+                                    <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
+                                      <Video className="h-3 w-3 mr-1" />
+                                      Join
+                                    </a>
+                                  </Button>
+                                )}
+                              </div>
                             </div>
-                          </CardContent>
-                        </Card>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Past Events */}
-              {pastEvents.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="h-1 w-12 bg-rogue-slate/30 rounded-full"></div>
-                    <h2 className="text-2xl font-bold text-rogue-slate">Past Events</h2>
-                    <Badge variant="outline" className="ml-auto">{pastEvents.length}</Badge>
-                  </div>
-                  
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {pastEvents.slice(0, 6).map((event) => (
-                      <Card key={event.id} className="border-rogue-slate/20 opacity-75">
-                        <CardContent className="pt-5">
-                          <h3 className="font-medium text-rogue-slate mb-2">{event.title}</h3>
-                          <div className="text-sm text-rogue-slate/70">
-                            {formatDate(event.start_time)}
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
-                  </div>
+                    )
+                  })}
+
+                  {/* Optional Events - Indented & Compact */}
+                  {optional.length > 0 && (
+                    <div className="ml-6 space-y-2">
+                      {optional.map((event) => {
+                        const isRegistered = registrations.has(event.id)
+                        
+                        return (
+                          <Card 
+                            key={event.id} 
+                            className="border-l-2 border-rogue-sage/40 shadow-sm hover:shadow-md transition-all bg-white/80"
+                          >
+                            <CardContent className="p-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="font-semibold text-rogue-forest text-sm">{event.title}</h4>
+                                    {isRegistered && <CheckCircle className="h-3 w-3 text-green-600 flex-shrink-0" />}
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-3 text-xs text-rogue-slate">
+                                    <span className="flex items-center gap-1">
+                                      <Calendar className="h-3 w-3" />
+                                      {formatDate(event.start_time, { month: 'short', day: 'numeric' })}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {formatEventTime(event.start_time, event.end_time)}
+                                    </span>
+                                    <Badge variant="outline" className="px-1.5 py-0 text-xs h-5">
+                                      {event.event_type === 'workshop' ? 'Workshop' : 
+                                       event.event_type === 'book_club' ? 'Book Club' : 
+                                       event.event_type === 'office_hours' ? 'Office Hours' : event.event_type}
+                                    </Badge>
+                                  </div>
+                                </div>
+
+                                <Button
+                                  size="sm"
+                                  variant={isRegistered ? 'ghost' : 'outline'}
+                                  onClick={() => handleRegister(event.id)}
+                                  className={`flex-shrink-0 h-7 px-3 text-xs ${isRegistered ? 'text-green-700' : ''}`}
+                                >
+                                  {isRegistered ? 'Registered' : 'Register'}
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
           )}
         </div>
@@ -334,3 +290,4 @@ export default function CalendarPage() {
     </div>
   )
 }
+
