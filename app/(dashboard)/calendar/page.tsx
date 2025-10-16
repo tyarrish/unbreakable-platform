@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Calendar, Clock, MapPin, Users, Video, Building2, CheckCircle, Sparkles, CalendarDays, ChevronDown, ChevronUp, UserCircle } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Video, Building2, CheckCircle, ChevronDown, ChevronUp, UserCircle, ExternalLink } from 'lucide-react'
 import { getEvents, registerForEvent, unregisterFromEvent, isRegisteredForEvent } from '@/lib/supabase/queries/events'
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
@@ -87,24 +87,15 @@ export default function CalendarPage() {
 
   // Format event description - handle both plain text and HTML
   function formatEventDescription(description: string): string {
-    // If it already contains HTML tags, return as is
     if (description.includes('<p>') || description.includes('<div>')) {
       return description
     }
 
-    // Otherwise, format plain text with markdown-style parsing
     let formatted = description
-      
-    // Convert **bold** to <strong>
     formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-rogue-forest">$1</strong>')
-    
-    // Convert line breaks to <br>
     formatted = formatted.replace(/\n/g, '<br/>')
+    formatted = formatted.replace(/- (.+?)(<br\/>|$)/g, '<div class="flex gap-2 mb-1"><span class="text-rogue-gold">•</span><span>$1</span></div>')
     
-    // Convert bullet points (- item) to styled bullets
-    formatted = formatted.replace(/- (.+?)(<br\/>|$)/g, '<div class="flex gap-2"><span class="text-rogue-gold">•</span><span>$1</span></div>')
-    
-    // Wrap in paragraph
     return `<div>${formatted}</div>`
   }
 
@@ -112,14 +103,13 @@ export default function CalendarPage() {
     return <PageLoader />
   }
 
-  // Group events by module/month and separate required from optional
+  // Group events by module
   const upcomingEvents = events.filter(e => new Date(e.end_time) >= new Date())
   
-  // Group by module (with fallback for events without modules)
-  const eventsByModule: { [key: string]: { required: Event[], optional: Event[], order: number } } = {}
+  const eventsByModule: { [key: string]: { events: Event[], order: number } } = {}
   
   upcomingEvents.forEach(event => {
-    let moduleKey = 'Unassigned Events'
+    let moduleKey = 'Upcoming Events'
     let moduleOrder = 999
     
     if ((event as any).module) {
@@ -129,18 +119,21 @@ export default function CalendarPage() {
     }
     
     if (!eventsByModule[moduleKey]) {
-      eventsByModule[moduleKey] = { required: [], optional: [], order: moduleOrder }
+      eventsByModule[moduleKey] = { events: [], order: moduleOrder }
     }
     
-    if (event.is_required) {
-      eventsByModule[moduleKey].required.push(event)
-    } else {
-      eventsByModule[moduleKey].optional.push(event)
-    }
+    eventsByModule[moduleKey].events.push(event)
   })
   
-  // Sort by module order
-  const sortedModules = Object.entries(eventsByModule).sort((a, b) => a[1].order - b[1].order)
+  // Sort by module order, then by date within module
+  const sortedModules = Object.entries(eventsByModule)
+    .sort((a, b) => a[1].order - b[1].order)
+    .map(([name, data]) => ({
+      name,
+      events: data.events.sort((a, b) => 
+        new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+      )
+    }))
 
   const totalUpcoming = upcomingEvents.length
   const totalRegistered = events.filter(e => registrations.has(e.id)).length
@@ -148,21 +141,23 @@ export default function CalendarPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
       {/* Header */}
-      <div className="bg-white/40 backdrop-blur-sm border-b border-rogue-sage/10">
+      <div className="bg-white/60 backdrop-blur-sm border-b border-rogue-sage/20">
         <Container>
-          <div className="py-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="py-8">
+            <div className="flex items-end justify-between flex-wrap gap-4">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-rogue-forest mb-1">Events Calendar</h1>
-                <p className="text-rogue-slate">Cohort calls, workshops, and book clubs</p>
+                <h1 className="text-4xl font-bold text-rogue-forest mb-2">Events</h1>
+                <p className="text-lg text-rogue-slate">Your cohort calendar</p>
               </div>
-              <div className="flex gap-2">
-                <Badge className="bg-orange-100 text-orange-700 border-0 px-3 py-1.5">
-                  {totalUpcoming} Upcoming
-                </Badge>
-                <Badge className="bg-green-100 text-green-700 border-0 px-3 py-1.5">
-                  {totalRegistered} Registered
-                </Badge>
+              <div className="flex gap-3">
+                <div className="px-4 py-2 bg-rogue-cream rounded-lg border border-rogue-sage/20">
+                  <p className="text-xs text-rogue-slate/70 uppercase tracking-wide">Upcoming</p>
+                  <p className="text-2xl font-bold text-rogue-forest">{totalUpcoming}</p>
+                </div>
+                <div className="px-4 py-2 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-xs text-green-700/70 uppercase tracking-wide">Registered</p>
+                  <p className="text-2xl font-bold text-green-700">{totalRegistered}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -170,7 +165,7 @@ export default function CalendarPage() {
       </div>
 
       <Container>
-        <div className="py-8 max-w-5xl mx-auto">
+        <div className="py-12 max-w-4xl">
           {upcomingEvents.length === 0 ? (
             <EmptyState
               icon={<Calendar size={64} />}
@@ -178,360 +173,34 @@ export default function CalendarPage() {
               description="Events and cohort calls will appear here. Stay tuned for upcoming sessions!"
             />
           ) : (
-            <div className="space-y-8">
-              {sortedModules.map(([moduleName, { required, optional }]) => (
-                <div key={moduleName} className="space-y-4">
-                  {/* Module Header */}
-                  <div className="flex items-center gap-3 sticky top-0 bg-gradient-to-r from-rogue-cream to-transparent py-3 z-10">
-                    <CalendarDays className="h-5 w-5 text-rogue-gold" />
-                    <h2 className="text-xl font-bold text-rogue-forest">{moduleName}</h2>
+            <div className="space-y-12">
+              {sortedModules.map(({ name, events: moduleEvents }) => (
+                <div key={name}>
+                  {/* Module Header - Clean */}
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-rogue-forest">{name}</h2>
+                    <div className="h-0.5 w-16 bg-rogue-gold mt-2 rounded-full" />
                   </div>
 
-                  {/* Required Events - Prominent */}
-                  {required.map((event, index) => {
-                    const isRegistered = registrations.has(event.id)
-                    
-                    // Cycle through marketing page colors
-                    const accentColors = [
-                      { border: 'border-emerald-500', bg: 'bg-emerald-500', badge: 'bg-emerald-600' }, // Teal
-                      { border: 'border-blue-500', bg: 'bg-blue-500', badge: 'bg-blue-600' }, // Blue
-                      { border: 'border-purple-500', bg: 'bg-purple-500', badge: 'bg-purple-600' }, // Purple
-                      { border: 'border-orange-500', bg: 'bg-orange-500', badge: 'bg-orange-600' }, // Orange
-                    ]
-                    const colors = accentColors[index % accentColors.length]
-                    
-                    const isExpanded = expandedEventId === event.id
-                    
-                    return (
-                      <Card 
-                        key={event.id} 
-                        className={`border-l-4 ${colors.border} shadow-lg hover:shadow-xl transition-all bg-white cursor-pointer`}
-                        onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
-                      >
-                        <CardContent className="p-5">
-                          <div className="flex items-start gap-4">
-                            {/* Date Block - Clean single date */}
-                            <div className={`flex-shrink-0 text-center p-4 rounded-lg ${colors.bg} text-white min-w-[100px]`}>
-                              <div className="text-xs uppercase font-semibold opacity-90 mb-1">
-                                {formatDate(event.start_time, { month: 'short' }).toUpperCase()}
-                              </div>
-                              <div className="text-4xl font-bold leading-none">
-                                {formatDate(event.start_time, { day: 'numeric' })}
-                              </div>
-                            </div>
+                  {/* Events Timeline */}
+                  <div className="space-y-4">
+                    {moduleEvents.map((event) => {
+                      const isRegistered = registrations.has(event.id)
+                      const isExpanded = expandedEventId === event.id
 
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge className={`${colors.badge} text-white border-0 px-2.5 py-0.5 text-xs`}>
-                                  Required
-                                </Badge>
-                                <Badge className="bg-rogue-forest text-white border-0 px-2.5 py-0.5 text-xs">
-                                  {event.event_type === 'cohort_call' ? 'Cohort Call' : event.event_type}
-                                </Badge>
-                                {isRegistered && (
-                                  <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />
-                                )}
-                              </div>
-
-                              <h3 className="font-bold text-xl text-rogue-forest mb-3">{event.title}</h3>
-
-                              <div className="flex flex-wrap gap-4 mb-3 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <Clock className="h-4 w-4 text-rogue-slate" />
-                                  <span className="text-rogue-slate font-medium">{formatEventTime(event.start_time, event.end_time)}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {event.location_type === 'virtual' ? (
-                                    <><Video className="h-4 w-4 text-blue-600" /><span className="text-rogue-slate">Virtual</span></>
-                                  ) : event.location_type === 'in_person' ? (
-                                    <><Building2 className="h-4 w-4 text-rogue-forest" /><span className="text-rogue-slate">In-Person</span></>
-                                  ) : (
-                                    <><MapPin className="h-4 w-4 text-rogue-gold" /><span className="text-rogue-slate">Hybrid</span></>
-                                  )}
-                                </div>
-                              </div>
-
-                              {event.location_address && (
-                                <div className="flex items-start gap-2 text-sm text-rogue-slate mb-3 bg-rogue-sage/5 p-2 rounded">
-                                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                  <span>{event.location_address}</span>
-                                </div>
-                              )}
-
-                              <div className="flex gap-2 items-center">
-                                <Button
-                                  size="sm"
-                                  variant={isRegistered ? 'outline' : 'default'}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleRegister(event.id)
-                                  }}
-                                  className={!isRegistered ? `${colors.bg} hover:opacity-90` : ''}
-                                >
-                                  {isRegistered ? 'Registered ✓' : 'Register'}
-                                </Button>
-                                {event.zoom_link && isRegistered && (
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    className="text-blue-600 hover:text-blue-700" 
-                                    asChild
-                                    onClick={(e: any) => e.stopPropagation()}
-                                  >
-                                    <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
-                                      <Video className="h-3 w-3 mr-1" />
-                                      Join Zoom
-                                    </a>
-                                  </Button>
-                                )}
-                                <div className="ml-auto">
-                                  {isExpanded ? (
-                                    <ChevronUp className="h-5 w-5 text-rogue-slate" />
-                                  ) : (
-                                    <ChevronDown className="h-5 w-5 text-rogue-slate" />
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Expanded Details */}
-                          <AnimatePresence>
-                            {isExpanded && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                className="overflow-hidden"
-                              >
-                                <div className="pt-4 mt-4 border-t border-rogue-sage/20">
-                                  {event.description && (
-                                    <div className="mb-4">
-                                      <h4 className="font-semibold text-rogue-forest mb-2">About This Event</h4>
-                                      <div 
-                                        className="text-sm text-rogue-slate leading-relaxed space-y-2"
-                                        dangerouslySetInnerHTML={{ __html: formatEventDescription(event.description) }}
-                                      />
-                                    </div>
-                                  )}
-
-                                  {(event as any).presenter_bio && (
-                                    <div className="mb-4">
-                                      <h4 className="font-semibold text-rogue-forest mb-2 flex items-center gap-2">
-                                        <UserCircle className="h-4 w-4" />
-                                        About the Presenter
-                                      </h4>
-                                      <div 
-                                        className="text-sm text-rogue-slate leading-relaxed space-y-2 p-3 bg-rogue-sage/5 rounded-lg"
-                                        dangerouslySetInnerHTML={{ __html: formatEventDescription((event as any).presenter_bio) }}
-                                      />
-                                    </div>
-                                  )}
-
-                                  {((event as any).attendance_count || (event as any).max_capacity) && (
-                                    <div className="mb-4">
-                                      <h4 className="font-semibold text-rogue-forest mb-2">Attendance</h4>
-                                      <div className="flex items-center gap-2 text-sm text-rogue-slate">
-                                        <Users className="h-4 w-4" />
-                                        <span>
-                                          {(event as any).attendance_count || 0} registered
-                                          {(event as any).max_capacity && ` / ${(event as any).max_capacity} capacity`}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {(event as any).meeting_notes && (
-                                    <div className="mb-4">
-                                      <h4 className="font-semibold text-rogue-forest mb-2">Meeting Notes</h4>
-                                      <div className="p-3 bg-rogue-sage/5 rounded-lg text-sm text-rogue-slate">
-                                        {(event as any).meeting_notes}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {event.zoom_link && !isRegistered && (
-                                    <div className="mb-4">
-                                      <h4 className="font-semibold text-rogue-forest mb-2">Join Link</h4>
-                                      <p className="text-sm text-rogue-slate">
-                                        Register for this event to access the Zoom link
-                                      </p>
-                                    </div>
-                                  )}
-
-                                  {(event as any).resources_url && (
-                                    <div>
-                                      <h4 className="font-semibold text-rogue-forest mb-2">Resources</h4>
-                                      <a
-                                        href={(event as any).resources_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-sm text-rogue-forest hover:text-rogue-pine underline inline-flex items-center gap-1"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        View event resources →
-                                      </a>
-                                    </div>
-                                  )}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
-
-                  {/* Optional Events - Indented & Expandable */}
-                  {optional.length > 0 && (
-                    <div className="ml-6 space-y-2">
-                      {optional.map((event) => {
-                        const isRegistered = registrations.has(event.id)
-                        const isExpanded = expandedEventId === event.id
-                        
-                        return (
-                          <Card 
-                            key={event.id} 
-                            className="border-l-2 border-rogue-sage/40 shadow-sm hover:shadow-md transition-all bg-white/80 cursor-pointer"
-                            onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
-                          >
-                            <CardContent className="p-3">
-                              <div className="flex items-center gap-3">
-                                {/* Compact Date */}
-                                <div className="flex-shrink-0 text-center p-2 rounded bg-rogue-sage/10 min-w-[50px]">
-                                  <div className="text-xs font-semibold text-rogue-forest uppercase">
-                                    {formatDate(event.start_time, { month: 'short' })}
-                                  </div>
-                                  <div className="text-lg font-bold text-rogue-forest leading-none">
-                                    {formatDate(event.start_time, { day: 'numeric' })}
-                                  </div>
-                                </div>
-
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="font-semibold text-rogue-forest text-sm">{event.title}</h4>
-                                    {isRegistered && <CheckCircle className="h-3 w-3 text-green-600 flex-shrink-0" />}
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-3 text-xs text-rogue-slate">
-                                    <span className="flex items-center gap-1 font-medium">
-                                      <Clock className="h-3 w-3" />
-                                      {formatEventTime(event.start_time, event.end_time)}
-                                    </span>
-                                    <Badge variant="outline" className="px-1.5 py-0 text-xs h-5">
-                                      {event.event_type === 'workshop' ? 'Workshop' : 
-                                       event.event_type === 'book_club' ? 'Book Club' : 
-                                       event.event_type === 'office_hours' ? 'Office Hours' : event.event_type}
-                                    </Badge>
-                                    {event.location_type === 'virtual' && <Video className="h-3 w-3 text-blue-600" />}
-                                  </div>
-                                </div>
-
-                                <Button
-                                  size="sm"
-                                  variant={isRegistered ? 'ghost' : 'outline'}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleRegister(event.id)
-                                  }}
-                                  className={`flex-shrink-0 h-7 px-3 text-xs ${isRegistered ? 'text-green-700' : ''}`}
-                                >
-                                  {isRegistered ? 'Registered' : 'Register'}
-                                </Button>
-
-                                <div className="flex-shrink-0">
-                                  {isExpanded ? (
-                                    <ChevronUp className="h-4 w-4 text-rogue-slate" />
-                                  ) : (
-                                    <ChevronDown className="h-4 w-4 text-rogue-slate" />
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Expanded Details for Optional Events */}
-                              <AnimatePresence>
-                                {isExpanded && (
-                                  <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: 'auto', opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                    className="overflow-hidden"
-                                  >
-                                    <div className="pt-3 mt-3 border-t border-rogue-sage/20">
-                                      {event.description && (
-                                        <div className="mb-3">
-                                          <h4 className="font-semibold text-rogue-forest text-xs mb-1.5">About This Event</h4>
-                                          <div 
-                                            className="text-xs text-rogue-slate leading-relaxed space-y-1"
-                                            dangerouslySetInnerHTML={{ __html: formatEventDescription(event.description) }}
-                                          />
-                                        </div>
-                                      )}
-
-                                      {(event as any).presenter_bio && (
-                                        <div className="mb-3">
-                                          <h4 className="font-semibold text-rogue-forest text-xs mb-1.5 flex items-center gap-1.5">
-                                            <UserCircle className="h-3 w-3" />
-                                            About the Presenter
-                                          </h4>
-                                          <div 
-                                            className="text-xs text-rogue-slate leading-relaxed space-y-1 p-2 bg-rogue-sage/5 rounded"
-                                            dangerouslySetInnerHTML={{ __html: formatEventDescription((event as any).presenter_bio) }}
-                                          />
-                                        </div>
-                                      )}
-
-                                      {event.location_address && (
-                                        <div className="mb-3">
-                                          <h4 className="font-semibold text-rogue-forest text-xs mb-1.5">Location</h4>
-                                          <div className="flex items-start gap-2 text-xs text-rogue-slate">
-                                            <MapPin className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                                            <span>{event.location_address}</span>
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {event.zoom_link && (
-                                        <div className="mb-3">
-                                          <Button 
-                                            size="sm" 
-                                            variant="outline" 
-                                            className="text-blue-600 hover:text-blue-700 h-7 text-xs" 
-                                            asChild
-                                            onClick={(e: any) => e.stopPropagation()}
-                                          >
-                                            <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
-                                              <Video className="h-3 w-3 mr-1" />
-                                              Join Zoom Meeting
-                                            </a>
-                                          </Button>
-                                        </div>
-                                      )}
-
-                                      {((event as any).attendance_count || (event as any).max_capacity) && (
-                                        <div>
-                                          <h4 className="font-semibold text-rogue-forest text-xs mb-1.5">Attendance</h4>
-                                          <div className="flex items-center gap-2 text-xs text-rogue-slate">
-                                            <Users className="h-3 w-3" />
-                                            <span>
-                                              {(event as any).attendance_count || 0} registered
-                                              {(event as any).max_capacity && ` / ${(event as any).max_capacity} capacity`}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </CardContent>
-                          </Card>
-                        )
-                      })}
-                    </div>
-                  )}
+                      return (
+                        <EventCard
+                          key={event.id}
+                          event={event}
+                          isRegistered={isRegistered}
+                          isExpanded={isExpanded}
+                          onToggleExpand={() => setExpandedEventId(isExpanded ? null : event.id)}
+                          onRegister={() => handleRegister(event.id)}
+                          formatDescription={formatEventDescription}
+                        />
+                      )
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
@@ -542,3 +211,237 @@ export default function CalendarPage() {
   )
 }
 
+interface EventCardProps {
+  event: Event
+  isRegistered: boolean
+  isExpanded: boolean
+  onToggleExpand: () => void
+  onRegister: () => void
+  formatDescription: (desc: string) => string
+}
+
+function EventCard({
+  event,
+  isRegistered,
+  isExpanded,
+  onToggleExpand,
+  onRegister,
+  formatDescription,
+}: EventCardProps) {
+  const eventDate = new Date(event.start_time)
+  const month = formatDate(event.start_time, { month: 'short' }).toUpperCase()
+  const day = formatDate(event.start_time, { day: 'numeric' })
+
+  return (
+    <Card 
+      className="group border-0 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer bg-white"
+      onClick={onToggleExpand}
+    >
+      <CardContent className="p-0">
+        {/* Main Content - Always Visible */}
+        <div className="flex items-start gap-6 p-6">
+          {/* Date Marker - Timeline Style */}
+          <div className="flex-shrink-0 text-center">
+            <div className="w-16">
+              <div className="text-xs font-semibold text-rogue-gold/70 mb-0.5">{month}</div>
+              <div className="text-4xl font-bold text-rogue-forest leading-none">{day}</div>
+              <div className="mt-2 h-0.5 w-full bg-gradient-to-r from-rogue-gold/50 to-transparent rounded-full" />
+            </div>
+          </div>
+
+          {/* Event Info */}
+          <div className="flex-1 min-w-0">
+            {/* Badges */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              {event.is_required && (
+                <Badge className="bg-rogue-forest text-white border-0 text-xs">
+                  Required
+                </Badge>
+              )}
+              <Badge variant="outline" className="text-xs">
+                {event.event_type === 'cohort_call' ? 'Cohort Call' : 
+                 event.event_type === 'workshop' ? 'Workshop' :
+                 event.event_type === 'book_club' ? 'Book Club' : 'Event'}
+              </Badge>
+              {event.location_type === 'virtual' && (
+                <Badge variant="outline" className="text-xs text-blue-600 border-blue-200">
+                  <Video className="h-3 w-3 mr-1" />
+                  Virtual
+                </Badge>
+              )}
+              {event.location_type === 'in_person' && (
+                <Badge variant="outline" className="text-xs text-rogue-forest border-rogue-forest/20">
+                  <Building2 className="h-3 w-3 mr-1" />
+                  In-Person
+                </Badge>
+              )}
+              {event.location_type === 'hybrid' && (
+                <Badge variant="outline" className="text-xs text-purple-600 border-purple-200">
+                  Hybrid
+                </Badge>
+              )}
+              {isRegistered && (
+                <Badge className="bg-green-100 text-green-700 border-0 text-xs ml-auto">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Registered
+                </Badge>
+              )}
+            </div>
+
+            {/* Title */}
+            <h3 className="text-xl font-bold text-rogue-forest mb-2 group-hover:text-rogue-pine transition-colors">
+              {event.title}
+            </h3>
+
+            {/* Time & Location - Compact */}
+            <div className="flex flex-wrap items-center gap-4 text-sm text-rogue-slate mb-4">
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-4 w-4" />
+                <span>{formatEventTime(event.start_time, event.end_time)}</span>
+              </div>
+              {event.location_address && (
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4" />
+                  <span className="truncate max-w-xs">{event.location_address}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRegister()
+                }}
+                variant={isRegistered ? 'outline' : 'default'}
+                className={isRegistered ? '' : 'bg-rogue-forest hover:bg-rogue-pine'}
+              >
+                {isRegistered ? 'Unregister' : 'Register'}
+              </Button>
+
+              {event.zoom_link && isRegistered && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  asChild
+                  onClick={(e: any) => e.stopPropagation()}
+                >
+                  <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
+                    <Video className="h-4 w-4 mr-2" />
+                    Join Zoom
+                  </a>
+                </Button>
+              )}
+
+              <button className="ml-auto text-rogue-slate/60 hover:text-rogue-forest transition-colors">
+                {isExpanded ? (
+                  <ChevronUp className="h-5 w-5" />
+                ) : (
+                  <ChevronDown className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Expanded Details */}
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="px-6 pb-6 border-t border-rogue-sage/10 pt-6 space-y-6">
+                {/* Description */}
+                {event.description && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-rogue-forest uppercase tracking-wide mb-3">
+                      About This Event
+                    </h4>
+                    <div 
+                      className="text-sm text-rogue-slate leading-relaxed prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: formatDescription(event.description) }}
+                    />
+                  </div>
+                )}
+
+                {/* Presenter Bio */}
+                {(event as any).presenter_bio && (
+                  <div className="bg-rogue-sage/5 rounded-xl p-5 border border-rogue-sage/10">
+                    <h4 className="text-sm font-semibold text-rogue-forest uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <UserCircle className="h-4 w-4" />
+                      About the Presenter
+                    </h4>
+                    <div 
+                      className="text-sm text-rogue-slate leading-relaxed prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: formatDescription((event as any).presenter_bio) }}
+                    />
+                  </div>
+                )}
+
+                {/* Additional Details Grid */}
+                <div className="grid sm:grid-cols-2 gap-4 pt-4 border-t border-rogue-sage/10">
+                  {/* Attendance */}
+                  {((event as any).attendance_count || (event as any).max_capacity) && (
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-rogue-sage/10 rounded-lg">
+                        <Users className="h-4 w-4 text-rogue-forest" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-rogue-slate/70 uppercase tracking-wide mb-1">
+                          Attendance
+                        </p>
+                        <p className="text-sm font-semibold text-rogue-forest">
+                          {(event as any).attendance_count || 0} registered
+                          {(event as any).max_capacity && ` / ${(event as any).max_capacity} max`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Meeting Notes */}
+                  {(event as any).meeting_notes && (
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-rogue-sage/10 rounded-lg">
+                        <Calendar className="h-4 w-4 text-rogue-forest" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-rogue-slate/70 uppercase tracking-wide mb-1">
+                          Notes
+                        </p>
+                        <p className="text-sm text-rogue-slate line-clamp-2">
+                          {(event as any).meeting_notes}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Resources Link */}
+                {(event as any).resources_url && (
+                  <div>
+                    <a
+                      href={(event as any).resources_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-sm font-medium text-rogue-forest hover:text-rogue-pine transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      View Event Resources
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </CardContent>
+    </Card>
+  )
+}
