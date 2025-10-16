@@ -125,7 +125,7 @@ export default function DashboardReviewPage() {
   return (
     <Container>
       <PageHeader
-        title="AI Dashboard Review"
+        heading="AI Dashboard Review"
         description="Review and approve AI-generated dashboard content before it goes live"
       />
 

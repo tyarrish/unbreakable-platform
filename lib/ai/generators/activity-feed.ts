@@ -5,7 +5,8 @@ import { formatRelativeTime } from '@/lib/utils/format-date'
 export interface DiscussionPost {
   id: string
   title: string
-  content_html: string
+  content_html?: string
+  content?: string
   author_name: string
   created_at: string
   response_count: number
@@ -38,7 +39,7 @@ export async function curateActivityFeed(
       id: d.id,
       author: d.author_name,
       title: d.title,
-      content: stripHtml(d.content_html),
+      content: stripHtml(d.content_html || d.content || ''),
       created_at: d.created_at,
       responses: d.response_count,
     }))
@@ -80,7 +81,7 @@ Return JSON array of the 4 best items (or fewer if there aren't 4 substantive po
     // Fallback: Return most recent discussions
     return discussions.slice(0, 4).map((d) => ({
       author: d.author_name,
-      preview: stripHtml(d.content_html).substring(0, 80) + '...',
+      preview: stripHtml(d.content_html || d.content || '').substring(0, 80) + '...',
       discussion_id: d.id,
       posted_relative: formatRelativeTime(new Date(d.created_at)),
     }))
@@ -90,7 +91,7 @@ Return JSON array of the 4 best items (or fewer if there aren't 4 substantive po
     // Fallback: Return most recent discussions
     return discussions.slice(0, 4).map((d) => ({
       author: d.author_name,
-      preview: stripHtml(d.content_html).substring(0, 80) + '...',
+      preview: stripHtml(d.content_html || d.content || '').substring(0, 80) + '...',
       discussion_id: d.id,
       posted_relative: formatRelativeTime(new Date(d.created_at)),
     }))

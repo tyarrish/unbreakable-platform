@@ -40,7 +40,7 @@ export default async function DashboardPage() {
   const userMetrics = await getUserActivityMetrics(user.id)
 
   // Fallback content if no AI content is available yet
-  const content = dashboardContent?.content || {
+  const content = (dashboardContent?.content as any) || {
     heroMessage:
       'Week 1: Personal Leadership Foundations. What obstacle are you facing that you\'re ready to name?',
     activityFeed: [],
@@ -54,7 +54,7 @@ export default async function DashboardPage() {
     communityStats: {
       activeUsers: 0,
       totalUsers: 0,
-      engagementLevel: 'medium',
+      engagementLevel: 'medium' as const,
     },
   }
 
@@ -68,12 +68,14 @@ export default async function DashboardPage() {
     .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
 
   // Get hottest discussion topic (most recent with activity)
-  const { data: hottestDiscussion } = await supabase
+  const { data: hottestDiscussionData } = await supabase
     .from('discussion_threads')
     .select('title')
     .order('last_activity_at', { ascending: false })
     .limit(1)
     .maybeSingle()
+
+  const hottestTopic = (hottestDiscussionData as { title: string } | null)?.title
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
@@ -94,7 +96,7 @@ export default async function DashboardPage() {
                 }}
                 liveConversations={{
                   count: discussionCount || 0,
-                  hottestTopic: hottestDiscussion?.title,
+                  hottestTopic: hottestTopic,
                 }}
                 nextEvent={
                   content.upcomingEvents?.[0]

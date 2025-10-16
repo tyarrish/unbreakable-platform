@@ -28,7 +28,7 @@ export async function getAllAchievements(): Promise<Achievement[]> {
     .order('points', { ascending: true })
   
   if (error) throw error
-  return data || []
+  return (data as Achievement[]) || []
 }
 
 export async function getUserAchievements(userId: string): Promise<UserAchievement[]> {
@@ -44,7 +44,7 @@ export async function getUserAchievements(userId: string): Promise<UserAchieveme
     .order('earned_at', { ascending: false })
   
   if (error) throw error
-  return data || []
+  return (data as UserAchievement[]) || []
 }
 
 export async function awardAchievement(userId: string, achievementId: string): Promise<void> {

@@ -30,9 +30,8 @@ export function JourneyContext({ currentModule, totalModules = 8 }: JourneyConte
         {/* Progress Tree Visualization */}
         <div className="mt-4">
           <ProgressTree
-            currentStep={currentModule.orderNumber}
-            totalSteps={totalModules}
-            variant="trailhead"
+            progress={(currentModule.orderNumber / totalModules) * 100}
+            showLabel={false}
           />
         </div>
         

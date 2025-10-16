@@ -59,8 +59,8 @@ export async function GET(request: NextRequest) {
         (s) => new Date(s.snapshot_date) < sevenDaysAgo
       )
 
-      const loginsPastWeek = pastWeekSnapshots.filter((s) => s.logins_count > 0).length
-      const loginsPreviousWeek = previousWeekSnapshots.filter((s) => s.logins_count > 0).length
+      const loginsPastWeek = pastWeekSnapshots.filter((s) => (s.logins_count || 0) > 0).length
+      const loginsPreviousWeek = previousWeekSnapshots.filter((s) => (s.logins_count || 0) > 0).length
       const postsPastWeek = pastWeekSnapshots.reduce((sum, s) => sum + (s.posts_count || 0), 0)
       const postsPreviousWeek = previousWeekSnapshots.reduce(
         (sum, s) => sum + (s.posts_count || 0),

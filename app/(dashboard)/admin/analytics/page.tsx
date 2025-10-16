@@ -70,9 +70,11 @@ export default function AnalyticsPage() {
         .from('discussion_posts')
         .select('*', { count: 'exact', head: true })
 
-      const { count: reflections } = await supabase
-        .from('reflections')
-        .select('*', { count: 'exact', head: true })
+      // TODO: Fix reflections table query after schema update
+      const reflections = 0
+      // const { count: reflections } = await supabase
+      //   .from('reflections')
+      //   .select('*', { count: 'exact', head: true })
 
       setStats({
         userCount: userCount || 0,

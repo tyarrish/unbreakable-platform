@@ -96,7 +96,7 @@ export default function EngagementFlagsPage() {
   return (
     <Container>
       <PageHeader
-        title="Engagement Flags"
+        heading="Engagement Flags"
         description="Monitor user engagement patterns and take action where needed"
       />
 
