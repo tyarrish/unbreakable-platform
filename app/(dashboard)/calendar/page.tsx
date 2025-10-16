@@ -286,9 +286,10 @@ export default function CalendarPage() {
                                   {event.description && (
                                     <div className="mb-4">
                                       <h4 className="font-semibold text-rogue-forest mb-2">About This Event</h4>
-                                      <p className="text-sm text-rogue-slate leading-relaxed whitespace-pre-line">
-                                        {event.description}
-                                      </p>
+                                      <div 
+                                        className="text-sm text-rogue-slate leading-relaxed prose prose-sm max-w-none"
+                                        dangerouslySetInnerHTML={{ __html: event.description }}
+                                      />
                                     </div>
                                   )}
 
@@ -314,6 +315,15 @@ export default function CalendarPage() {
                                     </div>
                                   )}
 
+                                  {event.zoom_link && !isRegistered && (
+                                    <div className="mb-4">
+                                      <h4 className="font-semibold text-rogue-forest mb-2">Join Link</h4>
+                                      <p className="text-sm text-rogue-slate">
+                                        Register for this event to access the Zoom link
+                                      </p>
+                                    </div>
+                                  )}
+
                                   {(event as any).resources_url && (
                                     <div>
                                       <h4 className="font-semibold text-rogue-forest mb-2">Resources</h4>
@@ -321,7 +331,7 @@ export default function CalendarPage() {
                                         href={(event as any).resources_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-sm text-rogue-forest hover:text-rogue-pine underline"
+                                        className="text-sm text-rogue-forest hover:text-rogue-pine underline inline-flex items-center gap-1"
                                         onClick={(e) => e.stopPropagation()}
                                       >
                                         View event resources →
@@ -337,16 +347,18 @@ export default function CalendarPage() {
                     )
                   })}
 
-                  {/* Optional Events - Indented & Compact */}
+                  {/* Optional Events - Indented & Expandable */}
                   {optional.length > 0 && (
                     <div className="ml-6 space-y-2">
                       {optional.map((event) => {
                         const isRegistered = registrations.has(event.id)
+                        const isExpanded = expandedEventId === event.id
                         
                         return (
                           <Card 
                             key={event.id} 
-                            className="border-l-2 border-rogue-sage/40 shadow-sm hover:shadow-md transition-all bg-white/80"
+                            className="border-l-2 border-rogue-sage/40 shadow-sm hover:shadow-md transition-all bg-white/80 cursor-pointer"
+                            onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
                           >
                             <CardContent className="p-3">
                               <div className="flex items-center gap-3">
@@ -383,12 +395,88 @@ export default function CalendarPage() {
                                 <Button
                                   size="sm"
                                   variant={isRegistered ? 'ghost' : 'outline'}
-                                  onClick={() => handleRegister(event.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleRegister(event.id)
+                                  }}
                                   className={`flex-shrink-0 h-7 px-3 text-xs ${isRegistered ? 'text-green-700' : ''}`}
                                 >
                                   {isRegistered ? 'Registered' : 'Register'}
                                 </Button>
+
+                                <div className="flex-shrink-0">
+                                  {isExpanded ? (
+                                    <ChevronUp className="h-4 w-4 text-rogue-slate" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4 text-rogue-slate" />
+                                  )}
+                                </div>
                               </div>
+
+                              {/* Expanded Details for Optional Events */}
+                              <AnimatePresence>
+                                {isExpanded && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                    className="overflow-hidden"
+                                  >
+                                    <div className="pt-3 mt-3 border-t border-rogue-sage/20">
+                                      {event.description && (
+                                        <div className="mb-3">
+                                          <h4 className="font-semibold text-rogue-forest text-xs mb-1.5">About This Event</h4>
+                                          <div 
+                                            className="text-xs text-rogue-slate leading-relaxed prose prose-sm max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: event.description }}
+                                          />
+                                        </div>
+                                      )}
+
+                                      {event.location_address && (
+                                        <div className="mb-3">
+                                          <h4 className="font-semibold text-rogue-forest text-xs mb-1.5">Location</h4>
+                                          <div className="flex items-start gap-2 text-xs text-rogue-slate">
+                                            <MapPin className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                                            <span>{event.location_address}</span>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {event.zoom_link && (
+                                        <div className="mb-3">
+                                          <Button 
+                                            size="sm" 
+                                            variant="outline" 
+                                            className="text-blue-600 hover:text-blue-700 h-7 text-xs" 
+                                            asChild
+                                            onClick={(e: any) => e.stopPropagation()}
+                                          >
+                                            <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
+                                              <Video className="h-3 w-3 mr-1" />
+                                              Join Zoom Meeting
+                                            </a>
+                                          </Button>
+                                        </div>
+                                      )}
+
+                                      {((event as any).attendance_count || (event as any).max_capacity) && (
+                                        <div>
+                                          <h4 className="font-semibold text-rogue-forest text-xs mb-1.5">Attendance</h4>
+                                          <div className="flex items-center gap-2 text-xs text-rogue-slate">
+                                            <Users className="h-3 w-3" />
+                                            <span>
+                                              {(event as any).attendance_count || 0} registered
+                                              {(event as any).max_capacity && ` / ${(event as any).max_capacity} capacity`}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
                             </CardContent>
                           </Card>
                         )
