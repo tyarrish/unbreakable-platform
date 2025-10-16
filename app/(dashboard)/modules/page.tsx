@@ -4,38 +4,25 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/components/layout/container'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
-import { ProgressTree } from '@/components/ui/progress-tree'
-import { TreePine, CheckCircle2, Lock, Sparkles, ArrowRight, BookOpen, TrendingUp } from 'lucide-react'
+import { TreePine, Lock, ArrowRight, Circle } from 'lucide-react'
 import { getModules } from '@/lib/supabase/queries/modules'
 import { formatDate, isFuture, isPast } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
+import { motion } from 'framer-motion'
+import { getMonthColor } from '@/lib/utils/month-colors'
 import type { Module } from '@/types/index.types'
 
 export default function ModulesPage() {
   const [modules, setModules] = useState<Module[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [currentModuleId, setCurrentModuleId] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
-
-  // Color scheme from marketing page for each month
-  const getModuleColors = (orderNumber: number) => {
-    const colors = [
-      { bg: 'from-emerald-500/20', border: 'border-emerald-500', badge: 'from-emerald-600 to-emerald-700' }, // Month 1 - Teal
-      { bg: 'from-blue-500/20', border: 'border-blue-500', badge: 'from-blue-600 to-blue-700' }, // Month 2 - Blue
-      { bg: 'from-purple-500/20', border: 'border-purple-500', badge: 'from-purple-600 to-purple-700' }, // Month 3 - Purple
-      { bg: 'from-orange-500/20', border: 'border-orange-500', badge: 'from-orange-600 to-orange-700' }, // Month 4 - Orange
-      { bg: 'from-emerald-500/20', border: 'border-emerald-500', badge: 'from-emerald-600 to-emerald-700' }, // Month 5 - Teal
-      { bg: 'from-blue-500/20', border: 'border-blue-500', badge: 'from-blue-600 to-blue-700' }, // Month 6 - Blue
-      { bg: 'from-purple-500/20', border: 'border-purple-500', badge: 'from-purple-600 to-purple-700' }, // Month 7 - Purple
-      { bg: 'from-orange-500/20', border: 'border-orange-500', badge: 'from-orange-600 to-orange-700' }, // Month 8 - Orange
-    ]
-    return colors[(orderNumber - 1) % colors.length]
-  }
 
   useEffect(() => {
     loadModules()
@@ -43,8 +30,14 @@ export default function ModulesPage() {
 
   async function loadModules() {
     try {
-      const data = await getModules(true) // Show all modules (including future/locked)
+      const data = await getModules(true)
       setModules(data)
+      
+      // Determine current module (first unlocked, or first if none unlocked)
+      const unlocked = data.filter(m => !m.release_date || isPast(m.release_date))
+      if (unlocked.length > 0) {
+        setCurrentModuleId(unlocked[0].id)
+      }
     } catch (error) {
       console.error('Error loading modules:', error)
       toast.error('Failed to load modules')
@@ -64,36 +57,36 @@ export default function ModulesPage() {
           <EmptyState
             icon={<TreePine size={64} />}
             title="Modules Coming Soon"
-            description="Your learning modules will appear here once they are released. Check back soon!"
+            description="Your learning modules will appear here once they are released."
           />
         </Container>
       </div>
     )
   }
 
-  const unlockedModules = modules.filter(m => !m.release_date || isPast(m.release_date))
-  const lockedModules = modules.filter(m => m.release_date && isFuture(m.release_date))
+  const availableModules = modules.filter(m => !m.release_date || isPast(m.release_date))
+  const upcomingModules = modules.filter(m => m.release_date && isFuture(m.release_date))
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
-      {/* Subtle header background */}
-      <div className="bg-white/40 backdrop-blur-sm border-b border-rogue-sage/10">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-white/80 via-white/60 to-transparent backdrop-blur-sm border-b border-rogue-sage/20">
         <Container>
-          <div className="py-8">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="py-10">
+            <div className="flex items-end justify-between flex-wrap gap-6">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-rogue-forest mb-2">Learning Modules</h1>
-                <p className="text-lg text-rogue-slate">
-                  Your 8-month structured leadership curriculum
-                </p>
+                <h1 className="text-5xl font-bold text-rogue-forest mb-3 tracking-tight">The Work</h1>
+                <p className="text-lg text-rogue-slate/80">Eight months of practice</p>
               </div>
-              <div className="flex items-center gap-3">
-                <Badge className="bg-rogue-forest/10 text-rogue-forest border-0 text-sm px-4 py-2">
-                  {modules.length} Total Modules
-                </Badge>
-                <Badge className="bg-rogue-gold text-white border-0 text-sm px-4 py-2">
-                  {unlockedModules.length} Available
-                </Badge>
+              <div className="flex gap-4">
+                <div className="px-5 py-3 bg-white rounded-xl border border-rogue-sage/20 shadow-sm">
+                  <p className="text-xs text-rogue-slate/60 uppercase tracking-wider mb-1">Available</p>
+                  <p className="text-3xl font-bold text-rogue-forest">{availableModules.length}</p>
+                </div>
+                <div className="px-5 py-3 bg-rogue-cream rounded-xl border border-rogue-sage/20 shadow-sm">
+                  <p className="text-xs text-rogue-slate/60 uppercase tracking-wider mb-1">Coming</p>
+                  <p className="text-3xl font-bold text-rogue-slate/70">{upcomingModules.length}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -101,175 +94,135 @@ export default function ModulesPage() {
       </div>
 
       <Container>
-        <div className="py-8">
+        <div className="py-16 max-w-5xl">
+          {/* Available Modules */}
+          {availableModules.length > 0 && (
+            <div className="mb-16">
+              {availableModules.map((module, index) => {
+                const monthColor = getMonthColor(module.order_number)
+                const isCurrent = module.id === currentModuleId
 
-          {/* Overall Progress Card */}
-          <Card className="mb-8 shadow-xl border-0 bg-white">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl">Your Learning Progress</CardTitle>
-                  <CardDescription className="text-base mt-1">
-                    Track your journey through the 8-month curriculum
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-rogue-forest/5 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-rogue-forest" />
-                  <span className="text-2xl font-bold text-rogue-forest">0%</span>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ProgressTree progress={0} />
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <div className="text-center p-3 bg-rogue-sage/5 rounded-lg">
-                  <div className="text-2xl font-bold text-rogue-forest">0</div>
-                  <div className="text-xs text-rogue-slate mt-1">Lessons Completed</div>
-                </div>
-                <div className="text-center p-3 bg-rogue-gold/5 rounded-lg">
-                  <div className="text-2xl font-bold text-rogue-forest">0h</div>
-                  <div className="text-xs text-rogue-slate mt-1">Time Invested</div>
-                </div>
-                <div className="text-center p-3 bg-rogue-copper/5 rounded-lg">
-                  <div className="text-2xl font-bold text-rogue-forest">0</div>
-                  <div className="text-xs text-rogue-slate mt-1">Reflections</div>
-                </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-700">0/8</div>
-                  <div className="text-xs text-green-600 mt-1">Modules Done</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Available Modules Section */}
-          {unlockedModules.length > 0 && (
-            <div className="mb-12">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-1 w-12 bg-gradient-to-r from-rogue-forest to-rogue-gold rounded-full"></div>
-                <h2 className="text-2xl font-bold text-rogue-forest">Available Modules</h2>
-              </div>
-              
-              <div className="grid lg:grid-cols-2 gap-6">
-                {unlockedModules.map((module) => {
-                  const colors = getModuleColors(module.order_number)
-                  return (
+                return (
+                  <motion.div
+                    key={module.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="mb-8"
+                  >
                     <Card
-                      key={module.id}
-                      className={`group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-l-4 ${colors.border} bg-gradient-to-br from-white to-rogue-sage/5`}
+                      className={`group cursor-pointer border-0 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden bg-gradient-to-br from-white via-white ${monthColor.lightBg}`}
                       onClick={() => router.push(`/modules/${module.id}`)}
                     >
-                      {/* Decorative gradient overlay with module color */}
-                      <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl ${colors.bg} via-transparent to-transparent rounded-bl-[100px]`}></div>
-                      
-                      {/* Module number badge with dynamic color */}
-                      <div className={`absolute top-6 right-6 w-16 h-16 bg-gradient-to-br ${colors.badge} rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-                        <span className="text-2xl font-bold text-white">{module.order_number}</span>
-                      </div>
+                      {/* Top Color Accent */}
+                      <div className={`h-2 ${monthColor.bg}`} />
 
-                      <CardHeader className="pb-4 relative z-10">
-                        <div className="space-y-4">
-                          <Badge className="bg-rogue-forest text-white border-0 shadow-sm">
-                            Module {module.order_number}
-                          </Badge>
-                          
-                          <CardTitle className="text-2xl md:text-3xl leading-tight group-hover:text-rogue-forest transition-colors pr-20">
-                            {module.title}
-                          </CardTitle>
-                        </div>
-                      </CardHeader>
+                      <CardContent className="p-8">
+                        <div className="flex items-start justify-between gap-6 mb-6">
+                          <div className="flex-1">
+                            {/* Module Number Badge */}
+                            <div className="flex items-center gap-3 mb-4">
+                              <Badge className={`${monthColor.badge} text-base font-semibold px-4 py-1.5 shadow-md`}>
+                                Month {module.order_number}
+                              </Badge>
+                              {isCurrent && (
+                                <Badge className="bg-rogue-cream text-rogue-forest border border-rogue-gold/30">
+                                  <Circle className="h-2 w-2 mr-1.5 fill-rogue-gold text-rogue-gold" />
+                                  Current Focus
+                                </Badge>
+                              )}
+                            </div>
 
-                    <CardContent className="space-y-6 relative z-10">
-                      {/* Progress bar */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-rogue-slate font-medium">Module Progress</span>
-                          <span className="text-lg font-bold text-rogue-forest">0%</span>
-                        </div>
-                        <div className="h-3 bg-rogue-sage/20 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-rogue-forest to-rogue-gold rounded-full transition-all duration-500"
-                            style={{ width: '0%' }}
-                          />
-                        </div>
-                      </div>
+                            {/* Title */}
+                            <h3 className={`text-3xl font-bold ${monthColor.text} mb-4 leading-tight group-hover:opacity-80 transition-opacity`}>
+                              {module.title}
+                            </h3>
 
-                      {/* Module stats */}
-                      <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-2 text-rogue-slate">
-                          <BookOpen size={16} className="text-rogue-forest" />
-                          <span>8 lessons</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-rogue-slate">
-                          <CheckCircle2 size={16} className="text-green-600" />
-                          <span>0 completed</span>
-                        </div>
-                      </div>
+                            {/* Description */}
+                            {module.description && (
+                              <p className="text-base text-rogue-slate/80 leading-relaxed mb-6 max-w-2xl">
+                                {module.description}
+                              </p>
+                            )}
 
-                      {/* CTA Button */}
-                      <Button 
-                        size="lg"
-                        className="w-full bg-gradient-to-r from-rogue-forest to-rogue-pine hover:from-rogue-pine hover:to-rogue-forest text-white shadow-lg group-hover:shadow-xl transition-all"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/modules/${module.id}`)
-                        }}
-                      >
-                        <Sparkles className="mr-2 h-5 w-5" />
-                        Start Learning
-                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                  )
-                })}
-              </div>
+                            {/* Action Button */}
+                            <Button
+                              size="lg"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                router.push(`/modules/${module.id}`)
+                              }}
+                              className={`${monthColor.bg} hover:opacity-90 text-white shadow-md`}
+                            >
+                              {isCurrent ? 'Continue' : 'Explore Module'}
+                              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                            </Button>
+                          </div>
+
+                          {/* Large Month Number */}
+                          <div className={`hidden md:block flex-shrink-0 w-32 h-32 rounded-2xl ${monthColor.lightBg} border-2 ${monthColor.border} border-opacity-20 flex items-center justify-center group-hover:scale-105 transition-transform`}>
+                            <span className={`text-7xl font-bold ${monthColor.text} opacity-40`}>
+                              {module.order_number}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              })}
             </div>
           )}
 
-          {/* Locked Modules Section */}
-          {lockedModules.length > 0 && (
+          {/* Upcoming Modules */}
+          {upcomingModules.length > 0 && (
             <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-1 w-12 bg-rogue-slate/30 rounded-full"></div>
-                <h2 className="text-2xl font-bold text-rogue-slate">Coming Soon</h2>
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-rogue-slate/70 mb-2">Coming Soon</h2>
+                <div className="h-0.5 w-16 bg-rogue-slate/30" />
               </div>
-              
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {lockedModules.map((module) => (
-                  <Card
-                    key={module.id}
-                    className="relative overflow-hidden border-dashed border-2 border-rogue-slate/20 bg-rogue-slate/5"
-                  >
-                    {/* Lock icon overlay */}
-                    <div className="absolute top-4 right-4 p-3 bg-rogue-slate/10 rounded-full">
-                      <Lock className="h-6 w-6 text-rogue-slate/50" />
-                    </div>
 
-                    <CardHeader>
-                      <Badge variant="secondary" className="w-fit mb-2">
-                        Module {module.order_number}
-                      </Badge>
-                      <CardTitle className="text-xl text-rogue-slate/70">
-                        {module.title}
-                      </CardTitle>
-                    </CardHeader>
+              <div className="grid md:grid-cols-2 gap-6">
+                {upcomingModules.map((module, index) => {
+                  const monthColor = getMonthColor(module.order_number)
 
-                    <CardContent>
-                      <div className="bg-white border border-rogue-slate/20 rounded-lg p-4 text-center">
-                        <Lock className="inline mb-2 h-5 w-5 text-rogue-slate" />
-                        <p className="text-sm font-medium text-rogue-slate mb-1">
-                          Unlocks Soon
-                        </p>
-                        {module.release_date && (
-                          <p className="text-xs text-rogue-slate/70">
-                            {formatDate(module.release_date)}
-                          </p>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                  return (
+                    <motion.div
+                      key={module.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.05 }}
+                    >
+                      <Card className="border-dashed border-2 border-rogue-sage/30 bg-white/50 backdrop-blur-sm">
+                        <CardHeader>
+                          <div className="flex items-start justify-between gap-4 mb-3">
+                            <Badge variant="outline" className={`${monthColor.text} border-current`}>
+                              Month {module.order_number}
+                            </Badge>
+                            <div className="p-2 bg-rogue-sage/10 rounded-lg">
+                              <Lock className="h-4 w-4 text-rogue-slate/50" />
+                            </div>
+                          </div>
+                          <CardTitle className="text-xl text-rogue-slate/70 leading-tight">
+                            {module.title}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {module.release_date && (
+                            <div className="text-center py-3 px-4 bg-rogue-cream/50 rounded-lg border border-rogue-sage/20">
+                              <p className="text-xs text-rogue-slate/60 uppercase tracking-wide mb-1">
+                                Unlocks
+                              </p>
+                              <p className="text-sm font-semibold text-rogue-forest">
+                                {formatDate(module.release_date, { month: 'long', day: 'numeric', year: 'numeric' })}
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )
+                })}
               </div>
             </div>
           )}
