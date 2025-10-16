@@ -150,7 +150,7 @@ export async function getUserActivityMetrics(userId: string) {
     }
   }
 
-  const daysActive = snapshots.filter((s) => s.logins_count > 0).length
+  const daysActive = snapshots.filter((s) => (s.logins_count || 0) > 0).length
   const posts = snapshots.reduce((sum, s) => sum + (s.posts_count || 0), 0)
   const responses = snapshots.reduce((sum, s) => sum + (s.responses_count || 0), 0)
   const modulesCompleted = Math.max(...snapshots.map((s) => s.modules_completed || 0))
