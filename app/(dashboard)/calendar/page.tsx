@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Calendar, Clock, MapPin, Users, Video, Building2, CheckCircle, Sparkles, CalendarDays, ChevronDown, ChevronUp } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Video, Building2, CheckCircle, Sparkles, CalendarDays, ChevronDown, ChevronUp, UserCircle } from 'lucide-react'
 import { getEvents, registerForEvent, unregisterFromEvent, isRegisteredForEvent } from '@/lib/supabase/queries/events'
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
@@ -316,6 +316,19 @@ export default function CalendarPage() {
                                     </div>
                                   )}
 
+                                  {(event as any).presenter_bio && (
+                                    <div className="mb-4">
+                                      <h4 className="font-semibold text-rogue-forest mb-2 flex items-center gap-2">
+                                        <UserCircle className="h-4 w-4" />
+                                        About the Presenter
+                                      </h4>
+                                      <div 
+                                        className="text-sm text-rogue-slate leading-relaxed space-y-2 p-3 bg-rogue-sage/5 rounded-lg"
+                                        dangerouslySetInnerHTML={{ __html: formatEventDescription((event as any).presenter_bio) }}
+                                      />
+                                    </div>
+                                  )}
+
                                   {((event as any).attendance_count || (event as any).max_capacity) && (
                                     <div className="mb-4">
                                       <h4 className="font-semibold text-rogue-forest mb-2">Attendance</h4>
@@ -453,6 +466,19 @@ export default function CalendarPage() {
                                           <div 
                                             className="text-xs text-rogue-slate leading-relaxed space-y-1"
                                             dangerouslySetInnerHTML={{ __html: formatEventDescription(event.description) }}
+                                          />
+                                        </div>
+                                      )}
+
+                                      {(event as any).presenter_bio && (
+                                        <div className="mb-3">
+                                          <h4 className="font-semibold text-rogue-forest text-xs mb-1.5 flex items-center gap-1.5">
+                                            <UserCircle className="h-3 w-3" />
+                                            About the Presenter
+                                          </h4>
+                                          <div 
+                                            className="text-xs text-rogue-slate leading-relaxed space-y-1 p-2 bg-rogue-sage/5 rounded"
+                                            dangerouslySetInnerHTML={{ __html: formatEventDescription((event as any).presenter_bio) }}
                                           />
                                         </div>
                                       )}

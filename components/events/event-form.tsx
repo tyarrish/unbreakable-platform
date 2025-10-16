@@ -9,11 +9,12 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
+import { RichTextEditor } from '@/components/discussions/rich-text-editor'
 import { createEvent, updateEvent } from '@/lib/supabase/queries/events'
 import { getModules } from '@/lib/supabase/queries/modules'
 import { EVENT_TYPES, LOCATION_TYPES } from '@/lib/constants'
 import { toast } from 'sonner'
-import { Calendar, Clock, MapPin, Users, Video, Building2 } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Video, Building2, UserCircle } from 'lucide-react'
 import type { Event, Module } from '@/types/index.types'
 
 interface EventFormProps {
@@ -31,6 +32,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
   const [formData, setFormData] = useState({
     title: event?.title || '',
     description: event?.description || '',
+    presenter_bio: (event as any)?.presenter_bio || '',
     event_type: event?.event_type || 'cohort_call',
     start_time: event?.start_time ? new Date(event.start_time).toISOString().slice(0, 16) : '',
     end_time: event?.end_time ? new Date(event.end_time).toISOString().slice(0, 16) : '',
@@ -100,6 +102,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       const eventData = {
         title: formData.title,
         description: formData.description || undefined,
+        presenter_bio: formData.presenter_bio || undefined,
         event_type: formData.event_type,
         start_time: new Date(formData.start_time).toISOString(),
         end_time: new Date(formData.end_time).toISOString(),
@@ -111,7 +114,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
         module_id: formData.module_id || undefined,
         max_attendees: formData.max_attendees ? parseInt(formData.max_attendees) : undefined,
         created_by: user.id,
-      }
+      } as any
 
       if (event?.id) {
         // Update existing event
@@ -165,13 +168,33 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                placeholder="What will be covered in this event?"
-                rows={4}
-              />
+              <div className="border border-rogue-sage/20 rounded-lg overflow-hidden">
+                <RichTextEditor
+                  content={formData.description}
+                  onChange={(html) => handleChange('description', html)}
+                  placeholder="What will be covered in this event? Use formatting for better readability..."
+                />
+              </div>
+              <p className="text-xs text-rogue-slate/70">
+                Use the toolbar to format text with bold, lists, headings, etc.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="presenter_bio" className="flex items-center gap-2">
+                <UserCircle size={16} />
+                Presenter Bio (Optional)
+              </Label>
+              <div className="border border-rogue-sage/20 rounded-lg overflow-hidden">
+                <RichTextEditor
+                  content={formData.presenter_bio}
+                  onChange={(html) => handleChange('presenter_bio', html)}
+                  placeholder="Add presenter background, credentials, or relevant experience..."
+                />
+              </div>
+              <p className="text-xs text-rogue-slate/70">
+                Information about the facilitator or guest presenter for this event
+              </p>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
