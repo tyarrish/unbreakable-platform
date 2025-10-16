@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/layout/sidebar'
 import { NotificationCenter } from '@/components/layout/notification-center'
 import { GlobalSearch } from '@/components/search/global-search'
 import { PageLoader } from '@/components/ui/loading-spinner'
+import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types/index.types'
 
 interface UserProfile {
@@ -21,8 +22,26 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  // Listen for sidebar toggle events
+  useEffect(() => {
+    // Check initial state
+    const saved = localStorage.getItem('sidebar-collapsed')
+    if (saved === 'true') {
+      setSidebarCollapsed(true)
+    }
+
+    // Listen for changes
+    const handleSidebarToggle = (e: any) => {
+      setSidebarCollapsed(e.detail.isCollapsed)
+    }
+    
+    window.addEventListener('sidebar-toggle', handleSidebarToggle)
+    return () => window.removeEventListener('sidebar-toggle', handleSidebarToggle)
+  }, [])
 
   useEffect(() => {
     async function checkUser() {
@@ -106,7 +125,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen">
       <Sidebar userRole={userRole} userProfile={userProfile} />
-      <div className="md:ml-64 min-h-screen bg-rogue-cream">
+      <div className={cn(
+        'min-h-screen bg-rogue-cream transition-all duration-300',
+        sidebarCollapsed ? 'md:ml-20' : 'md:ml-64'
+      )}>
         {/* Header with Search and Notifications */}
         <header className="sticky top-0 z-30 bg-white border-b border-rogue-sage/20 px-6 py-3 flex items-center justify-between gap-4">
           <GlobalSearch />

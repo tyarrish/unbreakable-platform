@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -27,7 +27,9 @@ import {
   X,
   LogOut,
   UserCog,
-  MoreVertical
+  MoreVertical,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import { signOut } from '@/app/actions/auth'
 import { toast } from 'sonner'
@@ -69,7 +71,25 @@ const adminNavItems = [
 
 export function Sidebar({ userRole, userProfile }: SidebarProps) {
   const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false) // Mobile menu
+  const [isCollapsed, setIsCollapsed] = useState(false) // Desktop collapse
+  
+  // Load collapsed state from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('sidebar-collapsed')
+    if (saved === 'true') {
+      setIsCollapsed(true)
+    }
+  }, [])
+
+  // Save collapsed state to localStorage and dispatch event
+  const toggleCollapse = () => {
+    const newState = !isCollapsed
+    setIsCollapsed(newState)
+    localStorage.setItem('sidebar-collapsed', String(newState))
+    // Dispatch custom event so other components can react
+    window.dispatchEvent(new CustomEvent('sidebar-toggle', { detail: { isCollapsed: newState } }))
+  }
   
   const navItems = userRole === 'admin'
     ? adminNavItems
@@ -120,20 +140,41 @@ export function Sidebar({ userRole, userProfile }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-rogue-forest to-rogue-pine border-r border-rogue-gold/20 z-40 transition-transform duration-200 flex flex-col shadow-2xl',
-          isOpen ? 'translate-x-0' : '-translate-x-full',
-          'md:translate-x-0'
+          'fixed left-0 top-0 h-full bg-gradient-to-b from-rogue-forest to-rogue-pine border-r border-rogue-gold/20 z-40 flex flex-col shadow-2xl transition-all duration-300',
+          // Mobile behavior
+          isOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64',
+          // Desktop behavior
+          'md:translate-x-0',
+          isCollapsed ? 'md:w-20' : 'md:w-64'
         )}
       >
+        {/* Toggle Button (Desktop only) */}
+        <button
+          onClick={toggleCollapse}
+          className="hidden md:block absolute -right-3 top-8 z-50 bg-white border border-rogue-sage/20 rounded-full p-1.5 shadow-lg hover:bg-rogue-cream transition-colors"
+        >
+          {isCollapsed ? (
+            <ChevronRight className="h-4 w-4 text-rogue-forest" />
+          ) : (
+            <ChevronLeft className="h-4 w-4 text-rogue-forest" />
+          )}
+        </button>
+
         {/* Logo */}
-        <div className="p-8 border-b border-white/10">
+        <div className={cn(
+          'border-b border-white/10 transition-all duration-300',
+          isCollapsed ? 'p-4' : 'p-8'
+        )}>
           <Link href="/dashboard" className="flex justify-center group">
             <div className="relative">
               <div className="absolute inset-0 bg-rogue-gold/30 blur-2xl rounded-full"></div>
               <img 
                 src="/RLTE-logo.png" 
                 alt="Rogue Leadership Training Experience" 
-                className="h-40 w-auto relative z-10 group-hover:scale-105 transition-transform duration-300"
+                className={cn(
+                  'w-auto relative z-10 group-hover:scale-105 transition-all duration-300',
+                  isCollapsed ? 'h-12' : 'h-40'
+                )}
               />
             </div>
           </Link>
@@ -151,14 +192,28 @@ export function Sidebar({ userRole, userProfile }: SidebarProps) {
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
+                  'flex items-center rounded-lg transition-all duration-200 group relative',
+                  isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3',
                   isActive
                     ? 'bg-rogue-gold text-white shadow-lg shadow-rogue-gold/20'
                     : 'text-white/80 hover:bg-white/10 hover:text-white'
                 )}
+                title={isCollapsed ? item.label : undefined}
               >
-                <Icon size={20} />
-                <span className="font-medium">{item.label}</span>
+                <Icon size={20} className="flex-shrink-0" />
+                <span className={cn(
+                  'font-medium transition-all duration-200',
+                  isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+                )}>
+                  {item.label}
+                </span>
+                
+                {/* Tooltip on hover when collapsed */}
+                {isCollapsed && (
+                  <div className="absolute left-full ml-2 px-3 py-1.5 bg-rogue-forest border border-rogue-gold/30 rounded-lg text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
+                    {item.label}
+                  </div>
+                )}
               </Link>
             )
           })}
@@ -166,32 +221,40 @@ export function Sidebar({ userRole, userProfile }: SidebarProps) {
 
         {/* User Area Footer */}
         <div className="p-4 border-t border-white/10">
-          <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 backdrop-blur-sm">
-            <Avatar className="h-10 w-10 border-2 border-rogue-gold/30">
-              <AvatarImage src={userProfile.avatar_url} alt={userProfile.full_name} />
-              <AvatarFallback className="bg-rogue-gold text-white font-semibold">
-                {getInitials(userProfile.full_name)}
-              </AvatarFallback>
-            </Avatar>
-            
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
-                {userProfile.full_name}
-              </p>
-              <p className="text-xs text-white/60 truncate">
-                {userProfile.email}
-              </p>
-            </div>
-
+          <div className={cn(
+            'flex items-center rounded-lg bg-white/5 backdrop-blur-sm transition-all duration-300',
+            isCollapsed ? 'justify-center px-2 py-2' : 'gap-3 px-3 py-2'
+          )}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="flex-shrink-0 h-8 w-8 text-white/80 hover:text-white hover:bg-white/10"
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
+                <button className="flex items-center gap-3 w-full text-left focus:outline-none group">
+                  <Avatar className={cn(
+                    'border-2 border-rogue-gold/30 flex-shrink-0 transition-all',
+                    isCollapsed ? 'h-9 w-9' : 'h-10 w-10'
+                  )}>
+                    <AvatarImage src={userProfile.avatar_url} alt={userProfile.full_name} />
+                    <AvatarFallback className="bg-rogue-gold text-white font-semibold">
+                      {getInitials(userProfile.full_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className={cn(
+                    'flex-1 min-w-0 transition-all duration-200',
+                    isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+                  )}>
+                    <p className="text-sm font-semibold text-white truncate">
+                      {userProfile.full_name}
+                    </p>
+                    <p className="text-xs text-white/60 truncate">
+                      {userProfile.email}
+                    </p>
+                  </div>
+
+                  <MoreVertical className={cn(
+                    'h-4 w-4 text-white/80 group-hover:text-white flex-shrink-0 transition-all duration-200',
+                    isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+                  )} />
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
