@@ -30,7 +30,7 @@ export function PracticeGrid({
   return (
     <div className="grid md:grid-cols-2 gap-6 mb-8">
       {/* Current Focus */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-rogue-forest/5 hover:shadow-xl transition-shadow">
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-rogue-forest/5 hover:shadow-2xl transition-all hover:scale-[1.02] duration-300">
         <CardContent className="p-6">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-rogue-forest/10 rounded-lg">
@@ -56,7 +56,7 @@ export function PracticeGrid({
       </Card>
 
       {/* Live Conversations */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-rogue-copper/5 hover:shadow-xl transition-shadow">
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-rogue-copper/5 hover:shadow-2xl transition-all hover:scale-[1.02] duration-300">
         <CardContent className="p-6">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-rogue-copper/10 rounded-lg">
@@ -81,7 +81,7 @@ export function PracticeGrid({
       </Card>
 
       {/* Next Gathering */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-rogue-gold/5 hover:shadow-xl transition-shadow">
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-rogue-gold/5 hover:shadow-2xl transition-all hover:scale-[1.02] duration-300">
         <CardContent className="p-6">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-rogue-gold/10 rounded-lg">
@@ -110,7 +110,7 @@ export function PracticeGrid({
       </Card>
 
       {/* Your Rhythm */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-rogue-sage/5 hover:shadow-xl transition-shadow">
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-rogue-sage/5 hover:shadow-2xl transition-all hover:scale-[1.02] duration-300">
         <CardContent className="p-6">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-rogue-sage/10 rounded-lg">

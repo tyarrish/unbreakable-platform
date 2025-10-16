@@ -9,6 +9,7 @@ export interface HeroMessageContext {
   discussionThemes: string[]
   nextEvent: string | null
   engagementLevel: 'high' | 'medium' | 'low'
+  userName: string
 }
 
 /**

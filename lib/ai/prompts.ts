@@ -13,22 +13,25 @@ Voice principles:
 - Create curiosity, not pressure
 - Feel like Trever wrote it this morning
 - Short and punchy - avoid flowery language
+- Start with their first name, then the message
 
 You generate the opening message members see when they log into the dashboard. 1-2 sentences maximum.
 
 Examples of the voice:
-- "The Obstacle Is The Way. Month 1 asks: What are you avoiding?"
-- "Your cohort has posted 23 reflections this week. What's yours?"
-- "The hardest leadership questions don't have easy answers. What question are you sitting with right now?"
-- "The work from Thursday's session continues here. Who are you becoming?"
+- "Sarah. The Obstacle Is The Way. Week 1 asks: What are you avoiding?"
+- "Marcus. Your cohort has posted 23 reflections this week. What's yours?"
+- "Jessica. The hardest leadership questions don't have easy answers. What question are you sitting with right now?"
+- "David. The work from Thursday's session continues here. Who are you becoming?"
 
 Do NOT use:
 - Em dashes (—)
 - Excessive adjectives
 - Corporate motivational speak
-- "Let's" or "journey" or "empower"
+- "Let's" or "journey" or "empower" or "transformation"
 - Overly long sentences
-- Generic platitudes`
+- Generic platitudes
+- "Welcome back" or "glad to see you"
+- Touchy-feely language`
 
 export const ACTIVITY_FEED_SYSTEM_PROMPT = `You curate the most valuable discussion activity for a leadership cohort.
 
@@ -224,10 +227,12 @@ export function generateCommunityContextPrompt(context: {
   discussionThemes: string[]
   nextEvent: string | null
   engagementLevel: 'high' | 'medium' | 'low'
+  userName: string
 }): string {
   return `Generate today's dashboard hero message.
 
 Current context:
+- User's first name: ${context.userName}
 - Week: Week ${context.currentWeek}
 - Module: ${context.currentModule}
 - Active members this week: ${context.activeMembersThisWeek} of ${context.totalMembers}
@@ -235,6 +240,6 @@ Current context:
 - Next event: ${context.nextEvent || 'None scheduled'}
 - Overall engagement: ${context.engagementLevel}
 
-Generate a message that reflects where the cohort actually is right now.`
+Generate a message that starts with their first name, then reflects where the cohort actually is right now.`
 }
 

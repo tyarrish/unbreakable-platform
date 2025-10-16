@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       context.totalUsers
     )
 
-    // 4. Generate hero message
+    // 4. Generate hero message (generic version for all users)
     console.log('Generating hero message...')
     const heroMessage = await generateHeroMessage({
       currentWeek: context.programState.currentWeek,
@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
       discussionThemes: themes,
       nextEvent: context.upcomingEvents[0]?.title || null,
       engagementLevel,
+      userName: '{firstName}', // Placeholder to be replaced per user
     })
     console.log('Hero message generated:', heroMessage)
 

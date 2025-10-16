@@ -40,9 +40,9 @@ export default async function DashboardPage() {
   const userMetrics = await getUserActivityMetrics(user.id)
 
   // Fallback content if no AI content is available yet
+  const firstName = profile.full_name?.split(' ')[0] || 'Leader'
   const content = (dashboardContent?.content as any) || {
-    heroMessage:
-      'Week 1: Personal Leadership Foundations. What obstacle are you facing that you\'re ready to name?',
+    heroMessage: `${firstName}. Week 1: Personal Leadership Foundations. What obstacle are you facing that you're ready to name?`,
     activityFeed: [],
     practiceActions: {},
     programState: {
@@ -77,12 +77,18 @@ export default async function DashboardPage() {
 
   const hottestTopic = (hottestDiscussionData as { title: string } | null)?.title
 
+  // Personalize the hero message with user's name
+  const personalizedHeroMessage = content.heroMessage.replace(
+    '{firstName}',
+    firstName
+  )
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
       <Container>
         <div className="py-8">
           {/* Dynamic Hero Message */}
-          <DynamicHero message={content.heroMessage} />
+          <DynamicHero message={personalizedHeroMessage} />
 
           {/* Main Content Grid */}
           <div className="grid lg:grid-cols-3 gap-8">
