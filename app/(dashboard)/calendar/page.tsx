@@ -14,6 +14,7 @@ import { getEvents, registerForEvent, unregisterFromEvent, isRegisteredForEvent 
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
+import { getMonthColorFromString } from '@/lib/utils/month-colors'
 import type { Event } from '@/types/index.types'
 
 export default function CalendarPage() {
@@ -162,12 +163,15 @@ export default function CalendarPage() {
             />
           ) : (
             <div className="space-y-12">
-              {sortedModules.map(([moduleName, { required, optional }]) => (
+              {sortedModules.map(([moduleName, { required, optional }]) => {
+                const moduleColor = getMonthColorFromString(moduleName)
+                
+                return (
                 <div key={moduleName}>
-                  {/* Module Header */}
+                  {/* Module Header - Color Coded */}
                   <div className="mb-6">
-                    <h2 className="text-xl font-bold text-rogue-forest">{moduleName}</h2>
-                    <div className="h-0.5 w-12 bg-rogue-gold mt-2" />
+                    <h2 className={`text-xl font-bold ${moduleColor.text}`}>{moduleName}</h2>
+                    <div className={`h-0.5 w-12 ${moduleColor.bg} mt-2`} />
                   </div>
 
                   {/* Required Events - Prominent */}
@@ -474,7 +478,8 @@ export default function CalendarPage() {
                     </div>
                   )}
                 </div>
-              ))}
+              )}
+              )}
             </div>
           )}
         </div>
