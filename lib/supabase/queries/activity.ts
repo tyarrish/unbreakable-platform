@@ -33,7 +33,7 @@ export async function getActivityFeed(limit: number = 50, offset: number = 0): P
     .range(offset, offset + limit - 1)
   
   if (error) throw error
-  return data || []
+  return (data as ActivityItem[]) || []
 }
 
 export async function getUserActivity(userId: string, limit: number = 20): Promise<ActivityItem[]> {
@@ -54,7 +54,7 @@ export async function getUserActivity(userId: string, limit: number = 20): Promi
     .limit(limit)
   
   if (error) throw error
-  return data || []
+  return (data as ActivityItem[]) || []
 }
 
 export async function getActivityByType(
@@ -78,7 +78,7 @@ export async function getActivityByType(
     .limit(limit)
   
   if (error) throw error
-  return data || []
+  return (data as ActivityItem[]) || []
 }
 
 export async function createActivity(
