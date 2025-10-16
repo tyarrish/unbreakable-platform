@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { Plus, Edit, Trash2, Library, ExternalLink } from 'lucide-react'
 import { getBooks, deleteBook } from '@/lib/supabase/queries/books'
 import { toast } from 'sonner'
+import { getMonthColor } from '@/lib/utils/month-colors'
 import type { Book } from '@/types/index.types'
 import {
   Dialog,
@@ -113,7 +114,7 @@ export default function AdminBooksPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             {book.assigned_month && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge className={`${getMonthColor(book.assigned_month).badge} text-xs`}>
                                 Month {book.assigned_month}
                               </Badge>
                             )}

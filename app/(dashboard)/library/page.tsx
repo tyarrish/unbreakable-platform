@@ -13,6 +13,7 @@ import { Library, BookOpen, Star, ExternalLink, Sparkles, BookMarked, Check, Cir
 import { getBooks, getReadingProgress, updateReadingProgress } from '@/lib/supabase/queries/books'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
+import { getMonthColor } from '@/lib/utils/month-colors'
 import type { Book, ReadingStatus } from '@/types/index.types'
 
 export default function LibraryPage() {
@@ -179,10 +180,10 @@ export default function LibraryPage() {
                               </div>
                             )}
                             
-                            {/* Month Badge - Redesigned */}
+                            {/* Month Badge - Color Coded */}
                             {book.assigned_month && (
                               <div className="absolute top-2 right-2">
-                                <div className="bg-rogue-gold text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                                <div className={`${getMonthColor(book.assigned_month).badge} text-xs font-bold px-3 py-1.5 rounded-full shadow-lg`}>
                                   Month {book.assigned_month}
                                 </div>
                               </div>

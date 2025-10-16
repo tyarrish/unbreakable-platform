@@ -13,6 +13,7 @@ import { BookCommentThread } from '@/components/books/book-comment-thread'
 import { getBook, getReadingProgress, updateReadingProgress } from '@/lib/supabase/queries/books'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
+import { getMonthColor } from '@/lib/utils/month-colors'
 import { ArrowLeft, ExternalLink, BookOpen, Star, Lightbulb, Circle, CheckCircle2 } from 'lucide-react'
 import type { Book, ReadingStatus } from '@/types/index.types'
 
@@ -138,7 +139,7 @@ export default function BookDetailPage() {
                 {/* Book Title & Author */}
                 <div>
                   {book.assigned_month && (
-                    <Badge variant="outline" className="mb-2">
+                    <Badge className={`${getMonthColor(book.assigned_month).badge} mb-2`}>
                       Month {book.assigned_month}
                     </Badge>
                   )}
