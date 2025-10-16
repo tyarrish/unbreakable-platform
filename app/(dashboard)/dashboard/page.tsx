@@ -42,7 +42,7 @@ export default async function DashboardPage() {
   // Fallback content if no AI content is available yet
   const firstName = profile.full_name?.split(' ')[0] || 'Leader'
   const content = (dashboardContent?.content as any) || {
-    heroMessage: `${firstName}. Week 1: Personal Leadership Foundations. What obstacle are you facing that you're ready to name?`,
+    heroMessage: `${firstName}. Welcome to Building the Unbreakable. The work starts now.`,
     activityFeed: [],
     practiceActions: {},
     programState: {
@@ -77,6 +77,27 @@ export default async function DashboardPage() {
 
   const hottestTopic = (hottestDiscussionData as { title: string } | null)?.title
 
+  // Get next upcoming event (if not in AI content)
+  let nextEventData = content.upcomingEvents?.[0]
+  if (!nextEventData) {
+    const { data: upcomingEvent } = await supabase
+      .from('events')
+      .select('id, title, start_time, location')
+      .gte('start_time', new Date().toISOString())
+      .order('start_time', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+    
+    if (upcomingEvent) {
+      nextEventData = {
+        id: upcomingEvent.id,
+        title: upcomingEvent.title,
+        start_time: upcomingEvent.start_time,
+        location: upcomingEvent.location,
+      }
+    }
+  }
+
   // Personalize the hero message with user's name
   const personalizedHeroMessage = content.heroMessage.replace(
     '{firstName}',
@@ -105,12 +126,12 @@ export default async function DashboardPage() {
                   hottestTopic: hottestTopic,
                 }}
                 nextEvent={
-                  content.upcomingEvents?.[0]
+                  nextEventData
                     ? {
-                        id: content.upcomingEvents[0].id,
-                        title: content.upcomingEvents[0].title,
-                        startTime: content.upcomingEvents[0].start_time,
-                        location: content.upcomingEvents[0].location,
+                        id: nextEventData.id,
+                        title: nextEventData.title,
+                        startTime: nextEventData.start_time,
+                        location: nextEventData.location,
                       }
                     : null
                 }

@@ -37,9 +37,7 @@ export function JourneyContext({ currentModule, totalModules = 8 }: JourneyConte
         
         <div className="mt-6 p-4 bg-rogue-cream/50 rounded-lg">
           <p className="text-sm text-rogue-slate leading-relaxed">
-            This journey isn't measured in percentages or completion rates. It's measured in the
-            questions you're willing to sit with, the conversations you're brave enough to have,
-            and the leader you're becoming.
+            Eight months of practice. Progress measured by the questions you engage with and the work you do.
           </p>
         </div>
       </CardContent>
