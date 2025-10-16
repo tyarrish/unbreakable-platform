@@ -82,7 +82,7 @@ export default async function DashboardPage() {
   if (!nextEventData) {
     const { data: upcomingEvent } = await supabase
       .from('events')
-      .select('id, title, start_time, location')
+      .select('id, title, start_time, location_address')
       .gte('start_time', new Date().toISOString())
       .order('start_time', { ascending: true })
       .limit(1)
@@ -93,7 +93,7 @@ export default async function DashboardPage() {
         id: upcomingEvent.id,
         title: upcomingEvent.title,
         start_time: upcomingEvent.start_time,
-        location: upcomingEvent.location,
+        location: upcomingEvent.location_address,
       }
     }
   }
