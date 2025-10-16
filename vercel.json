@@ -8,6 +8,16 @@
     "deploymentEnabled": {
       "main": true
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/generate-dashboard",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/analyze-engagement",
+      "schedule": "0 6 * * *"
+    }
+  ]
 }
 
