@@ -85,6 +85,29 @@ export default function CalendarPage() {
     }
   }
 
+  // Format event description - handle both plain text and HTML
+  function formatEventDescription(description: string): string {
+    // If it already contains HTML tags, return as is
+    if (description.includes('<p>') || description.includes('<div>')) {
+      return description
+    }
+
+    // Otherwise, format plain text with markdown-style parsing
+    let formatted = description
+      
+    // Convert **bold** to <strong>
+    formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-rogue-forest">$1</strong>')
+    
+    // Convert line breaks to <br>
+    formatted = formatted.replace(/\n/g, '<br/>')
+    
+    // Convert bullet points (- item) to styled bullets
+    formatted = formatted.replace(/- (.+?)(<br\/>|$)/g, '<div class="flex gap-2"><span class="text-rogue-gold">•</span><span>$1</span></div>')
+    
+    // Wrap in paragraph
+    return `<div>${formatted}</div>`
+  }
+
   if (isLoading) {
     return <PageLoader />
   }
@@ -287,8 +310,8 @@ export default function CalendarPage() {
                                     <div className="mb-4">
                                       <h4 className="font-semibold text-rogue-forest mb-2">About This Event</h4>
                                       <div 
-                                        className="text-sm text-rogue-slate leading-relaxed prose prose-sm max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: event.description }}
+                                        className="text-sm text-rogue-slate leading-relaxed space-y-2"
+                                        dangerouslySetInnerHTML={{ __html: formatEventDescription(event.description) }}
                                       />
                                     </div>
                                   )}
@@ -428,8 +451,8 @@ export default function CalendarPage() {
                                         <div className="mb-3">
                                           <h4 className="font-semibold text-rogue-forest text-xs mb-1.5">About This Event</h4>
                                           <div 
-                                            className="text-xs text-rogue-slate leading-relaxed prose prose-sm max-w-none"
-                                            dangerouslySetInnerHTML={{ __html: event.description }}
+                                            className="text-xs text-rogue-slate leading-relaxed space-y-1"
+                                            dangerouslySetInnerHTML={{ __html: formatEventDescription(event.description) }}
                                           />
                                         </div>
                                       )}
