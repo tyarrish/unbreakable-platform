@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const message = await anthropic.messages.create({
       model: DEFAULT_MODEL,
       max_tokens: 1000,
-      system: `You are helping curate books for Building the Unbreakable, a Stoic-influenced leadership development program.
+      system: `You are helping curate books for the Rogue Leadership Training Experience, a Stoic-influenced leadership development program.
 
 Your job:
 - Generate a 2-3 paragraph description of the book

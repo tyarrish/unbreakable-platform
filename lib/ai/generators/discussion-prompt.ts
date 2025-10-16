@@ -9,7 +9,7 @@ export interface DiscussionPromptContext {
   activeParticipants: number
 }
 
-const DISCUSSION_PROMPT_SYSTEM = `You are generating discussion prompts for Building the Unbreakable, a Stoic-influenced leadership development program.
+const DISCUSSION_PROMPT_SYSTEM = `You are generating discussion prompts for the Rogue Leadership Training Experience, a Stoic-influenced leadership development program.
 
 Your job:
 - Create a thought-provoking discussion prompt for the cohort

@@ -42,7 +42,7 @@ export default async function DashboardPage() {
   // Fallback content if no AI content is available yet
   const firstName = profile.full_name?.split(' ')[0] || 'Leader'
   const content = (dashboardContent?.content as any) || {
-    heroMessage: `${firstName}. Welcome to Building the Unbreakable. The work starts now.`,
+    heroMessage: `${firstName}. Welcome to the Rogue Leadership Training Experience. The work starts now.`,
     activityFeed: [],
     practiceActions: {},
     programState: {

@@ -17,7 +17,7 @@ export interface CohortHealthContext {
   stuckDiscussions: Array<{ title: string; views: number; responses: number }>
 }
 
-const HEALTH_REPORT_SYSTEM = `You are generating a weekly cohort health report for Trever, the facilitator of Building the Unbreakable.
+const HEALTH_REPORT_SYSTEM = `You are generating a weekly cohort health report for Trever, the facilitator of the Rogue Leadership Training Experience.
 
 Your job:
 - Synthesize the cohort's state into actionable insights
