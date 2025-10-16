@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { gatherCommunityContext, getAllUsersActivityMetrics, saveDashboardContent } from '@/lib/supabase/queries/ai-dashboard'
+import { createClient } from '@supabase/supabase-js'
+import { gatherCommunityContext, getAllUsersActivityMetrics } from '@/lib/supabase/queries/ai-dashboard'
 import { generateHeroMessage } from '@/lib/ai/generators/hero-message'
 import { curateActivityFeed } from '@/lib/ai/generators/activity-feed'
 import { generateBatchPracticeActions } from '@/lib/ai/generators/practice-actions'
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
     const practiceActions = await generateBatchPracticeActions(userContexts)
     console.log('Practice actions generated for', Object.keys(practiceActions).length, 'users')
 
-    // 8. Save full dashboard content
+    // 8. Save full dashboard content using service role (bypass RLS)
     const dashboardContent = {
       heroMessage,
       activityFeed,
@@ -104,15 +105,40 @@ export async function GET(request: NextRequest) {
       },
     }
 
-    const contentId = await saveDashboardContent(
-      'full_dashboard',
-      dashboardContent,
+    // Use service role client to bypass RLS policies
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
-        discussionCount: context.discussions.length,
-        themes,
-        generatedAt: new Date().toISOString(),
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
       }
     )
+
+    const { data, error } = await supabaseAdmin
+      .from('dashboard_content')
+      .insert({
+        content_type: 'full_dashboard',
+        content: dashboardContent,
+        generation_context: {
+          discussionCount: context.discussions.length,
+          themes,
+          generatedAt: new Date().toISOString(),
+        },
+        approved: false,
+        active: false,
+      })
+      .select('id')
+      .single()
+
+    if (error) {
+      console.error('Error saving dashboard content:', error)
+      throw new Error('Failed to save dashboard content')
+    }
+
+    const contentId = data?.id
 
     if (!contentId) {
       throw new Error('Failed to save dashboard content')

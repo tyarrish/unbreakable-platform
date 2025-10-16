@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import { analyzeEngagement } from '@/lib/ai/analyzers/engagement'
-import { createEngagementFlag } from '@/lib/supabase/queries/ai-dashboard'
 import type { UserEngagementData } from '@/lib/ai/analyzers/engagement'
 
 /**
@@ -21,7 +20,17 @@ export async function GET(request: NextRequest) {
 
     console.log('Starting engagement analysis...')
 
-    const supabase = await createClient()
+    // Use service role client to bypass RLS policies
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    )
 
     // Get all active members
     const { data: profiles } = await supabase
@@ -92,16 +101,17 @@ export async function GET(request: NextRequest) {
     const flags = await analyzeEngagement(userEngagementData)
     console.log('Engagement analysis complete:', flags.length, 'flags generated')
 
-    // Save flags to database
+    // Save flags to database using service role
     let savedCount = 0
     for (const flag of flags) {
-      const success = await createEngagementFlag({
+      const { error } = await supabase.from('engagement_flags').insert({
         user_id: flag.userId,
         flag_type: flag.flagType,
         flag_reason: flag.reason,
         context: flag.context,
       })
-      if (success) savedCount++
+      
+      if (!error) savedCount++
     }
 
     console.log('Saved', savedCount, 'engagement flags')
