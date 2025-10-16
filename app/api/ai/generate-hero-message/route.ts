@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
       discussionThemes: themes,
       nextEvent: context.upcomingEvents[0]?.title || null,
       engagementLevel,
+      userName: '{firstName}', // Placeholder for testing
     })
 
     return NextResponse.json({
