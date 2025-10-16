@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BookCoverUpload } from '@/components/books/book-cover-upload'
 import { createBook } from '@/lib/supabase/queries/books'
 import { toast } from 'sonner'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Sparkles, Loader2 } from 'lucide-react'
 
 export default function NewBookPage() {
   const [title, setTitle] = useState('')
@@ -27,7 +27,41 @@ export default function NewBookPage() {
   const [reasoning, setReasoning] = useState('')
   const [keyTakeaways, setKeyTakeaways] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isEnriching, setIsEnriching] = useState(false)
   const router = useRouter()
+
+  async function enrichBookDetails() {
+    if (!title || !author) {
+      toast.error('Please enter title and author first')
+      return
+    }
+
+    setIsEnriching(true)
+    try {
+      const res = await fetch('/api/ai/enrich-book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, author }),
+      })
+
+      const result = await res.json()
+
+      if (result.success) {
+        setDescription(result.data.description)
+        setIsbn(result.data.isbn)
+        setAmazonLink(result.data.amazon_link)
+        setGoodreadsLink(result.data.goodreads_link)
+        toast.success('Book details auto-populated!')
+      } else {
+        toast.error('Failed to enrich book details')
+      }
+    } catch (error) {
+      console.error('Error enriching book:', error)
+      toast.error('Failed to enrich book details')
+    } finally {
+      setIsEnriching(false)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -88,7 +122,7 @@ export default function NewBookPage() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || isEnriching}
                   />
                 </div>
 
@@ -100,10 +134,35 @@ export default function NewBookPage() {
                     value={author}
                     onChange={(e) => setAuthor(e.target.value)}
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || isEnriching}
                   />
                 </div>
               </div>
+
+              {/* AI Enrich Button */}
+              {title && author && (
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={enrichBookDetails}
+                    disabled={isEnriching || isLoading}
+                    className="border-rogue-gold/30 text-rogue-forest hover:bg-rogue-gold/10"
+                  >
+                    {isEnriching ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating with AI...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4 text-rogue-gold" />
+                        Auto-Fill with AI
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
@@ -112,9 +171,12 @@ export default function NewBookPage() {
                   placeholder="Brief overview of the book and why it's valuable for leadership development..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  rows={4}
+                  rows={6}
                   disabled={isLoading}
                 />
+                <p className="text-xs text-rogue-slate/70">
+                  AI will generate a leadership-focused description explaining why this book matters for the cohort
+                </p>
               </div>
 
               {/* Book Cover Upload Component */}
@@ -127,56 +189,65 @@ export default function NewBookPage() {
                 disabled={isLoading}
               />
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="isbn">ISBN (Optional)</Label>
-                  <Input
-                    id="isbn"
-                    placeholder="e.g., 978-1591845324"
-                    value={isbn}
-                    onChange={(e) => setIsbn(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
+              <div className="space-y-4">
+                <p className="text-sm font-medium text-rogue-forest">Auto-Populated Fields</p>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="isbn">ISBN</Label>
+                    <Input
+                      id="isbn"
+                      placeholder="Auto-filled"
+                      value={isbn}
+                      onChange={(e) => setIsbn(e.target.value)}
+                      disabled={isLoading}
+                      className="bg-rogue-sage/5"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="assignedMonth">Assigned Month (Optional)</Label>
-                  <Input
-                    id="assignedMonth"
-                    type="number"
-                    min="1"
-                    max="8"
-                    placeholder="1-8"
-                    value={assignedMonth || ''}
-                    onChange={(e) => setAssignedMonth(e.target.value ? parseInt(e.target.value) : undefined)}
-                    disabled={isLoading}
-                  />
-                  <p className="text-xs text-rogue-slate">Link to specific month (1-8)</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="amazonLink">Amazon Link</Label>
+                    <Input
+                      id="amazonLink"
+                      type="url"
+                      placeholder="Auto-filled"
+                      value={amazonLink}
+                      onChange={(e) => setAmazonLink(e.target.value)}
+                      disabled={isLoading}
+                      className="bg-rogue-sage/5"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="goodreadsLink">Goodreads Link</Label>
+                    <Input
+                      id="goodreadsLink"
+                      type="url"
+                      placeholder="Auto-filled"
+                      value={goodreadsLink}
+                      onChange={(e) => setGoodreadsLink(e.target.value)}
+                      disabled={isLoading}
+                      className="bg-rogue-sage/5"
+                    />
+                  </div>
                 </div>
+                <p className="text-xs text-rogue-slate/70">
+                  These fields are automatically populated when you click "Auto-Fill with AI"
+                </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="amazonLink">Amazon Link (Optional)</Label>
+                <Label htmlFor="assignedMonth">Assigned Month (Optional)</Label>
                 <Input
-                  id="amazonLink"
-                  type="url"
-                  placeholder="https://amazon.com/..."
-                  value={amazonLink}
-                  onChange={(e) => setAmazonLink(e.target.value)}
+                  id="assignedMonth"
+                  type="number"
+                  min="1"
+                  max="8"
+                  placeholder="1-8"
+                  value={assignedMonth || ''}
+                  onChange={(e) => setAssignedMonth(e.target.value ? parseInt(e.target.value) : undefined)}
                   disabled={isLoading}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="goodreadsLink">Goodreads Link (Optional)</Label>
-                <Input
-                  id="goodreadsLink"
-                  type="url"
-                  placeholder="https://goodreads.com/..."
-                  value={goodreadsLink}
-                  onChange={(e) => setGoodreadsLink(e.target.value)}
-                  disabled={isLoading}
-                />
+                <p className="text-xs text-rogue-slate/70">Assign this book to a specific month (1-8)</p>
               </div>
 
               <div className="space-y-2">
