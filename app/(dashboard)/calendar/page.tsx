@@ -41,16 +41,12 @@ export default function CalendarPage() {
       const eventsData = await getEvents() as Event[]
       setEvents(eventsData)
 
-      const regPromises = eventsData.map(event => 
-        isRegisteredForEvent(event.id, user.id)
-      )
+      const regPromises = eventsData.map(event => isRegisteredForEvent(event.id, user.id))
       const regResults = await Promise.all(regPromises)
       
       const newRegs = new Set<string>()
       regResults.forEach((isReg, index) => {
-        if (isReg) {
-          newRegs.add(eventsData[index].id)
-        }
+        if (isReg) newRegs.add(eventsData[index].id)
       })
       setRegistrations(newRegs)
     } catch (error) {
@@ -101,7 +97,6 @@ export default function CalendarPage() {
     return <PageLoader />
   }
 
-  // Group events by module, separate required from optional
   const upcomingEvents = events.filter(e => new Date(e.end_time) >= new Date())
   
   const eventsByModule: { [key: string]: { required: Event[], optional: Event[], order: number } } = {}
@@ -128,7 +123,6 @@ export default function CalendarPage() {
   })
   
   const sortedModules = Object.entries(eventsByModule).sort((a, b) => a[1].order - b[1].order)
-
   const totalUpcoming = upcomingEvents.length
   const totalRegistered = events.filter(e => registrations.has(e.id)).length
 
@@ -143,14 +137,14 @@ export default function CalendarPage() {
                 <h1 className="text-4xl font-bold text-rogue-forest mb-2">Events</h1>
                 <p className="text-lg text-rogue-slate">Your cohort calendar</p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <div className="text-right">
-                  <p className="text-xs text-rogue-slate/70 uppercase tracking-wide mb-1">Upcoming</p>
+                  <p className="text-xs text-rogue-slate/60 uppercase mb-1">Upcoming</p>
                   <p className="text-2xl font-bold text-rogue-forest">{totalUpcoming}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-green-700/70 uppercase tracking-wide mb-1">Registered</p>
-                  <p className="text-2xl font-bold text-green-700">{totalRegistered}</p>
+                  <p className="text-xs text-green-600/60 uppercase mb-1">Registered</p>
+                  <p className="text-2xl font-bold text-green-600">{totalRegistered}</p>
                 </div>
               </div>
             </div>
@@ -159,150 +153,140 @@ export default function CalendarPage() {
       </div>
 
       <Container>
-        <div className="py-12 max-w-5xl">
+        <div className="py-12 max-w-4xl">
           {upcomingEvents.length === 0 ? (
             <EmptyState
               icon={<Calendar size={64} />}
               title="No Events Scheduled"
-              description="Events and cohort calls will appear here. Stay tuned for upcoming sessions!"
+              description="Events and cohort calls will appear here."
             />
           ) : (
             <div className="space-y-12">
               {sortedModules.map(([moduleName, { required, optional }]) => (
                 <div key={moduleName}>
                   {/* Module Header */}
-                  <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-rogue-forest">{moduleName}</h2>
-                    <div className="h-1 w-20 bg-rogue-gold mt-2 rounded-full" />
+                  <div className="mb-6">
+                    <h2 className="text-xl font-bold text-rogue-forest">{moduleName}</h2>
+                    <div className="h-0.5 w-12 bg-rogue-gold mt-2" />
                   </div>
 
-                  {/* Required Events - Large, Prominent */}
-                  <div className="space-y-6">
+                  {/* Required Events - Prominent */}
+                  <div className="space-y-4">
                     {required.map((event) => {
                       const isRegistered = registrations.has(event.id)
                       const isExpanded = expandedEventId === event.id
-                      const month = formatDate(event.start_time, { month: 'short' }).toUpperCase()
-                      const day = formatDate(event.start_time, { day: 'numeric' })
 
                       return (
                         <Card 
                           key={event.id}
-                          className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
+                          className="border-l-4 border-rogue-forest shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                           onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
                         >
-                          <CardContent className="p-0">
-                            <div className="flex gap-6 p-6">
-                              {/* Date - Clean Vertical */}
-                              <div className="flex-shrink-0">
-                                <div className="text-center">
-                                  <div className="text-xs font-semibold text-rogue-gold mb-1">{month}</div>
-                                  <div className="text-5xl font-bold text-rogue-forest leading-none">{day}</div>
-                                </div>
-                              </div>
-
-                              {/* Content */}
-                              <div className="flex-1">
-                                {/* Badges Row */}
-                                <div className="flex flex-wrap items-center gap-2 mb-3">
-                                  <Badge className="bg-rogue-forest text-white">Required</Badge>
-                                  <Badge variant="outline">{event.event_type === 'cohort_call' ? 'Cohort Call' : event.event_type}</Badge>
-                                  {event.location_type === 'in_person' && (
-                                    <Badge variant="outline" className="border-rogue-forest/20">
-                                      <Building2 className="h-3 w-3 mr-1" />
-                                      In-Person
-                                    </Badge>
-                                  )}
-                                  {event.location_type === 'virtual' && (
-                                    <Badge variant="outline" className="border-blue-200 text-blue-600">
-                                      <Video className="h-3 w-3 mr-1" />
-                                      Virtual
-                                    </Badge>
-                                  )}
-                                  {event.location_type === 'hybrid' && (
-                                    <Badge variant="outline" className="border-purple-200 text-purple-600">
-                                      Hybrid
-                                    </Badge>
-                                  )}
-                                  {isRegistered && (
-                                    <Badge className="bg-green-100 text-green-700 ml-auto">
-                                      <CheckCircle className="h-3 w-3 mr-1" />
-                                      Registered
-                                    </Badge>
-                                  )}
-                                </div>
-
-                                {/* Title */}
-                                <h3 className="text-2xl font-bold text-rogue-forest mb-3">{event.title}</h3>
-
-                                {/* Time & Location */}
-                                <div className="flex flex-wrap gap-4 text-sm text-rogue-slate mb-4">
-                                  <div className="flex items-center gap-2">
-                                    <Clock className="h-4 w-4" />
-                                    {formatEventTime(event.start_time, event.end_time)}
-                                  </div>
-                                  {event.location_address && (
-                                    <div className="flex items-center gap-2">
-                                      <MapPin className="h-4 w-4" />
-                                      {event.location_address}
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex items-center gap-3">
-                                  <Button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleRegister(event.id)
-                                    }}
-                                    size="sm"
-                                    variant={isRegistered ? 'outline' : 'default'}
-                                    className={!isRegistered ? 'bg-rogue-forest hover:bg-rogue-pine' : ''}
-                                  >
-                                    {isRegistered ? 'Unregister' : 'Register'}
-                                  </Button>
-
-                                  {event.zoom_link && isRegistered && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="text-blue-600 hover:text-blue-700"
-                                      asChild
-                                      onClick={(e: any) => e.stopPropagation()}
-                                    >
-                                      <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
-                                        <Video className="h-4 w-4 mr-2" />
-                                        Join Zoom
-                                      </a>
-                                    </Button>
-                                  )}
-
-                                  <button className="ml-auto text-rogue-slate/60 hover:text-rogue-forest transition-colors">
-                                    {isExpanded ? (
-                                      <ChevronUp className="h-5 w-5" />
-                                    ) : (
-                                      <ChevronDown className="h-5 w-5" />
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
+                          <CardContent className="p-6">
+                            {/* Top Row - Badges & Status */}
+                            <div className="flex flex-wrap items-center gap-2 mb-4">
+                              <Badge className="text-xs font-medium bg-rogue-forest text-white">
+                                Required
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {formatDate(event.start_time, { month: 'short', day: 'numeric' })}
+                              </Badge>
+                              {event.location_type === 'virtual' && (
+                                <Badge variant="outline" className="text-xs border-blue-200 text-blue-600">
+                                  <Video className="h-3 w-3 mr-1" />
+                                  Virtual
+                                </Badge>
+                              )}
+                              {event.location_type === 'in_person' && (
+                                <Badge variant="outline" className="text-xs">
+                                  <Building2 className="h-3 w-3 mr-1" />
+                                  In-Person
+                                </Badge>
+                              )}
+                              {event.location_type === 'hybrid' && (
+                                <Badge variant="outline" className="text-xs border-purple-200 text-purple-600">
+                                  Hybrid
+                                </Badge>
+                              )}
+                              {isRegistered && (
+                                <Badge className="bg-green-100 text-green-700 ml-auto">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Registered
+                                </Badge>
+                              )}
                             </div>
 
-                            {/* Expanded Content */}
+                            {/* Title - Hero */}
+                            <h3 className="text-2xl font-bold text-rogue-forest mb-4">{event.title}</h3>
+
+                            {/* Time & Location Row */}
+                            <div className="flex flex-wrap gap-4 text-sm text-rogue-slate mb-6">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-rogue-slate/60" />
+                                {formatEventTime(event.start_time, event.end_time)}
+                              </div>
+                              {event.location_address && (
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 text-rogue-slate/60" />
+                                  <span className="line-clamp-1">{event.location_address}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center gap-3">
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleRegister(event.id)
+                                }}
+                                size="sm"
+                                variant={isRegistered ? 'outline' : 'default'}
+                                className={!isRegistered ? 'bg-rogue-forest hover:bg-rogue-pine' : ''}
+                              >
+                                {isRegistered ? 'Unregister' : 'Register for Event'}
+                              </Button>
+
+                              {event.zoom_link && isRegistered && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                                  asChild
+                                  onClick={(e: any) => e.stopPropagation()}
+                                >
+                                  <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
+                                    <Video className="h-4 w-4 mr-2" />
+                                    Join Zoom
+                                  </a>
+                                </Button>
+                              )}
+
+                              <button className="ml-auto p-2 hover:bg-rogue-sage/10 rounded-lg transition-colors">
+                                {isExpanded ? (
+                                  <ChevronUp className="h-5 w-5 text-rogue-slate" />
+                                ) : (
+                                  <ChevronDown className="h-5 w-5 text-rogue-slate" />
+                                )}
+                              </button>
+                            </div>
+
+                            {/* Expanded Details */}
                             <AnimatePresence>
                               {isExpanded && (
                                 <motion.div
                                   initial={{ height: 0, opacity: 0 }}
                                   animate={{ height: 'auto', opacity: 1 }}
                                   exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                  transition={{ duration: 0.3 }}
                                   className="overflow-hidden"
                                 >
-                                  <div className="px-6 pb-6 pt-2 border-t border-rogue-sage/10 space-y-5">
-                                    {/* Description */}
+                                  <div className="mt-6 pt-6 border-t border-rogue-sage/20 space-y-5">
                                     {event.description && (
                                       <div>
-                                        <h4 className="text-sm font-semibold text-rogue-forest mb-3">About This Event</h4>
+                                        <h4 className="text-xs font-semibold text-rogue-forest/70 uppercase tracking-wide mb-3">
+                                          About This Event
+                                        </h4>
                                         <div 
                                           className="text-sm text-rogue-slate leading-relaxed"
                                           dangerouslySetInnerHTML={{ __html: formatEventDescription(event.description) }}
@@ -310,12 +294,11 @@ export default function CalendarPage() {
                                       </div>
                                     )}
 
-                                    {/* Presenter Bio */}
                                     {(event as any).presenter_bio && (
-                                      <div className="bg-rogue-cream/50 rounded-lg p-4 border border-rogue-sage/10">
-                                        <h4 className="text-sm font-semibold text-rogue-forest mb-3 flex items-center gap-2">
+                                      <div className="bg-gradient-to-br from-rogue-sage/10 to-rogue-cream/50 rounded-xl p-5">
+                                        <h4 className="text-xs font-semibold text-rogue-forest/70 uppercase tracking-wide mb-3 flex items-center gap-2">
                                           <UserCircle className="h-4 w-4" />
-                                          About the Presenter
+                                          Presenter
                                         </h4>
                                         <div 
                                           className="text-sm text-rogue-slate leading-relaxed"
@@ -324,28 +307,24 @@ export default function CalendarPage() {
                                       </div>
                                     )}
 
-                                    {/* Additional Info */}
-                                    <div className="flex flex-wrap gap-6 text-sm">
+                                    <div className="flex flex-wrap gap-6 text-sm text-rogue-slate/70">
                                       {((event as any).attendance_count || (event as any).max_capacity) && (
-                                        <div className="flex items-center gap-2 text-rogue-slate">
+                                        <div className="flex items-center gap-2">
                                           <Users className="h-4 w-4" />
-                                          <span>
-                                            {(event as any).attendance_count || 0} registered
-                                            {(event as any).max_capacity && ` / ${(event as any).max_capacity} max`}
-                                          </span>
+                                          {(event as any).attendance_count || 0} registered
+                                          {(event as any).max_capacity && ` / ${(event as any).max_capacity} max`}
                                         </div>
                                       )}
-
                                       {(event as any).resources_url && (
                                         <a
                                           href={(event as any).resources_url}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="inline-flex items-center gap-2 text-rogue-forest hover:text-rogue-pine transition-colors"
+                                          className="inline-flex items-center gap-1.5 text-rogue-forest hover:text-rogue-pine font-medium"
                                           onClick={(e) => e.stopPropagation()}
                                         >
-                                          Event Resources
-                                          <ExternalLink className="h-4 w-4" />
+                                          Resources
+                                          <ExternalLink className="h-3 w-3" />
                                         </a>
                                       )}
                                     </div>
@@ -359,132 +338,127 @@ export default function CalendarPage() {
                     })}
                   </div>
 
-                  {/* Optional Events - Smaller, Indented */}
+                  {/* Optional Events - Compact, Indented */}
                   {optional.length > 0 && (
-                    <div className="mt-6 ml-8 space-y-3">
+                    <div className="mt-4 ml-6 space-y-2">
                       {optional.map((event) => {
                         const isRegistered = registrations.has(event.id)
                         const isExpanded = expandedEventId === event.id
-                        const month = formatDate(event.start_time, { month: 'short' }).toUpperCase()
-                        const day = formatDate(event.start_time, { day: 'numeric' })
 
                         return (
                           <Card 
                             key={event.id}
-                            className="border-0 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
+                            className="border-l-2 border-rogue-sage/40 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
                             onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
                           >
-                            <CardContent className="p-0">
-                              <div className="flex gap-4 p-4">
-                                {/* Compact Date */}
-                                <div className="flex-shrink-0">
-                                  <div className="text-center">
-                                    <div className="text-xs font-medium text-rogue-gold mb-0.5">{month}</div>
-                                    <div className="text-2xl font-bold text-rogue-forest leading-none">{day}</div>
-                                  </div>
-                                </div>
-
-                                {/* Content */}
+                            <CardContent className="p-4">
+                              {/* Compact Layout */}
+                              <div className="flex items-start justify-between gap-4 mb-3">
                                 <div className="flex-1">
-                                  <div className="flex items-start justify-between gap-3 mb-2">
-                                    <h4 className="text-lg font-semibold text-rogue-forest">{event.title}</h4>
-                                    {isRegistered && (
-                                      <Badge className="bg-green-100 text-green-700 flex-shrink-0">
-                                        <CheckCircle className="h-3 w-3 mr-1" />
-                                        Registered
-                                      </Badge>
-                                    )}
-                                  </div>
-
-                                  <div className="flex flex-wrap items-center gap-3 text-xs text-rogue-slate mb-3">
-                                    <div className="flex items-center gap-1">
+                                  <h4 className="text-lg font-semibold text-rogue-forest mb-2">{event.title}</h4>
+                                  <div className="flex flex-wrap items-center gap-3 text-xs text-rogue-slate/70">
+                                    <div className="flex items-center gap-1.5">
                                       <Clock className="h-3 w-3" />
-                                      {formatEventTime(event.start_time, event.end_time)}
+                                      {formatDate(event.start_time, { month: 'short', day: 'numeric' })}, {formatEventTime(event.start_time, event.end_time)}
                                     </div>
                                     {event.location_type === 'virtual' && (
-                                      <Badge variant="outline" className="text-xs border-blue-200 text-blue-600">
+                                      <Badge variant="outline" className="text-xs h-5">
                                         <Video className="h-3 w-3 mr-1" />
                                         Virtual
                                       </Badge>
                                     )}
                                     {event.location_type === 'hybrid' && (
-                                      <Badge variant="outline" className="text-xs border-purple-200 text-purple-600">
+                                      <Badge variant="outline" className="text-xs h-5 border-purple-200 text-purple-600">
                                         Hybrid
                                       </Badge>
                                     )}
                                   </div>
-
-                                  <div className="flex items-center gap-2">
-                                    <Button
-                                      size="sm"
-                                      variant={isRegistered ? 'outline' : 'default'}
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        handleRegister(event.id)
-                                      }}
-                                      className={!isRegistered ? 'bg-rogue-forest hover:bg-rogue-pine h-8' : 'h-8'}
-                                    >
-                                      {isRegistered ? 'Unregister' : 'Register'}
-                                    </Button>
-
-                                    {event.zoom_link && isRegistered && (
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="text-blue-600 hover:text-blue-700 h-8"
-                                        asChild
-                                        onClick={(e: any) => e.stopPropagation()}
-                                      >
-                                        <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
-                                          <Video className="h-3 w-3 mr-1" />
-                                          Zoom
-                                        </a>
-                                      </Button>
-                                    )}
-
-                                    <button className="ml-auto text-rogue-slate/60 hover:text-rogue-forest transition-colors">
-                                      {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                    </button>
-                                  </div>
                                 </div>
+
+                                {isRegistered && (
+                                  <Badge className="bg-green-100 text-green-700 flex-shrink-0 h-6">
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Registered
+                                  </Badge>
+                                )}
                               </div>
 
-                              {/* Expanded Content */}
+                              {/* Actions Row */}
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleRegister(event.id)
+                                  }}
+                                  size="sm"
+                                  variant={isRegistered ? 'outline' : 'default'}
+                                  className={!isRegistered ? 'bg-rogue-forest hover:bg-rogue-pine h-7 text-xs' : 'h-7 text-xs'}
+                                >
+                                  {isRegistered ? 'Unregister' : 'Register'}
+                                </Button>
+
+                                {event.zoom_link && isRegistered && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-blue-200 text-blue-600 hover:bg-blue-50 h-7 text-xs"
+                                    asChild
+                                    onClick={(e: any) => e.stopPropagation()}
+                                  >
+                                    <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
+                                      <Video className="h-3 w-3 mr-1" />
+                                      Zoom
+                                    </a>
+                                  </Button>
+                                )}
+
+                                <button className="ml-auto p-1 hover:bg-rogue-sage/10 rounded transition-colors">
+                                  {isExpanded ? (
+                                    <ChevronUp className="h-4 w-4 text-rogue-slate" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4 text-rogue-slate" />
+                                  )}
+                                </button>
+                              </div>
+
+                              {/* Expanded Details */}
                               <AnimatePresence>
                                 {isExpanded && (
                                   <motion.div
                                     initial={{ height: 0, opacity: 0 }}
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
-                                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                    transition={{ duration: 0.3 }}
                                     className="overflow-hidden"
                                   >
-                                    <div className="px-4 pb-4 border-t border-rogue-sage/10 pt-4 space-y-4">
+                                    <div className="mt-4 pt-4 border-t border-rogue-sage/10 space-y-4">
                                       {event.description && (
                                         <div>
-                                          <h5 className="text-xs font-semibold text-rogue-forest mb-2">About This Event</h5>
+                                          <h5 className="text-xs font-semibold text-rogue-forest/70 uppercase tracking-wide mb-2">
+                                            Details
+                                          </h5>
                                           <div 
-                                            className="text-xs text-rogue-slate leading-relaxed"
+                                            className="text-sm text-rogue-slate leading-relaxed"
                                             dangerouslySetInnerHTML={{ __html: formatEventDescription(event.description) }}
                                           />
                                         </div>
                                       )}
 
                                       {(event as any).presenter_bio && (
-                                        <div className="bg-rogue-cream/30 rounded p-3">
-                                          <h5 className="text-xs font-semibold text-rogue-forest mb-2 flex items-center gap-1.5">
+                                        <div className="bg-rogue-cream/40 rounded-lg p-4">
+                                          <h5 className="text-xs font-semibold text-rogue-forest/70 uppercase tracking-wide mb-2 flex items-center gap-1.5">
                                             <UserCircle className="h-3 w-3" />
-                                            About the Presenter
+                                            Presenter
                                           </h5>
                                           <div 
-                                            className="text-xs text-rogue-slate leading-relaxed"
+                                            className="text-sm text-rogue-slate leading-relaxed"
                                             dangerouslySetInnerHTML={{ __html: formatEventDescription((event as any).presenter_bio) }}
                                           />
                                         </div>
                                       )}
 
                                       {event.location_address && (
-                                        <div className="flex items-start gap-2 text-xs text-rogue-slate">
+                                        <div className="flex items-start gap-2 text-xs text-rogue-slate/70">
                                           <MapPin className="h-3 w-3 mt-0.5" />
                                           {event.location_address}
                                         </div>
