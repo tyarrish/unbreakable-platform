@@ -190,7 +190,7 @@ export async function getAllUsersActivityMetrics() {
 
   const userMetrics = profiles.map((profile) => {
     const userSnapshots = snapshots?.filter((s) => s.user_id === profile.id) || []
-    const daysActive = userSnapshots.filter((s) => s.logins_count > 0).length
+    const daysActive = userSnapshots.filter((s) => (s.logins_count || 0) > 0).length
     const posts = userSnapshots.reduce((sum, s) => sum + (s.posts_count || 0), 0)
     const responses = userSnapshots.reduce((sum, s) => sum + (s.responses_count || 0), 0)
     const modulesCompleted = Math.max(
