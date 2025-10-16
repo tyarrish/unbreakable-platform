@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Calendar, Clock, MapPin, Users, Video, Building2, CheckCircle, Sparkles, CalendarDays } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Video, Building2, CheckCircle, Sparkles, CalendarDays, ChevronDown, ChevronUp } from 'lucide-react'
 import { getEvents, registerForEvent, unregisterFromEvent, isRegisteredForEvent } from '@/lib/supabase/queries/events'
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Event } from '@/types/index.types'
 
 export default function CalendarPage() {
@@ -20,6 +21,7 @@ export default function CalendarPage() {
   const [registrations, setRegistrations] = useState<Set<string>>(new Set())
   const [userId, setUserId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [expandedEventId, setExpandedEventId] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -175,10 +177,13 @@ export default function CalendarPage() {
                     ]
                     const colors = accentColors[index % accentColors.length]
                     
+                    const isExpanded = expandedEventId === event.id
+                    
                     return (
                       <Card 
                         key={event.id} 
-                        className={`border-l-4 ${colors.border} shadow-lg hover:shadow-xl transition-all bg-white`}
+                        className={`border-l-4 ${colors.border} shadow-lg hover:shadow-xl transition-all bg-white cursor-pointer`}
+                        onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
                       >
                         <CardContent className="p-5">
                           <div className="flex items-start gap-4">
@@ -230,26 +235,103 @@ export default function CalendarPage() {
                                 </div>
                               )}
 
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 items-center">
                                 <Button
                                   size="sm"
                                   variant={isRegistered ? 'outline' : 'default'}
-                                  onClick={() => handleRegister(event.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleRegister(event.id)
+                                  }}
                                   className={!isRegistered ? `${colors.bg} hover:opacity-90` : ''}
                                 >
                                   {isRegistered ? 'Registered ✓' : 'Register'}
                                 </Button>
                                 {event.zoom_link && isRegistered && (
-                                  <Button size="sm" variant="outline" className="text-blue-600 hover:text-blue-700" asChild>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="text-blue-600 hover:text-blue-700" 
+                                    asChild
+                                    onClick={(e: any) => e.stopPropagation()}
+                                  >
                                     <a href={event.zoom_link} target="_blank" rel="noopener noreferrer">
                                       <Video className="h-3 w-3 mr-1" />
                                       Join Zoom
                                     </a>
                                   </Button>
                                 )}
+                                <div className="ml-auto">
+                                  {isExpanded ? (
+                                    <ChevronUp className="h-5 w-5 text-rogue-slate" />
+                                  ) : (
+                                    <ChevronDown className="h-5 w-5 text-rogue-slate" />
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
+
+                          {/* Expanded Details */}
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                className="overflow-hidden"
+                              >
+                                <div className="pt-4 mt-4 border-t border-rogue-sage/20">
+                                  {event.description && (
+                                    <div className="mb-4">
+                                      <h4 className="font-semibold text-rogue-forest mb-2">About This Event</h4>
+                                      <p className="text-sm text-rogue-slate leading-relaxed whitespace-pre-line">
+                                        {event.description}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {((event as any).attendance_count || event.max_capacity) && (
+                                    <div className="mb-4">
+                                      <h4 className="font-semibold text-rogue-forest mb-2">Attendance</h4>
+                                      <div className="flex items-center gap-2 text-sm text-rogue-slate">
+                                        <Users className="h-4 w-4" />
+                                        <span>
+                                          {(event as any).attendance_count || 0} registered
+                                          {event.max_capacity && ` / ${event.max_capacity} capacity`}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {event.meeting_notes && (
+                                    <div className="mb-4">
+                                      <h4 className="font-semibold text-rogue-forest mb-2">Meeting Notes</h4>
+                                      <div className="p-3 bg-rogue-sage/5 rounded-lg text-sm text-rogue-slate">
+                                        {event.meeting_notes}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {event.resources_url && (
+                                    <div>
+                                      <h4 className="font-semibold text-rogue-forest mb-2">Resources</h4>
+                                      <a
+                                        href={event.resources_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-rogue-forest hover:text-rogue-pine underline"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        View event resources →
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </CardContent>
                       </Card>
                     )
