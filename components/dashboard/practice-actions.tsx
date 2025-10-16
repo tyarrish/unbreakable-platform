@@ -1,6 +1,5 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, MessageCircle, BookOpen, Users, Lightbulb } from 'lucide-react'
+import { CheckCircle2, MessageCircle, BookOpen, Users, Lightbulb, ArrowRight } from 'lucide-react'
 
 interface PracticeAction {
   action: string
@@ -16,27 +15,37 @@ interface PracticeActionsProps {
 const categoryConfig = {
   connect: {
     icon: Users,
-    color: 'bg-rogue-gold/10 text-rogue-gold',
+    color: 'from-rogue-gold/20 to-rogue-gold/5',
+    iconBg: 'bg-rogue-gold text-white',
+    border: 'border-rogue-gold/30',
     label: 'Connect',
   },
   reflect: {
     icon: Lightbulb,
-    color: 'bg-rogue-sage/10 text-rogue-forest',
+    color: 'from-rogue-sage/20 to-rogue-sage/5',
+    iconBg: 'bg-rogue-forest text-white',
+    border: 'border-rogue-sage/30',
     label: 'Reflect',
   },
   engage: {
     icon: MessageCircle,
-    color: 'bg-rogue-copper/10 text-rogue-copper',
+    color: 'from-rogue-copper/20 to-rogue-copper/5',
+    iconBg: 'bg-rogue-copper text-white',
+    border: 'border-rogue-copper/30',
     label: 'Engage',
   },
   practice: {
     icon: CheckCircle2,
-    color: 'bg-rogue-forest/10 text-rogue-forest',
+    color: 'from-rogue-forest/20 to-rogue-forest/5',
+    iconBg: 'bg-rogue-forest text-white',
+    border: 'border-rogue-forest/30',
     label: 'Practice',
   },
   read: {
     icon: BookOpen,
-    color: 'bg-rogue-pine/10 text-rogue-pine',
+    color: 'from-rogue-pine/20 to-rogue-pine/5',
+    iconBg: 'bg-rogue-pine text-white',
+    border: 'border-rogue-pine/30',
     label: 'Read',
   },
 }
@@ -44,17 +53,14 @@ const categoryConfig = {
 export function PracticeActions({ actions }: PracticeActionsProps) {
   if (actions.length === 0) {
     return (
-      <Card className="border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle>Your Practice This Week</CardTitle>
-          <CardDescription>Specific actions for your growth edge</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-rogue-slate text-center py-8">
+      <div className="sticky top-8">
+        <div className="border-l-4 border-rogue-gold/30 pl-6 py-8">
+          <h2 className="text-xl font-bold text-rogue-forest mb-2">Your Practice This Week</h2>
+          <p className="text-rogue-slate/70">
             Your personalized practices will appear here.
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
@@ -62,51 +68,61 @@ export function PracticeActions({ actions }: PracticeActionsProps) {
   const sortedActions = [...actions].sort((a, b) => a.priority - b.priority)
 
   return (
-    <Card className="border-0 shadow-lg sticky top-8">
-      <CardHeader>
-        <CardTitle>Your Practice This Week</CardTitle>
-        <CardDescription>Specific actions for your growth edge</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {sortedActions.map((action, index) => {
-            const config = categoryConfig[action.category]
-            const Icon = config.icon
+    <div className="sticky top-8">
+      {/* Header */}
+      <div className="border-l-4 border-rogue-gold/50 pl-6 mb-8">
+        <h2 className="text-2xl font-bold text-rogue-forest mb-1">Your Practice This Week</h2>
+        <p className="text-sm text-rogue-slate/70">Specific actions for your growth edge</p>
+      </div>
 
-            return (
-              <div
-                key={index}
-                className="p-4 rounded-lg border border-rogue-sage/10 bg-gradient-to-br from-white to-rogue-sage/5 hover:border-rogue-sage/30 transition-all"
-              >
-                <div className="flex items-start gap-3 mb-3">
-                  <div className={`p-2 rounded-lg ${config.color} flex-shrink-0`}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <p className="text-sm font-medium text-rogue-forest leading-snug">
-                        {action.action}
-                      </p>
-                      {action.priority === 1 && (
-                        <Badge variant="outline" className="text-xs flex-shrink-0">
-                          Priority
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-rogue-slate mt-2">{action.why}</p>
-                  </div>
+      {/* Actions List */}
+      <div className="space-y-4 pl-6">
+        {sortedActions.map((action, index) => {
+          const config = categoryConfig[action.category]
+          const Icon = config.icon
+
+          return (
+            <div
+              key={index}
+              className={`group relative bg-gradient-to-br ${config.color} border ${config.border} rounded-xl p-5 hover:shadow-lg transition-all duration-300 cursor-pointer`}
+            >
+              {/* Priority indicator */}
+              {action.priority === 1 && (
+                <div className="absolute -left-6 top-1/2 -translate-y-1/2">
+                  <div className="w-3 h-3 bg-rogue-gold rounded-full shadow-lg shadow-rogue-gold/50" />
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">
+              )}
+
+              <div className="flex items-start gap-4">
+                <div className={`${config.iconBg} p-3 rounded-lg shadow-md flex-shrink-0`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <p className="text-base font-semibold text-rogue-forest leading-tight pr-2">
+                      {action.action}
+                    </p>
+                    <ArrowRight className="h-5 w-5 text-rogue-forest/40 group-hover:text-rogue-forest group-hover:translate-x-1 transition-all flex-shrink-0" />
+                  </div>
+                  
+                  <p className="text-sm text-rogue-slate/80 leading-relaxed mb-3">
+                    {action.why}
+                  </p>
+                  
+                  <Badge 
+                    variant="outline" 
+                    className="text-xs border-rogue-forest/20 text-rogue-forest/70"
+                  >
                     {config.label}
                   </Badge>
                 </div>
               </div>
-            )
-          })}
-        </div>
-      </CardContent>
-    </Card>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 

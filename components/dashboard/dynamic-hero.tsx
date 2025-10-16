@@ -14,23 +14,35 @@ export function DynamicHero({ message }: DynamicHeroProps) {
   
   return (
     <motion.div
-      initial={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
-      className="mb-12"
+      transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+      className="mb-16 -mx-8 px-8"
     >
-      <div className="relative bg-gradient-to-br from-rogue-forest/5 via-white/40 to-rogue-sage/5 backdrop-blur-sm border border-rogue-sage/20 -mx-8 px-8 py-10 rounded-2xl shadow-lg">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-rogue-gold/5 rounded-full blur-3xl -z-10" />
-        <div className="relative z-10">
-          <p className="text-3xl md:text-4xl font-bold text-rogue-forest leading-tight">
+      <div className="relative py-12">
+        {/* Subtle background accent */}
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-24 bg-gradient-to-b from-rogue-gold via-rogue-gold to-transparent rounded-full" />
+        
+        <div className="pl-6">
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-rogue-forest leading-tight tracking-tight"
+          >
             <span className="text-rogue-gold">{name}.</span>
-            {restOfMessage && (
-              <>
-                {' '}
-                <span className="font-semibold">{restOfMessage}</span>
-              </>
-            )}
-          </p>
+          </motion.p>
+          
+          {restOfMessage && (
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="text-2xl md:text-3xl lg:text-4xl font-semibold text-rogue-forest/90 leading-snug mt-4 max-w-4xl"
+            >
+              {restOfMessage}
+            </motion.p>
+          )}
         </div>
       </div>
     </motion.div>
