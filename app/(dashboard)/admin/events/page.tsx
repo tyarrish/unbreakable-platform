@@ -96,6 +96,29 @@ export default function AdminEventsPage() {
     }
   }
 
+  // Format event description - handle both plain text and HTML
+  function formatEventDescription(description: string): string {
+    // If it already contains HTML tags, return as is
+    if (description.includes('<p>') || description.includes('<div>')) {
+      return description
+    }
+
+    // Otherwise, format plain text with markdown-style parsing
+    let formatted = description
+      
+    // Convert **bold** to <strong>
+    formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-rogue-forest">$1</strong>')
+    
+    // Convert line breaks to <br>
+    formatted = formatted.replace(/\n/g, '<br/>')
+    
+    // Convert bullet points (- item) to styled bullets
+    formatted = formatted.replace(/- (.+?)(<br\/>|$)/g, '<div class="flex gap-2"><span class="text-rogue-gold">•</span><span>$1</span></div>')
+    
+    // Wrap in paragraph
+    return `<div>${formatted}</div>`
+  }
+
   const getLocationIcon = (locationType: string) => {
     const location = LOCATION_TYPES.find(l => l.value === locationType)
     return location?.icon || '📍'
@@ -170,7 +193,10 @@ export default function AdminEventsPage() {
                         </div>
                         <CardTitle>{event.title}</CardTitle>
                         {event.description && (
-                          <CardDescription className="mt-2">{event.description}</CardDescription>
+                          <div 
+                            className="mt-2 text-sm text-rogue-slate/80 leading-relaxed space-y-1 line-clamp-3"
+                            dangerouslySetInnerHTML={{ __html: formatEventDescription(event.description) }}
+                          />
                         )}
                       </div>
                       <div className="flex gap-2">
