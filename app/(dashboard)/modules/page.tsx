@@ -76,7 +76,7 @@ export default function ModulesPage() {
             <div className="flex items-end justify-between flex-wrap gap-6">
               <div>
                 <h1 className="text-5xl font-bold text-rogue-forest mb-3 tracking-tight">The Work</h1>
-                <p className="text-lg text-rogue-slate/80">Eight months of practice</p>
+                <p className="text-lg text-rogue-slate/80">Cohort curriculum</p>
               </div>
               <div className="flex gap-4">
                 <div className="px-5 py-3 bg-white rounded-xl border border-rogue-sage/20 shadow-sm">
