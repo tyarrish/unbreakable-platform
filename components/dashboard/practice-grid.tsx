@@ -13,8 +13,10 @@ interface PracticeGridProps {
     hottestTopic?: string
   }
   nextEvent: {
+    id: string
     title: string
     startTime: string
+    location?: string
   } | null
   yourRhythm: {
     daysActive: number
@@ -92,17 +94,36 @@ export function PracticeGrid({
               {nextEvent ? (
                 <>
                   <Link
-                    href="/calendar"
-                    className="text-lg font-semibold text-rogue-forest hover:text-rogue-pine transition-colors"
+                    href={`/calendar?event=${nextEvent.id}`}
+                    className="text-lg font-semibold text-rogue-forest hover:text-rogue-pine transition-colors block"
                   >
                     {nextEvent.title}
                   </Link>
                   <p className="text-sm text-rogue-slate mt-1">
-                    {formatRelativeTime(new Date(nextEvent.startTime))}
+                    {new Date(nextEvent.startTime).toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}
                   </p>
+                  {nextEvent.location && (
+                    <p className="text-xs text-rogue-slate/70 mt-1">
+                      {nextEvent.location}
+                    </p>
+                  )}
                 </>
               ) : (
-                <p className="text-lg font-semibold text-rogue-slate">None scheduled</p>
+                <>
+                  <p className="text-lg font-semibold text-rogue-slate">None scheduled</p>
+                  <Link
+                    href="/calendar"
+                    className="text-sm text-rogue-forest/70 hover:text-rogue-forest transition-colors mt-1 inline-block"
+                  >
+                    View calendar →
+                  </Link>
+                </>
               )}
             </div>
           </div>

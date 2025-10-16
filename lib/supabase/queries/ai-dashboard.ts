@@ -31,6 +31,8 @@ export interface CommunityContext {
     id: string
     title: string
     start_time: string
+    location?: string
+    description?: string
   }>
 }
 
@@ -106,7 +108,7 @@ export async function gatherCommunityContext(): Promise<CommunityContext> {
   // Get upcoming events (next 3)
   const { data: events } = await supabase
     .from('events')
-    .select('id, title, start_time')
+    .select('id, title, start_time, location, description')
     .gte('start_time', new Date().toISOString())
     .order('start_time', { ascending: true })
     .limit(3)
@@ -120,7 +122,7 @@ export async function gatherCommunityContext(): Promise<CommunityContext> {
     discussions: formattedDiscussions,
     activeUsers: uniqueActiveUsers,
     totalUsers: totalUsers || 0,
-    upcomingEvents: events || [],
+    upcomingEvents: (events as any) || [],
   }
 }
 

@@ -107,8 +107,10 @@ export default async function DashboardPage() {
                 nextEvent={
                   content.upcomingEvents?.[0]
                     ? {
+                        id: content.upcomingEvents[0].id,
                         title: content.upcomingEvents[0].title,
                         startTime: content.upcomingEvents[0].start_time,
+                        location: content.upcomingEvents[0].location,
                       }
                     : null
                 }
