@@ -292,33 +292,33 @@ export default function CalendarPage() {
                                     </div>
                                   )}
 
-                                  {((event as any).attendance_count || event.max_capacity) && (
+                                  {((event as any).attendance_count || (event as any).max_capacity) && (
                                     <div className="mb-4">
                                       <h4 className="font-semibold text-rogue-forest mb-2">Attendance</h4>
                                       <div className="flex items-center gap-2 text-sm text-rogue-slate">
                                         <Users className="h-4 w-4" />
                                         <span>
                                           {(event as any).attendance_count || 0} registered
-                                          {event.max_capacity && ` / ${event.max_capacity} capacity`}
+                                          {(event as any).max_capacity && ` / ${(event as any).max_capacity} capacity`}
                                         </span>
                                       </div>
                                     </div>
                                   )}
 
-                                  {event.meeting_notes && (
+                                  {(event as any).meeting_notes && (
                                     <div className="mb-4">
                                       <h4 className="font-semibold text-rogue-forest mb-2">Meeting Notes</h4>
                                       <div className="p-3 bg-rogue-sage/5 rounded-lg text-sm text-rogue-slate">
-                                        {event.meeting_notes}
+                                        {(event as any).meeting_notes}
                                       </div>
                                     </div>
                                   )}
 
-                                  {event.resources_url && (
+                                  {(event as any).resources_url && (
                                     <div>
                                       <h4 className="font-semibold text-rogue-forest mb-2">Resources</h4>
                                       <a
-                                        href={event.resources_url}
+                                        href={(event as any).resources_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-sm text-rogue-forest hover:text-rogue-pine underline"
