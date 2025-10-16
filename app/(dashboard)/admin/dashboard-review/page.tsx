@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { CheckCircle2, XCircle, Edit2, Save, X, Sparkles, Clock } from 'lucide-react'
+import { CheckCircle2, XCircle, Edit2, Save, X, Sparkles, Clock, Zap, Loader2 } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format-date'
 
 interface DashboardContent {
@@ -28,6 +28,7 @@ export default function DashboardReviewPage() {
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editedContent, setEditedContent] = useState<any>(null)
+  const [generating, setGenerating] = useState(false)
 
   useEffect(() => {
     fetchContent()
@@ -109,6 +110,31 @@ export default function DashboardReviewPage() {
     }
   }
 
+  async function generateContent() {
+    try {
+      setGenerating(true)
+      toast.info('Generating dashboard content with AI...')
+      
+      const res = await fetch('/api/admin/generate-content', {
+        method: 'POST',
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        toast.success('Content generated! Review it below.')
+        fetchContent()
+      } else {
+        toast.error('Failed to generate content: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Error generating content:', error)
+      toast.error('Failed to generate content')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   if (loading) {
     return (
       <Container>
@@ -124,10 +150,31 @@ export default function DashboardReviewPage() {
 
   return (
     <Container>
-      <PageHeader
-        heading="AI Dashboard Review"
-        description="Review and approve AI-generated dashboard content before it goes live"
-      />
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-semibold text-rogue-forest">AI Dashboard Review</h1>
+          <p className="text-lg text-rogue-slate mt-2">
+            Review and approve AI-generated dashboard content before it goes live
+          </p>
+        </div>
+        <Button
+          onClick={generateContent}
+          disabled={generating}
+          className="bg-rogue-forest hover:bg-rogue-pine text-white"
+        >
+          {generating ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Zap className="h-4 w-4 mr-2" />
+              Generate New Content
+            </>
+          )}
+        </Button>
+      </div>
 
       <div className="space-y-8">
         {/* Currently Active Content */}
