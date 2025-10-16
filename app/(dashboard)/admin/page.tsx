@@ -94,7 +94,7 @@ export default function AdminPage() {
                   <Button variant="default" className="bg-rogue-forest hover:bg-rogue-pine" asChild>
                     <a href="/admin/dashboard-review">
                       <Sparkles className="h-4 w-4 mr-2" />
-                      Review Generated Content
+                      Review Content
                     </a>
                   </Button>
                   <Button variant="outline" asChild>
@@ -103,10 +103,16 @@ export default function AdminPage() {
                       Engagement Flags
                     </a>
                   </Button>
+                  <Button variant="outline" className="bg-rogue-gold/10 border-rogue-gold/30 hover:bg-rogue-gold/20" asChild>
+                    <a href="/admin/ai-tools">
+                      <Sparkles className="h-4 w-4 mr-2 text-rogue-gold" />
+                      AI Tools
+                    </a>
+                  </Button>
                   <Button variant="outline" asChild>
                     <a href="/admin/ai-diagnostics">
                       <BarChart className="h-4 w-4 mr-2" />
-                      System Diagnostics
+                      Diagnostics
                     </a>
                   </Button>
                 </div>
