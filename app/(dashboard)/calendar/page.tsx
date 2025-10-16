@@ -87,25 +87,35 @@ export default function CalendarPage() {
     return <PageLoader />
   }
 
-  // Group events by month and separate required from optional
+  // Group events by module/month and separate required from optional
   const upcomingEvents = events.filter(e => new Date(e.end_time) >= new Date())
   
-  // Group by month
-  const eventsByMonth: { [key: string]: { required: Event[], optional: Event[] } } = {}
+  // Group by module (with fallback for events without modules)
+  const eventsByModule: { [key: string]: { required: Event[], optional: Event[], order: number } } = {}
   
   upcomingEvents.forEach(event => {
-    const monthKey = formatDate(event.start_time, { month: 'long', year: 'numeric' })
+    let moduleKey = 'Unassigned Events'
+    let moduleOrder = 999
     
-    if (!eventsByMonth[monthKey]) {
-      eventsByMonth[monthKey] = { required: [], optional: [] }
+    if ((event as any).module) {
+      const module = (event as any).module
+      moduleKey = `Month ${module.order_number}: ${module.title}`
+      moduleOrder = module.order_number
+    }
+    
+    if (!eventsByModule[moduleKey]) {
+      eventsByModule[moduleKey] = { required: [], optional: [], order: moduleOrder }
     }
     
     if (event.is_required) {
-      eventsByMonth[monthKey].required.push(event)
+      eventsByModule[moduleKey].required.push(event)
     } else {
-      eventsByMonth[monthKey].optional.push(event)
+      eventsByModule[moduleKey].optional.push(event)
     }
   })
+  
+  // Sort by module order
+  const sortedModules = Object.entries(eventsByModule).sort((a, b) => a[1].order - b[1].order)
 
   const totalUpcoming = upcomingEvents.length
   const totalRegistered = events.filter(e => registrations.has(e.id)).length
@@ -144,12 +154,12 @@ export default function CalendarPage() {
             />
           ) : (
             <div className="space-y-8">
-              {Object.entries(eventsByMonth).map(([month, { required, optional }]) => (
-                <div key={month} className="space-y-4">
-                  {/* Month Header */}
+              {sortedModules.map(([moduleName, { required, optional }]) => (
+                <div key={moduleName} className="space-y-4">
+                  {/* Module Header */}
                   <div className="flex items-center gap-3 sticky top-0 bg-gradient-to-r from-rogue-cream to-transparent py-3 z-10">
                     <CalendarDays className="h-5 w-5 text-rogue-gold" />
-                    <h2 className="text-xl font-bold text-rogue-forest">{month}</h2>
+                    <h2 className="text-xl font-bold text-rogue-forest">{moduleName}</h2>
                   </div>
 
                   {/* Required Events - Prominent */}
@@ -172,16 +182,13 @@ export default function CalendarPage() {
                       >
                         <CardContent className="p-5">
                           <div className="flex items-start gap-4">
-                            {/* Date Block - Prominent */}
-                            <div className={`flex-shrink-0 text-center p-3 rounded-lg ${colors.bg} text-white min-w-[80px]`}>
-                              <div className="text-xs uppercase font-semibold opacity-90">
-                                {formatDate(event.start_time, { month: 'short' })}
+                            {/* Date Block - Clean single date */}
+                            <div className={`flex-shrink-0 text-center p-4 rounded-lg ${colors.bg} text-white min-w-[100px]`}>
+                              <div className="text-xs uppercase font-semibold opacity-90 mb-1">
+                                {formatDate(event.start_time, { month: 'short' }).toUpperCase()}
                               </div>
-                              <div className="text-3xl font-bold leading-none my-1">
+                              <div className="text-4xl font-bold leading-none">
                                 {formatDate(event.start_time, { day: 'numeric' })}
-                              </div>
-                              <div className="text-xs opacity-90">
-                                {formatDate(event.start_time, { year: 'numeric' })}
                               </div>
                             </div>
 
