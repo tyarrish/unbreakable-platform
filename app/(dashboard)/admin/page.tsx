@@ -8,7 +8,7 @@ import { PageHeader } from '@/components/layout/page-header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PageLoader } from '@/components/ui/loading-spinner'
-import { Users, BookOpen, MessageSquare, Calendar, Library, Settings, BarChart } from 'lucide-react'
+import { Users, BookOpen, MessageSquare, Calendar, Library, Settings, BarChart, Sparkles, Brain } from 'lucide-react'
 import type { UserRole } from '@/types/index.types'
 
 export default function AdminPage() {
@@ -73,6 +73,47 @@ export default function AdminPage() {
         />
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* AI Dashboard - Admin Only - Featured */}
+          {isAdmin && (
+            <Card className="md:col-span-2 lg:col-span-3 bg-gradient-to-br from-rogue-gold/10 via-white to-rogue-forest/5 border-2 border-rogue-gold/30 hover:shadow-xl transition-all">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-3 bg-gradient-to-br from-rogue-gold to-rogue-gold/80 rounded-xl text-white shadow-md">
+                    <Sparkles className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-2xl">AI Dashboard</CardTitle>
+                    <CardDescription className="text-base">
+                      Review AI-generated content, monitor engagement flags, and manage automation
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  <Button variant="default" className="bg-rogue-forest hover:bg-rogue-pine" asChild>
+                    <a href="/admin/dashboard-review">
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Review Generated Content
+                    </a>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <a href="/admin/engagement-flags">
+                      <Brain className="h-4 w-4 mr-2" />
+                      Engagement Flags
+                    </a>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <a href="/admin/ai-diagnostics">
+                      <BarChart className="h-4 w-4 mr-2" />
+                      System Diagnostics
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* User Management - Admin Only */}
           {isAdmin && (
             <AdminCard
