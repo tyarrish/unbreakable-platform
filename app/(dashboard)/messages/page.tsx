@@ -121,9 +121,9 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
-      <Container className="h-[calc(100vh-4rem)] py-0">
-        <div className="h-full flex rounded-lg overflow-hidden border border-rogue-sage/20 bg-white shadow-lg my-6">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
+      <div className="flex-1 overflow-hidden px-6 py-4">
+        <div className="h-full flex rounded-lg overflow-hidden border border-rogue-sage/20 bg-white shadow-lg">
           {/* Desktop: Two-column layout */}
           <div className="hidden lg:flex w-full">
             {/* Sidebar */}
@@ -177,7 +177,7 @@ export default function MessagesPage() {
             )}
           </div>
         </div>
-      </Container>
+      </div>
 
       {/* New Conversation Modal */}
       <NewConversationModal

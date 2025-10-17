@@ -72,34 +72,51 @@ export function ConversationView({
     loadMessages()
     markAsRead()
 
-    // Set up real-time subscription for new messages - DIRECT METHOD
-    console.log('Setting up direct realtime for conversation:', conversation.id)
+    // Set up real-time subscription - POLLING FALLBACK
+    console.log('🚀 Setting up realtime for conversation:', conversation.id)
     
     const channel = supabase
-      .channel(`messages-${conversation.id}`)
+      .channel(`conv-${conversation.id}`, {
+        config: {
+          broadcast: { self: true },
+          presence: { key: currentUserId }
+        }
+      })
       .on(
         'postgres_changes' as any,
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'discussion_posts',
           filter: `thread_id=eq.${conversation.id}`,
         } as any,
         (payload: any) => {
-          console.log('🔥 REALTIME MESSAGE RECEIVED:', payload)
-          // Only add if it's from someone else (we already optimistically added ours)
-          if (payload.new.author_id !== currentUserId) {
+          console.log('🔥 REALTIME EVENT:', payload.eventType, payload.new)
+          if (payload.eventType === 'INSERT' && payload.new.author_id !== currentUserId) {
+            console.log('Loading new messages from another user')
             loadMessages()
           }
           markAsRead()
         }
       )
-      .subscribe((status: any) => {
-        console.log('📡 Channel subscription status:', status, 'for conversation:', conversation.id)
+      .subscribe((status: any, err: any) => {
+        if (err) {
+          console.error('❌ Subscription error:', err)
+        }
+        console.log('📡 Status:', status, 'Conv:', conversation.id.slice(0, 8))
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ REALTIME IS ACTIVE')
+        }
       })
 
+    // FALLBACK: Poll for new messages every 5 seconds as backup
+    const pollInterval = setInterval(() => {
+      loadMessages()
+    }, 5000)
+
     return () => {
-      console.log('Cleaning up realtime subscription for:', conversation.id)
+      console.log('🧹 Cleanup for:', conversation.id.slice(0, 8))
+      clearInterval(pollInterval)
       supabase.removeChannel(channel)
     }
   }, [conversation.id])
