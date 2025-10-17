@@ -158,6 +158,14 @@ export async function getConversationMessages(conversationId: string) {
 export async function createDirectMessage(fromUserId: string, toUserId: string) {
   const supabase = createClient()
   
+  // Verify auth
+  const { data: { session } } = await supabase.auth.getSession()
+  console.log('Auth session exists:', !!session, 'User ID matches:', session?.user?.id === fromUserId)
+  
+  if (!session) {
+    throw new Error('Not authenticated')
+  }
+  
   // Check if DM already exists between these users
   const { data: existing } = await supabase
     .from('discussion_threads')
