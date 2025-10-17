@@ -14,8 +14,13 @@ import {
   UserPlus,
   LogOut,
   Archive,
-  VolumeX
+  VolumeX,
+  ThumbsUp,
+  Heart,
+  Lightbulb,
+  Star
 } from 'lucide-react'
+import { MessageAttachmentUpload, AttachmentDisplay } from './message-attachments'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,14 +30,17 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { RichTextEditor } from '@/components/discussions/rich-text-editor'
 import { formatRelativeTime } from '@/lib/utils/format-date'
+import { createClient } from '@/lib/supabase/client'
 import { 
   getConversationMessages, 
   sendMessage, 
   markConversationAsRead,
   toggleArchiveConversation,
   toggleMuteConversation,
-  leaveGroupChat
+  leaveGroupChat,
+  subscribeToConversation
 } from '@/lib/supabase/queries/conversations'
+import { toggleReaction } from '@/lib/supabase/queries/discussions'
 import { toast } from 'sonner'
 import type { Conversation, DiscussionPost, User } from '@/types/index.types'
 
@@ -53,13 +61,24 @@ export function ConversationView({
 }: ConversationViewProps) {
   const [messages, setMessages] = useState<(DiscussionPost & { author: User })[]>([])
   const [newMessage, setNewMessage] = useState('')
+  const [attachments, setAttachments] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const supabase = createClient()
 
   useEffect(() => {
     loadMessages()
     markAsRead()
+
+    // Set up real-time subscription
+    const channel = subscribeToConversation(conversation.id, () => {
+      loadMessages()
+    })
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [conversation.id])
 
   useEffect(() => {
@@ -89,13 +108,20 @@ export function ConversationView({
   }
 
   async function handleSendMessage() {
-    if (!newMessage.trim() || isSending) return
+    if ((!newMessage.trim() && attachments.length === 0) || isSending) return
 
     try {
       setIsSending(true)
-      const message = await sendMessage(conversation.id, currentUserId, newMessage)
+      const message = await sendMessage(
+        conversation.id, 
+        currentUserId, 
+        newMessage || ' ', // Empty content if only attachments
+        undefined,
+        attachments
+      )
       setMessages(prev => [...prev, message as any])
       setNewMessage('')
+      setAttachments([])
       onRefresh()
     } catch (error) {
       console.error('Error sending message:', error)
@@ -103,6 +129,26 @@ export function ConversationView({
     } finally {
       setIsSending(false)
     }
+  }
+
+  async function handleReaction(messageId: string, reactionType: string) {
+    try {
+      await toggleReaction(messageId, currentUserId, reactionType)
+      // Refresh messages to show updated reactions
+      await loadMessages()
+    } catch (error) {
+      console.error('Error toggling reaction:', error)
+      toast.error('Failed to react')
+    }
+  }
+
+  function getReactionIcon(type: string) {
+    const icons: Record<string, any> = {
+      like: ThumbsUp,
+      helpful: Lightbulb,
+      insightful: Star
+    }
+    return icons[type] || ThumbsUp
   }
 
   async function handleArchive() {
@@ -331,20 +377,96 @@ export function ConversationView({
                         {message.author?.full_name}
                       </span>
                     )}
-                    <div
-                      className={`
-                        rounded-2xl px-4 py-2.5 break-words
-                        ${isCurrentUser 
-                          ? 'bg-rogue-forest text-white rounded-br-sm' 
-                          : 'bg-rogue-cream border border-rogue-sage/20 rounded-bl-sm'
-                        }
-                      `}
-                    >
-                      <div 
-                        className={`prose prose-sm max-w-none ${isCurrentUser ? 'prose-invert' : ''}`}
-                        dangerouslySetInnerHTML={{ __html: message.content }}
-                      />
+                    <div className="space-y-2">
+                      <div
+                        className={`
+                          rounded-2xl px-4 py-2.5 break-words
+                          ${isCurrentUser 
+                            ? 'bg-rogue-forest text-white rounded-br-sm' 
+                            : 'bg-rogue-cream border border-rogue-sage/20 rounded-bl-sm'
+                          }
+                        `}
+                      >
+                        {message.content && message.content.trim() !== ' ' && (
+                          <div 
+                            className={`prose prose-sm max-w-none ${isCurrentUser ? 'prose-invert' : ''}`}
+                            dangerouslySetInnerHTML={{ __html: message.content }}
+                          />
+                        )}
+                        {(message as any).media_urls && (message as any).media_urls.length > 0 && (
+                          <AttachmentDisplay 
+                            urls={(message as any).media_urls} 
+                            compact={true}
+                          />
+                        )}
+                      </div>
+
+                      {/* Reactions */}
+                      {(message as any).reactions && (message as any).reactions.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {['like', 'helpful', 'insightful'].map(reactionType => {
+                            const reactionData = (message as any).reactions.reduce((acc: any, r: any) => {
+                              if (r.reaction_type === reactionType) {
+                                acc.count++
+                                if (r.user_id === currentUserId) acc.userReacted = true
+                              }
+                              return acc
+                            }, { count: 0, userReacted: false })
+
+                            if (reactionData.count === 0) return null
+
+                            const Icon = getReactionIcon(reactionType)
+
+                            return (
+                              <button
+                                key={reactionType}
+                                onClick={() => handleReaction(message.id, reactionType)}
+                                className={`
+                                  flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all
+                                  ${reactionData.userReacted
+                                    ? 'bg-rogue-gold/20 text-rogue-forest border border-rogue-gold'
+                                    : 'bg-white border border-rogue-sage/30 text-rogue-slate hover:border-rogue-sage'
+                                  }
+                                `}
+                              >
+                                <Icon className="h-3 w-3" />
+                                <span className="font-medium">{reactionData.count}</span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
+
+                      {/* Reaction Buttons (hover) */}
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex gap-1">
+                          {['like', 'helpful', 'insightful'].map(reactionType => {
+                            const Icon = getReactionIcon(reactionType)
+                            const userReacted = (message as any).reactions?.some(
+                              (r: any) => r.reaction_type === reactionType && r.user_id === currentUserId
+                            )
+
+                            return (
+                              <button
+                                key={reactionType}
+                                onClick={() => handleReaction(message.id, reactionType)}
+                                className={`
+                                  p-1.5 rounded-full transition-all
+                                  ${userReacted
+                                    ? 'bg-rogue-gold/20 text-rogue-forest'
+                                    : 'bg-white hover:bg-rogue-cream border border-rogue-sage/20 text-rogue-slate hover:text-rogue-forest'
+                                  }
+                                `}
+                                title={reactionType}
+                              >
+                                <Icon className="h-3.5 w-3.5" />
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
                     </div>
+
                     <span className="text-xs text-rogue-slate/50 mt-1 px-1">
                       {formatRelativeTime(message.created_at)}
                       {message.is_edited && ' (edited)'}
@@ -360,22 +482,31 @@ export function ConversationView({
 
       {/* Message Input */}
       <div className="p-4 border-t border-rogue-sage/20 bg-rogue-cream/20">
-        <div className="flex gap-2 items-end">
-          <div className="flex-1 bg-white rounded-lg border border-rogue-sage/20 overflow-hidden">
-            <RichTextEditor
-              content={newMessage}
-              onChange={setNewMessage}
-              placeholder="Type a message..."
-              className="min-h-[60px] max-h-[200px]"
-            />
+        <div className="space-y-2">
+          {/* Attachment Upload */}
+          <MessageAttachmentUpload
+            attachments={attachments}
+            onAttachmentsChange={setAttachments}
+          />
+
+          {/* Message Input */}
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 bg-white rounded-lg border border-rogue-sage/20 overflow-hidden">
+              <RichTextEditor
+                content={newMessage}
+                onChange={setNewMessage}
+                placeholder="Type a message..."
+                className="min-h-[60px] max-h-[200px]"
+              />
+            </div>
+            <Button
+              onClick={handleSendMessage}
+              disabled={(!newMessage.trim() && attachments.length === 0) || isSending}
+              className="bg-rogue-forest hover:bg-rogue-pine h-[60px] px-6"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
           </div>
-          <Button
-            onClick={handleSendMessage}
-            disabled={!newMessage.trim() || isSending}
-            className="bg-rogue-forest hover:bg-rogue-pine h-[60px] px-6"
-          >
-            <Send className="h-5 w-5" />
-          </Button>
         </div>
       </div>
     </div>

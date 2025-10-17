@@ -268,7 +268,8 @@ export async function sendMessage(
   conversationId: string,
   authorId: string,
   content: string,
-  parentPostId?: string
+  parentPostId?: string,
+  mediaUrls?: string[]
 ) {
   const supabase = createClient()
   
@@ -278,7 +279,9 @@ export async function sendMessage(
       thread_id: conversationId,
       author_id: authorId,
       content,
-      parent_post_id: parentPostId
+      parent_post_id: parentPostId,
+      media_urls: mediaUrls && mediaUrls.length > 0 ? mediaUrls : null,
+      has_media: mediaUrls && mediaUrls.length > 0
     })
     .select(`
       *,
