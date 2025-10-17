@@ -64,6 +64,7 @@ export function ConversationView({
   const [attachments, setAttachments] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
+  const [editorKey, setEditorKey] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
@@ -130,14 +131,13 @@ export function ConversationView({
         attachments
       )
       
-      // Immediately clear form BEFORE adding to messages
-      const tempMessage = newMessage
-      const tempAttachments = attachments
+      // Add message to list first (optimistic update)
+      setMessages(prev => [...prev, message as any])
+      
+      // Clear form by resetting editor key and state
       setNewMessage('')
       setAttachments([])
-      
-      // Add message to list
-      setMessages(prev => [...prev, message as any])
+      setEditorKey(prev => prev + 1)
       
       // Refresh parent to update conversation list
       onRefresh()
@@ -513,7 +513,7 @@ export function ConversationView({
           <div className="flex gap-2 items-end">
             <div className="flex-1 bg-white rounded-lg border border-rogue-sage/20 overflow-hidden">
               <RichTextEditor
-                key={`editor-${messages.length}`}
+                key={`editor-${editorKey}`}
                 content={newMessage}
                 onChange={setNewMessage}
                 placeholder="Type a message..."
