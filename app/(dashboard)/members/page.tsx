@@ -191,126 +191,103 @@ export default function MembersPage() {
 
         {/* Featured Facilitators Section */}
         {facilitators.length > 0 && (
-          <div className="mb-16">
-            {/* Header with elegant background */}
-            <div className="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-rogue-forest/5 via-rogue-sage/5 to-rogue-gold/5 p-8 backdrop-blur-sm border border-rogue-gold/20">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(212,175,55,0.1),transparent)]"></div>
-              <div className="relative">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 rounded-lg bg-rogue-gold/10">
-                    <Sparkles className="h-6 w-6 text-rogue-gold" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-rogue-forest">
-                    Meet Your Facilitators
-                  </h2>
+          <div className="mb-12">
+            {/* Compact Header */}
+            <div className="relative mb-5 overflow-hidden rounded-xl bg-gradient-to-r from-rogue-forest/5 via-rogue-gold/5 to-transparent p-5 border border-rogue-gold/20">
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 rounded-lg bg-rogue-gold/10">
+                  <Sparkles className="h-5 w-5 text-rogue-gold" />
                 </div>
-                <p className="text-rogue-slate/80 text-lg leading-relaxed max-w-3xl">
-                  Our experienced facilitators are here to guide you through your leadership journey. 
-                  They bring years of expertise and are dedicated to your growth and success.
-                </p>
+                <div>
+                  <h2 className="text-2xl font-bold text-rogue-forest">Meet Your Facilitators</h2>
+                  <p className="text-sm text-rogue-slate/70">Guiding your leadership journey with expertise and dedication</p>
+                </div>
               </div>
             </div>
 
-            {/* Facilitator Cards - Horizontal Layout */}
-            <div className="space-y-6">
+            {/* Facilitator Cards - Compact 2-Column Grid */}
+            <div className="grid lg:grid-cols-2 gap-4">
               {facilitators.map((facilitator) => (
                 <Card
                   key={facilitator.id}
-                  className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-rogue-gold/20 hover:border-rogue-gold/40 bg-gradient-to-br from-white to-rogue-cream/30 overflow-hidden"
+                  className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-rogue-gold/20 hover:border-rogue-gold/40 bg-gradient-to-br from-white to-rogue-cream/20 overflow-hidden"
                   onClick={() => router.push(`/members/${facilitator.id}`)}
                 >
                   <CardContent className="p-0">
-                    <div className="flex flex-col md:flex-row">
-                      {/* Image Section */}
-                      <div className="relative md:w-64 flex-shrink-0 bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10 p-8 flex items-center justify-center">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(212,175,55,0.1),transparent)]"></div>
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-rogue-gold/20 blur-2xl rounded-full scale-150 group-hover:scale-175 transition-transform duration-500"></div>
-                          <Avatar className="relative h-32 w-32 border-4 border-white shadow-xl ring-2 ring-rogue-gold/20 group-hover:ring-rogue-gold/40 transition-all">
-                            <AvatarImage src={facilitator.avatar_url || undefined} className="object-cover" />
-                            <AvatarFallback className="bg-rogue-forest text-white text-4xl font-semibold">
-                              {facilitator.full_name?.[0] || facilitator.email[0].toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
+                    <div className="flex">
+                      {/* Compact Image Section */}
+                      <div className="relative w-32 flex-shrink-0 bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10 p-4 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(212,175,55,0.15),transparent)]"></div>
+                        <Avatar className="relative h-20 w-20 border-2 border-white shadow-lg ring-2 ring-rogue-gold/20 group-hover:ring-rogue-gold/40 transition-all">
+                          <AvatarImage src={facilitator.avatar_url || undefined} className="object-cover" />
+                          <AvatarFallback className="bg-rogue-forest text-white text-2xl font-semibold">
+                            {facilitator.full_name?.[0] || facilitator.email[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                       </div>
 
-                      {/* Content Section */}
-                      <div className="flex-1 p-6 md:p-8">
-                        <div className="flex flex-col h-full">
-                          {/* Header */}
-                          <div className="mb-4">
-                            <div className="flex items-start justify-between gap-4 mb-2">
-                              <div>
-                                <h3 className="text-2xl font-bold text-rogue-forest mb-1 group-hover:text-rogue-pine transition-colors">
-                                  {facilitator.full_name || 'Facilitator'}
-                                </h3>
-                                {facilitator.current_role && (
-                                  <p className="text-rogue-slate/80 font-medium">
-                                    {facilitator.current_role}
-                                  </p>
-                                )}
-                                {facilitator.employer && (
-                                  <p className="text-sm text-rogue-slate/60">
-                                    {facilitator.employer}
-                                  </p>
-                                )}
-                              </div>
-                              <div className="flex flex-wrap gap-2 items-start">
-                                <RoleBadge roles={facilitator.roles as any} role={facilitator.role as any} />
-                                {(facilitator.city || facilitator.state) && (
-                                  <Badge variant="outline" className="text-xs border-rogue-sage/30">
-                                    <MapPin size={12} className="mr-1" />
-                                    {[facilitator.city, facilitator.state].filter(Boolean).join(', ')}
-                                  </Badge>
-                                )}
-                              </div>
+                      {/* Compact Content Section */}
+                      <div className="flex-1 p-4">
+                        {/* Header */}
+                        <div className="mb-2">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-lg font-bold text-rogue-forest truncate group-hover:text-rogue-pine transition-colors">
+                                {facilitator.full_name || 'Facilitator'}
+                              </h3>
+                              {facilitator.current_role && (
+                                <p className="text-xs text-rogue-slate/80 font-medium truncate">
+                                  {facilitator.current_role}
+                                </p>
+                              )}
+                              {facilitator.employer && (
+                                <p className="text-xs text-rogue-slate/60 truncate">
+                                  {facilitator.employer}
+                                </p>
+                              )}
                             </div>
+                            <RoleBadge roles={facilitator.roles as any} role={facilitator.role as any} className="text-xs" />
                           </div>
+                        </div>
 
-                          {/* Bio - Full Display */}
-                          {facilitator.bio && (
-                            <div className="flex-1 mb-4">
-                              <p className="text-rogue-slate leading-relaxed text-base">
-                                {facilitator.bio}
-                              </p>
+                        {/* Bio - Compact Display */}
+                        {facilitator.bio && (
+                          <p className="text-sm text-rogue-slate leading-relaxed line-clamp-3 mb-3">
+                            {facilitator.bio}
+                          </p>
+                        )}
+
+                        {/* Compact Footer */}
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-rogue-sage/10">
+                          {facilitator.interests && facilitator.interests.length > 0 && (
+                            <div className="flex gap-1 overflow-hidden">
+                              {facilitator.interests.slice(0, 2).map((interest, idx) => (
+                                <Badge 
+                                  key={idx} 
+                                  variant="secondary" 
+                                  className="text-xs bg-rogue-sage/10 text-rogue-forest"
+                                >
+                                  {interest}
+                                </Badge>
+                              ))}
+                              {facilitator.interests.length > 2 && (
+                                <Badge variant="secondary" className="text-xs bg-rogue-sage/10">
+                                  +{facilitator.interests.length - 2}
+                                </Badge>
+                              )}
                             </div>
                           )}
-
-                          {/* Footer */}
-                          <div className="flex items-center justify-between gap-4 pt-4 border-t border-rogue-sage/10">
-                            {facilitator.interests && facilitator.interests.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 flex-1">
-                                {facilitator.interests.slice(0, 4).map((interest, idx) => (
-                                  <Badge 
-                                    key={idx} 
-                                    variant="secondary" 
-                                    className="text-xs bg-rogue-sage/10 text-rogue-forest hover:bg-rogue-sage/20"
-                                  >
-                                    {interest}
-                                  </Badge>
-                                ))}
-                                {facilitator.interests.length > 4 && (
-                                  <Badge 
-                                    variant="secondary" 
-                                    className="text-xs bg-rogue-sage/10 text-rogue-forest"
-                                  >
-                                    +{facilitator.interests.length - 4} more
-                                  </Badge>
-                                )}
-                              </div>
-                            )}
-                            <Button
-                              variant="outline"
-                              className="border-rogue-forest/20 hover:border-rogue-forest hover:bg-rogue-forest hover:text-white transition-all flex-shrink-0"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                router.push(`/members/${facilitator.id}`)
-                              }}
-                            >
-                              View Full Profile
-                            </Button>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs hover:bg-rogue-forest hover:text-white transition-all h-7 px-2"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/members/${facilitator.id}`)
+                            }}
+                          >
+                            View Profile
+                          </Button>
                         </div>
                       </div>
                     </div>
