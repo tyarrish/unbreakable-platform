@@ -12,8 +12,30 @@ import { Sparkles, MessageSquare, BarChart, Loader2, Mail, CheckCircle } from 'l
 export default function AIToolsPage() {
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false)
   const [isGeneratingReport, setIsGeneratingReport] = useState(false)
+  const [isCreatingWelcome, setIsCreatingWelcome] = useState(false)
   const [discussionPrompt, setDiscussionPrompt] = useState<any>(null)
   const [healthReport, setHealthReport] = useState<string>('')
+
+  async function createWelcomeDiscussion() {
+    setIsCreatingWelcome(true)
+    try {
+      const res = await fetch('/api/ai/create-welcome-discussion', {
+        method: 'POST',
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        toast.success(`Welcome discussion created: "${data.discussion.title}"`)
+      } else {
+        toast.error('Failed to create discussion')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Failed to create discussion')
+    } finally {
+      setIsCreatingWelcome(false)
+    }
+  }
 
   async function generatePrompt() {
     setIsGeneratingPrompt(true)
@@ -68,9 +90,41 @@ export default function AIToolsPage() {
         description="Next-level AI capabilities for cohort management"
       />
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        {/* Discussion Prompt Generator */}
-        <Card className="border-2 border-rogue-copper/20 bg-gradient-to-br from-rogue-copper/5 to-white">
+      <div className="space-y-8">
+        {/* Quick Actions */}
+        <Card className="border-2 border-rogue-gold/30 bg-gradient-to-br from-rogue-gold/10 to-white">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>One-click AI utilities</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={createWelcomeDiscussion}
+              disabled={isCreatingWelcome}
+              variant="outline"
+              className="border-rogue-forest/30 hover:bg-rogue-forest/10"
+            >
+              {isCreatingWelcome ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2 text-rogue-gold" />
+                  Create Week 1 Welcome Discussion
+                </>
+              )}
+            </Button>
+            <p className="text-xs text-rogue-slate/70 mt-2">
+              Generates and posts an AI-written welcome thread to kick off community engagement
+            </p>
+          </CardContent>
+        </Card>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Discussion Prompt Generator */}
+          <Card className="border-2 border-rogue-copper/20 bg-gradient-to-br from-rogue-copper/5 to-white">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-rogue-copper rounded-lg text-white">
@@ -204,6 +258,7 @@ export default function AIToolsPage() {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
     </Container>
   )
