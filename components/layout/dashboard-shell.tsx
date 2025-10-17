@@ -62,9 +62,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         // Get user profile to determine role and user info
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('role, full_name, email, avatar_url, is_active, profile_completed')
+          .select('role, roles, full_name, email, avatar_url, is_active, profile_completed')
           .eq('id', session.user.id)
-          .single<{ role: string; full_name: string; email: string; avatar_url: string | null; is_active: boolean; profile_completed: boolean }>()
+          .single<{ role: string; roles: string[]; full_name: string; email: string; avatar_url: string | null; is_active: boolean; profile_completed: boolean }>()
 
         console.log('Dashboard: Profile data:', profile)
 
