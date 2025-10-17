@@ -461,6 +461,8 @@ export async function updateGroupName(conversationId: string, groupName: string)
 export function subscribeToConversation(conversationId: string, callback: () => void) {
   const supabase = createClient()
   
+  console.log('Setting up real-time subscription for conversation:', conversationId)
+  
   const channel = supabase
     .channel(`conversation:${conversationId}`)
     .on(
@@ -471,9 +473,14 @@ export function subscribeToConversation(conversationId: string, callback: () => 
         table: 'discussion_posts',
         filter: `thread_id=eq.${conversationId}`,
       },
-      callback
+      (payload) => {
+        console.log('Real-time event received:', payload)
+        callback()
+      }
     )
-    .subscribe()
+    .subscribe((status) => {
+      console.log('Subscription status:', status)
+    })
   
   return channel
 }
@@ -483,6 +490,8 @@ export function subscribeToConversation(conversationId: string, callback: () => 
  */
 export function subscribeToUserConversations(userId: string, callback: () => void) {
   const supabase = createClient()
+  
+  console.log('Setting up user conversations real-time subscription for:', userId)
   
   // Subscribe to any changes in conversations where user is a member
   const channel = supabase
@@ -494,7 +503,10 @@ export function subscribeToUserConversations(userId: string, callback: () => voi
         schema: 'public',
         table: 'discussion_posts',
       },
-      callback
+      (payload) => {
+        console.log('Real-time: discussion_posts change', payload.eventType)
+        callback()
+      }
     )
     .on(
       'postgres_changes',
@@ -504,9 +516,14 @@ export function subscribeToUserConversations(userId: string, callback: () => voi
         table: 'conversation_members',
         filter: `user_id=eq.${userId}`,
       },
-      callback
+      (payload) => {
+        console.log('Real-time: conversation_members change', payload.eventType)
+        callback()
+      }
     )
-    .subscribe()
+    .subscribe((status) => {
+      console.log('User conversations subscription status:', status)
+    })
   
   return channel
 }

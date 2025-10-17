@@ -71,15 +71,25 @@ export function ConversationView({
     loadMessages()
     markAsRead()
 
-    // Set up real-time subscription
+    // Set up real-time subscription for new messages
     const channel = subscribeToConversation(conversation.id, () => {
+      console.log('Real-time: New message detected in conversation')
       loadMessages()
+      markAsRead()
     })
 
     return () => {
+      console.log('Cleaning up real-time subscription')
       supabase.removeChannel(channel)
     }
   }, [conversation.id])
+
+  // Mark as read whenever messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      markAsRead()
+    }
+  }, [messages.length])
 
   useEffect(() => {
     scrollToBottom()
@@ -119,10 +129,20 @@ export function ConversationView({
         undefined,
         attachments
       )
-      setMessages(prev => [...prev, message as any])
+      
+      // Immediately clear form BEFORE adding to messages
+      const tempMessage = newMessage
+      const tempAttachments = attachments
       setNewMessage('')
       setAttachments([])
+      
+      // Add message to list
+      setMessages(prev => [...prev, message as any])
+      
+      // Refresh parent to update conversation list
       onRefresh()
+      
+      console.log('Message sent and form cleared')
     } catch (error) {
       console.error('Error sending message:', error)
       toast.error('Failed to send message')
@@ -493,6 +513,7 @@ export function ConversationView({
           <div className="flex gap-2 items-end">
             <div className="flex-1 bg-white rounded-lg border border-rogue-sage/20 overflow-hidden">
               <RichTextEditor
+                key={`editor-${messages.length}`}
                 content={newMessage}
                 onChange={setNewMessage}
                 placeholder="Type a message..."
