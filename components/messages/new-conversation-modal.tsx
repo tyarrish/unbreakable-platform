@@ -96,13 +96,16 @@ export function NewConversationModal({
     
     try {
       setIsLoading(true)
+      console.log('Creating DM between:', currentUserId, 'and', selectedUsers[0].id)
       const conversation = await createDirectMessage(currentUserId, selectedUsers[0].id)
+      console.log('DM created successfully:', conversation)
       toast.success('Conversation started')
       onConversationCreated(conversation.id)
       onClose()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating DM:', error)
-      toast.error('Failed to create conversation')
+      console.error('Error details:', error.message, error.details, error.hint)
+      toast.error(error.message || 'Failed to create conversation')
     } finally {
       setIsLoading(false)
     }
@@ -121,17 +124,20 @@ export function NewConversationModal({
     
     try {
       setIsLoading(true)
+      console.log('Creating group:', groupName, 'with members:', selectedUsers.map(u => u.id))
       const conversation = await createGroupChat(
         currentUserId,
         selectedUsers.map(u => u.id),
         groupName
       )
+      console.log('Group created successfully:', conversation)
       toast.success('Group created')
       onConversationCreated(conversation.id)
       onClose()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating group:', error)
-      toast.error('Failed to create group')
+      console.error('Error details:', error.message, error.details, error.hint)
+      toast.error(error.message || 'Failed to create group')
     } finally {
       setIsLoading(false)
     }

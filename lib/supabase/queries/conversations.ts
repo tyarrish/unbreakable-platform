@@ -195,7 +195,7 @@ export async function createDirectMessage(fromUserId: string, toUserId: string) 
   const { data: thread, error: threadError } = await supabase
     .from('discussion_threads')
     .insert({
-      title: '', // Will be generated from participant names in UI
+      title: 'Direct Message', // Fallback title in case null doesn't work
       conversation_type: 'direct_message',
       created_by: fromUserId,
       is_pinned: false,
@@ -204,7 +204,10 @@ export async function createDirectMessage(fromUserId: string, toUserId: string) 
     .select()
     .single()
   
-  if (threadError) throw threadError
+  if (threadError) {
+    console.error('Error creating thread:', threadError)
+    throw threadError
+  }
   
   // Add both users as members
   const { error: membersError } = await (supabase as any)
@@ -214,7 +217,10 @@ export async function createDirectMessage(fromUserId: string, toUserId: string) 
       { thread_id: thread.id, user_id: toUserId }
     ])
   
-  if (membersError) throw membersError
+  if (membersError) {
+    console.error('Error adding members:', membersError)
+    throw membersError
+  }
   
   return thread
 }
