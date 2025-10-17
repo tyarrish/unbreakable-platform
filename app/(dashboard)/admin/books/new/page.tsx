@@ -24,11 +24,23 @@ export default function NewBookPage() {
   const [goodreadsLink, setGoodreadsLink] = useState('')
   const [assignedMonth, setAssignedMonth] = useState<number | undefined>()
   const [isFeatured, setIsFeatured] = useState(false)
+  const [category, setCategory] = useState('')
   const [reasoning, setReasoning] = useState('')
   const [keyTakeaways, setKeyTakeaways] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isEnriching, setIsEnriching] = useState(false)
   const router = useRouter()
+
+  const BOOK_CATEGORIES = [
+    'Stoicism',
+    'Team Leadership',
+    'Decision Making',
+    'Communication',
+    'Personal Development',
+    'Biography',
+    'Strategy',
+    'General Leadership',
+  ]
 
   async function enrichBookDetails() {
     if (!title || !author) {
@@ -73,6 +85,7 @@ export default function NewBookPage() {
         author,
         description,
         isbn,
+        category: category || undefined,
         cover_image_url: coverImageUrl || undefined,
         amazon_link: amazonLink || undefined,
         goodreads_link: goodreadsLink || undefined,
@@ -80,7 +93,7 @@ export default function NewBookPage() {
         is_featured: isFeatured,
         reasoning: reasoning || undefined,
         key_takeaways: keyTakeaways ? keyTakeaways.split('\n').filter(t => t.trim()) : undefined,
-      })
+      } as any)
 
       toast.success('Book added successfully!')
       router.push('/admin/books')
@@ -235,19 +248,38 @@ export default function NewBookPage() {
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="assignedMonth">Assigned Month (Optional)</Label>
-                <Input
-                  id="assignedMonth"
-                  type="number"
-                  min="1"
-                  max="8"
-                  placeholder="1-8"
-                  value={assignedMonth || ''}
-                  onChange={(e) => setAssignedMonth(e.target.value ? parseInt(e.target.value) : undefined)}
-                  disabled={isLoading}
-                />
-                <p className="text-xs text-rogue-slate/70">Assign this book to a specific month (1-8)</p>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="assignedMonth">Assigned Month (Optional)</Label>
+                  <Input
+                    id="assignedMonth"
+                    type="number"
+                    min="1"
+                    max="8"
+                    placeholder="1-8"
+                    value={assignedMonth || ''}
+                    onChange={(e) => setAssignedMonth(e.target.value ? parseInt(e.target.value) : undefined)}
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-rogue-slate/70">Assign to a month for featured reading</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category (Optional)</Label>
+                  <select
+                    id="category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    disabled={isLoading}
+                    className="w-full h-10 px-3 py-2 rounded-lg border border-rogue-sage/20 bg-white text-rogue-forest focus:outline-none focus:ring-2 focus:ring-rogue-gold/50"
+                  >
+                    <option value="">Select a category...</option>
+                    {BOOK_CATEGORIES.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-rogue-slate/70">For organizing non-featured books</p>
+                </div>
               </div>
 
               <div className="space-y-2">

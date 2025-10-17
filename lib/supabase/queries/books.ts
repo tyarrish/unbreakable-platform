@@ -2,19 +2,22 @@ import { createClient } from '@/lib/supabase/client'
 import type { Book, ReadingStatus } from '@/types/index.types'
 
 /**
- * Get all books
+ * Get all books with submitter info
  */
 export async function getBooks() {
   const supabase = createClient()
   
   const { data, error } = await supabase
     .from('books')
-    .select('*')
+    .select(`
+      *,
+      submitted_by_profile:profiles!books_submitted_by_fkey(full_name)
+    `)
     .order('assigned_month', { ascending: true, nullsFirst: false })
     .order('title', { ascending: true })
   
   if (error) throw error
-  return data as Book[]
+  return data as any[]
 }
 
 /**

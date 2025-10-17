@@ -4,24 +4,33 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/components/layout/container'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Library, BookOpen, Star, ExternalLink, Sparkles, BookMarked, Check, Circle, CheckCircle2 } from 'lucide-react'
-import { getBooks, getReadingProgress, updateReadingProgress } from '@/lib/supabase/queries/books'
+import { Library, BookOpen } from 'lucide-react'
+import { getBooks, getReadingProgress } from '@/lib/supabase/queries/books'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { getMonthColor } from '@/lib/utils/month-colors'
-import type { Book, ReadingStatus } from '@/types/index.types'
+import type { Book } from '@/types/index.types'
+
+const BOOK_CATEGORIES = [
+  'Stoicism',
+  'Team Leadership',
+  'Decision Making',
+  'Communication',
+  'Personal Development',
+  'Biography',
+  'Strategy',
+  'General Leadership',
+]
 
 export default function LibraryPage() {
   const router = useRouter()
   const [books, setBooks] = useState<Book[]>([])
-  const [progressMap, setProgressMap] = useState<Map<string, any>>(new Map())
   const [userId, setUserId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [hoveredBook, setHoveredBook] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -39,19 +48,6 @@ export default function LibraryPage() {
 
       const booksData = await getBooks()
       setBooks(booksData)
-
-      const progressPromises = booksData.map(book => 
-        getReadingProgress(user.id, book.id)
-      )
-      const progressData = await Promise.all(progressPromises)
-      
-      const newProgressMap = new Map()
-      progressData.forEach((progress, index) => {
-        if (progress) {
-          newProgressMap.set(booksData[index].id, progress)
-        }
-      })
-      setProgressMap(newProgressMap)
     } catch (error) {
       console.error('Error loading library:', error)
       toast.error('Failed to load library')
@@ -60,64 +56,38 @@ export default function LibraryPage() {
     }
   }
 
-  async function updateStatus(bookId: string, status: ReadingStatus) {
-    if (!userId) return
-
-    try {
-      const updates: any = { status }
-      
-      if (status === 'reading' && !progressMap.get(bookId)?.started_at) {
-        updates.started_at = new Date().toISOString().split('T')[0]
-      }
-      
-      if (status === 'finished') {
-        updates.finished_at = new Date().toISOString().split('T')[0]
-        if (!progressMap.get(bookId)?.started_at) {
-          updates.started_at = new Date().toISOString().split('T')[0]
-        }
-      }
-
-      await updateReadingProgress(userId, bookId, updates)
-      toast.success('Reading status updated!')
-      loadLibrary()
-    } catch (error) {
-      console.error('Error updating status:', error)
-      toast.error('Failed to update status')
-    }
-  }
-
   if (isLoading) {
     return <PageLoader />
   }
 
-  const currentMonthBooks = books.filter(b => b.assigned_month)
-  const generalBooks = books.filter(b => !b.assigned_month)
-  const finishedCount = Array.from(progressMap.values()).filter(p => p.status === 'finished').length
-  const readingCount = Array.from(progressMap.values()).filter(p => p.status === 'reading').length
+  // Split books: Featured (assigned to months) vs General (bookshelf)
+  const featuredBooks = books.filter(b => b.is_featured || b.assigned_month).sort((a, b) => (a.assigned_month || 99) - (b.assigned_month || 99))
+  const generalBooks = books.filter(b => !b.is_featured && !b.assigned_month)
+
+  // Group general books by category
+  const booksByCategory: Record<string, Book[]> = {}
+  generalBooks.forEach(book => {
+    const category = (book as any).category || 'General Leadership'
+    if (!booksByCategory[category]) {
+      booksByCategory[category] = []
+    }
+    booksByCategory[category].push(book)
+  })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
-      {/* Subtle header background */}
-      <div className="bg-white/40 backdrop-blur-sm border-b border-rogue-sage/10">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-white/80 via-white/60 to-transparent backdrop-blur-sm border-b border-rogue-sage/20">
         <Container>
-          <div className="py-8">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="py-10">
+            <div className="flex items-end justify-between flex-wrap gap-6">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-rogue-forest mb-2">Leadership Library</h1>
-                <p className="text-lg text-rogue-slate">
-                  Curated reading paired with your monthly curriculum
-                </p>
+                <h1 className="text-5xl font-bold text-rogue-forest mb-3 tracking-tight">Library</h1>
+                <p className="text-lg text-rogue-slate/80">Curated leadership reading</p>
               </div>
-              <div className="flex gap-3">
-                <Badge className="bg-rogue-pine/10 text-rogue-pine border-0 px-4 py-2">
-                  {books.length} Books
-                </Badge>
-                <Badge className="bg-rogue-gold text-white border-0 px-4 py-2">
-                  {readingCount} Reading
-                </Badge>
-                <Badge className="bg-green-100 text-green-700 border-0 px-4 py-2">
-                  {finishedCount} Done
-                </Badge>
+              <div className="px-5 py-3 bg-white rounded-xl border border-rogue-sage/20 shadow-sm">
+                <p className="text-xs text-rogue-slate/60 uppercase tracking-wider mb-1">Total Books</p>
+                <p className="text-3xl font-bold text-rogue-forest">{books.length}</p>
               </div>
             </div>
           </div>
@@ -125,133 +95,69 @@ export default function LibraryPage() {
       </div>
 
       <Container>
-        <div className="py-8">
+        <div className="py-12">
           {books.length === 0 ? (
-            <Card className="border-0 shadow-xl">
-              <EmptyState
-                icon={<Library size={64} />}
-                title="Library Coming Soon"
-                description="Your curated book collection will appear here with monthly reading assignments."
-              />
-            </Card>
+            <EmptyState
+              icon={<Library size={64} />}
+              title="No Books Yet"
+              description="Your curated library will appear here."
+            />
           ) : (
-            <div className="space-y-12">
-              {/* Monthly Assigned Books */}
-              {currentMonthBooks.length > 0 && (
+            <div className="space-y-16">
+              {/* Featured Books - Assigned to Months */}
+              {featuredBooks.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-rogue-gold/10 rounded-lg">
-                      <Sparkles className="h-5 w-5 text-rogue-gold" />
-                    </div>
-                    <h2 className="text-3xl font-bold text-rogue-forest">Monthly Assignments</h2>
+                  <div className="mb-8">
+                    <h2 className="text-3xl font-bold text-rogue-forest mb-2">Monthly Reading</h2>
+                    <div className="h-1 w-20 bg-rogue-gold rounded-full" />
                   </div>
-                  
-                  <div className="grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                    {currentMonthBooks.map((book) => {
-                      const progress = progressMap.get(book.id)
-                      const status = progress?.status || 'want_to_read'
+
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {featuredBooks.map((book, index) => {
+                      const monthColor = book.assigned_month ? getMonthColor(book.assigned_month) : null
 
                       return (
                         <motion.div
                           key={book.id}
-                          layoutId={`book-${book.id}`}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                          whileHover={{ y: -8, scale: 1.02 }}
+                          transition={{ duration: 0.4, delay: index * 0.05 }}
+                          className="group cursor-pointer"
+                          onClick={() => router.push(`/library/${book.id}`)}
                         >
-                          <Card 
-                            className="group border-0 shadow-lg hover:shadow-2xl transition-shadow cursor-pointer overflow-hidden bg-white"
-                            onClick={() => router.push(`/library/${book.id}`)}
-                          >
-                          {/* Book Cover - Taller for better book proportions */}
-                          <div className="relative bg-gradient-to-b from-rogue-sage/5 to-white p-4">
-                            {book.cover_image_url ? (
-                              <div className="aspect-[2/3] overflow-hidden rounded-lg shadow-md">
+                          <div className="relative">
+                            {/* Book Cover */}
+                            <div className="aspect-[2/3] rounded-xl overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-300 bg-gradient-to-b from-rogue-sage/5 to-white">
+                              {book.cover_image_url ? (
                                 <img
                                   src={book.cover_image_url}
                                   alt={book.title}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
-                              </div>
-                            ) : (
-                              <div className="aspect-[2/3] bg-gradient-to-br from-rogue-forest/10 to-rogue-gold/10 rounded-lg flex items-center justify-center">
-                                <BookOpen className="h-16 w-16 text-rogue-forest/30" />
-                              </div>
-                            )}
-                            
-                            {/* Month Badge - Color Coded */}
-                            {book.assigned_month && (
-                              <div className="absolute top-2 right-2">
-                                <div className={`${getMonthColor(book.assigned_month).badge} text-xs font-bold px-3 py-1.5 rounded-full shadow-lg`}>
-                                  Month {book.assigned_month}
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-rogue-forest/10 to-rogue-gold/10 flex items-center justify-center">
+                                  <BookOpen className="h-16 w-16 text-rogue-forest/30" />
                                 </div>
-                              </div>
-                            )}
-                            
-                            {/* Status Badge */}
-                            {status === 'finished' && (
-                              <div className="absolute bottom-2 left-2">
-                                <Badge className="bg-green-600 text-white shadow-lg border-0 text-xs">
-                                  <Check size={10} className="mr-1" />
-                                  Done
-                                </Badge>
-                              </div>
-                            )}
-                            {status === 'reading' && (
-                              <div className="absolute bottom-2 left-2">
-                                <Badge className="bg-rogue-gold text-white shadow-lg border-0 text-xs">
-                                  Reading
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
+                              )}
+                            </div>
 
-                          {/* Book Info - Compact */}
-                          <CardContent className="pt-4 pb-4 space-y-3">
-                            <div>
-                              <h3 className="font-bold text-base text-rogue-forest line-clamp-2 leading-tight group-hover:text-rogue-gold transition-colors mb-1">
+                            {/* Month Badge */}
+                            {book.assigned_month && monthColor && (
+                              <div className="absolute top-3 right-3">
+                                <Badge className={`${monthColor.badge} shadow-lg`}>
+                                  Month {book.assigned_month}
+                                </Badge>
+                              </div>
+                            )}
+
+                            {/* Title & Author - Below Cover */}
+                            <div className="mt-4">
+                              <h3 className="font-bold text-rogue-forest line-clamp-2 group-hover:text-rogue-pine transition-colors">
                                 {book.title}
                               </h3>
-                              <p className="text-sm text-rogue-slate">{book.author}</p>
+                              <p className="text-sm text-rogue-slate/70 mt-1">{book.author}</p>
                             </div>
-
-                            {/* Star Rating */}
-                            {progress?.rating && (
-                              <div className="flex items-center gap-0.5">
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    size={14}
-                                    className={i < progress.rating ? 'fill-rogue-gold text-rogue-gold' : 'text-rogue-slate/20'}
-                                  />
-                                ))}
-                              </div>
-                            )}
-
-                            {/* Reading Status Badge */}
-                            <div className="pt-2 border-t border-rogue-sage/10">
-                              {status === 'want_to_read' && (
-                                <div className="flex items-center gap-1.5 text-rogue-slate text-xs">
-                                  <Circle className="w-3 h-3" />
-                                  <span>To Read</span>
-                                </div>
-                              )}
-                              {status === 'reading' && (
-                                <div className="flex items-center gap-1.5 text-rogue-gold text-xs font-medium">
-                                  <BookOpen className="w-3 h-3" />
-                                  <span>Reading</span>
-                                </div>
-                              )}
-                              {status === 'finished' && (
-                                <div className="flex items-center gap-1.5 text-green-700 text-xs font-medium">
-                                  <CheckCircle2 className="w-3 h-3 fill-green-700" />
-                                  <span>Completed</span>
-                                </div>
-                              )}
-                            </div>
-                          </CardContent>
-                          </Card>
+                          </div>
                         </motion.div>
                       )
                     })}
@@ -259,64 +165,83 @@ export default function LibraryPage() {
                 </div>
               )}
 
-              {/* Additional Reading */}
-              {generalBooks.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="h-1 w-12 bg-gradient-to-r from-rogue-forest to-rogue-gold rounded-full"></div>
-                    <h2 className="text-2xl font-bold text-rogue-forest">Additional Reading</h2>
+              {/* Bookshelf - Non-Featured Books */}
+              {Object.keys(booksByCategory).length > 0 && (
+                <div className="bg-gradient-to-b from-rogue-forest/5 to-rogue-pine/5 -mx-6 px-6 py-12 rounded-2xl">
+                  <div className="mb-10">
+                    <h2 className="text-3xl font-bold text-rogue-forest mb-2">Bookshelf</h2>
+                    <p className="text-rogue-slate/70">Additional recommended reading</p>
                   </div>
-                  
-                  <div className="grid md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                    {generalBooks.map((book) => {
-                      const progress = progressMap.get(book.id)
-                      const status = progress?.status || 'want_to_read'
 
-                      return (
-                        <motion.div
-                          key={book.id}
-                          layoutId={`book-${book.id}`}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                          whileHover={{ y: -6, scale: 1.02 }}
-                        >
-                          <Card 
-                            className="group border-0 shadow-md hover:shadow-xl transition-shadow cursor-pointer bg-white"
-                            onClick={() => router.push(`/library/${book.id}`)}
-                          >
-                          <div className="relative bg-gradient-to-b from-rogue-sage/5 to-white p-3">
-                            {book.cover_image_url ? (
-                              <div className="aspect-[2/3] overflow-hidden rounded-md shadow">
-                                <img
-                                  src={book.cover_image_url}
-                                  alt={book.title}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
+                  <div className="space-y-12">
+                    {Object.entries(booksByCategory).map(([category, categoryBooks]) => (
+                      <div key={category}>
+                        {/* Category Header */}
+                        <h3 className="text-xl font-semibold text-rogue-forest mb-6 flex items-center gap-3">
+                          <div className="h-px flex-1 bg-rogue-sage/20 max-w-12" />
+                          {category}
+                          <div className="h-px flex-1 bg-rogue-sage/20" />
+                        </h3>
+
+                        {/* Books Grid - Cover Only with Hover */}
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
+                          {categoryBooks.map((book) => (
+                            <motion.div
+                              key={book.id}
+                              className="group cursor-pointer relative"
+                              onClick={() => router.push(`/library/${book.id}`)}
+                              onMouseEnter={() => setHoveredBook(book.id)}
+                              onMouseLeave={() => setHoveredBook(null)}
+                              whileHover={{ scale: 1.05, y: -4 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              {/* Book Cover */}
+                              <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-md group-hover:shadow-xl transition-shadow duration-300 bg-gradient-to-b from-rogue-sage/5 to-white">
+                                {book.cover_image_url ? (
+                                  <img
+                                    src={book.cover_image_url}
+                                    alt={book.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-rogue-forest/10 to-rogue-gold/10 flex items-center justify-center">
+                                    <BookOpen className="h-8 w-8 text-rogue-forest/30" />
+                                  </div>
+                                )}
                               </div>
-                            ) : (
-                              <div className="aspect-[2/3] bg-gradient-to-br from-rogue-forest/10 to-rogue-gold/10 rounded-md flex items-center justify-center">
-                                <BookOpen className="h-12 w-12 text-rogue-forest/30" />
-                              </div>
-                            )}
-                            {status === 'finished' && (
-                              <div className="absolute bottom-1 left-1">
-                                <Badge className="bg-green-600 text-white shadow-md border-0 text-xs">
-                                  ✓
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-                          <CardContent className="pt-3 pb-3 space-y-1">
-                            <h3 className="font-semibold text-xs text-rogue-forest line-clamp-2 leading-tight">{book.title}</h3>
-                            <p className="text-xs text-rogue-slate truncate">{book.author}</p>
-                          </CardContent>
-                          </Card>
-                        </motion.div>
-                      )
-                    })}
+
+                              {/* Hover Overlay - Title, Author, Submitter */}
+                              {hoveredBook === book.id && (
+                                <motion.div
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  className="absolute inset-0 bg-gradient-to-t from-rogue-forest via-rogue-forest/95 to-rogue-forest/80 rounded-lg p-3 flex flex-col justify-end text-white"
+                                >
+                                  <h4 className="font-bold text-sm line-clamp-2 mb-1">{book.title}</h4>
+                                  <p className="text-xs opacity-90 mb-2">{book.author}</p>
+                                  {(book as any).submitted_by_profile && (
+                                    <p className="text-xs opacity-70">
+                                      Added by {(book as any).submitted_by_profile.full_name}
+                                    </p>
+                                  )}
+                                </motion.div>
+                              )}
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
+              )}
+
+              {/* Empty States */}
+              {featuredBooks.length === 0 && generalBooks.length === 0 && (
+                <EmptyState
+                  icon={<Library size={64} />}
+                  title="No Books Yet"
+                  description="Your curated library will appear here."
+                />
               )}
             </div>
           )}
