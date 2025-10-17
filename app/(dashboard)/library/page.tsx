@@ -140,18 +140,7 @@ export default function LibraryPage() {
                           className="group cursor-pointer"
                           onClick={() => router.push(`/library/${book.id}`)}
                         >
-                          <div className="relative mb-4">
-                            {/* Reading Status Tag - Slides from underneath */}
-                            {status !== 'want_to_read' && (
-                              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-0 transition-all duration-300 group-hover:-bottom-4">
-                                <div className={`px-4 py-1.5 rounded-t-lg text-xs font-bold text-white shadow-xl ${
-                                  status === 'finished' ? 'bg-green-500' : 'bg-blue-500'
-                                }`}>
-                                  {status === 'finished' ? 'Done' : 'Reading'}
-                                </div>
-                              </div>
-                            )}
-
+                          <div className="relative mb-6">
                             {/* Book Cover - Sits on top of tag */}
                             <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-300 bg-gradient-to-b from-rogue-sage/5 to-white relative z-10">
                               {book.cover_image_url ? (
@@ -176,8 +165,19 @@ export default function LibraryPage() {
                               )}
                             </div>
 
+                            {/* Reading Status Tag - Slides from underneath, aligned with bottom */}
+                            {status !== 'want_to_read' && (
+                              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 z-0 transition-all duration-300 group-hover:translate-y-4">
+                                <div className={`px-4 py-1.5 rounded-b-lg text-xs font-bold text-white shadow-xl ${
+                                  status === 'finished' ? 'bg-green-500' : 'bg-blue-500'
+                                }`}>
+                                  {status === 'finished' ? 'Done' : 'Reading'}
+                                </div>
+                              </div>
+                            )}
+
                             {/* Title & Author - Below tag (visible on hover) */}
-                            <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
                               <h3 className="font-semibold text-sm text-rogue-forest line-clamp-2">
                                 {book.title}
                               </h3>
