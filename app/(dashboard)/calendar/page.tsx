@@ -15,6 +15,7 @@ import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getMonthColorFromString } from '@/lib/utils/month-colors'
+import { EVENT_TYPES } from '@/lib/constants'
 import type { Event } from '@/types/index.types'
 
 export default function CalendarPage() {
@@ -162,7 +163,7 @@ export default function CalendarPage() {
               description="Events and cohort calls will appear here."
             />
           ) : (
-            <div className="space-y-16">
+            <div className="space-y-12">
               {sortedModules.map(([moduleName, { required, optional }]) => {
                 const moduleColor = getMonthColorFromString(moduleName)
                 
@@ -183,7 +184,7 @@ export default function CalendarPage() {
                   </div>
 
                   {/* Required Events - Premium Cards */}
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {required.map((event, index) => {
                       const isRegistered = registrations.has(event.id)
                       const isExpanded = expandedEventId === event.id
@@ -202,29 +203,32 @@ export default function CalendarPage() {
                             {/* Color Accent Top Border */}
                             <div className={`h-1.5 ${moduleColor.bg}`} />
                             
-                            <CardContent className="p-8">
+                            <CardContent className="p-5">
                               {/* Top Row - Badges */}
-                              <div className="flex flex-wrap items-center gap-2 mb-5">
-                                <Badge className={`${moduleColor.badge} text-sm font-semibold px-3 py-1 shadow-sm`}>
+                              <div className="flex flex-wrap items-center gap-2 mb-3">
+                                <Badge className={`${moduleColor.badge} text-xs font-semibold px-2.5 py-0.5 shadow-sm`}>
                                   Required
                                 </Badge>
-                                <Badge variant="outline" className="text-sm border-rogue-sage/30">
+                                <Badge variant="outline" className="text-xs border-rogue-sage/30 font-medium">
+                                  {EVENT_TYPES.find(t => t.value === event.event_type)?.label || event.event_type}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs border-rogue-sage/30">
                                   {formatDate(event.start_time, { month: 'short', day: 'numeric' })}
                                 </Badge>
                                 {event.location_type === 'virtual' && (
-                                  <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-sm">
-                                    <Video className="h-3.5 w-3.5 mr-1.5" />
+                                  <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-xs">
+                                    <Video className="h-3 w-3 mr-1" />
                                     Virtual
                                   </Badge>
                                 )}
                                 {event.location_type === 'in_person' && (
-                                  <Badge className="bg-rogue-forest/10 text-rogue-forest border border-rogue-forest/20 text-sm">
-                                    <Building2 className="h-3.5 w-3.5 mr-1.5" />
+                                  <Badge className="bg-rogue-forest/10 text-rogue-forest border border-rogue-forest/20 text-xs">
+                                    <Building2 className="h-3 w-3 mr-1" />
                                     In-Person
                                   </Badge>
                                 )}
                                 {event.location_type === 'hybrid' && (
-                                  <Badge className="bg-purple-50 text-purple-700 border border-purple-200 text-sm">
+                                  <Badge className="bg-purple-50 text-purple-700 border border-purple-200 text-xs">
                                     Hybrid
                                   </Badge>
                                 )}
@@ -237,23 +241,19 @@ export default function CalendarPage() {
                               </div>
 
                               {/* Title */}
-                              <h3 className="text-3xl font-bold text-rogue-forest mb-5 leading-tight group-hover:text-rogue-pine transition-colors">
+                              <h3 className="text-2xl font-bold text-rogue-forest mb-3 leading-tight group-hover:text-rogue-pine transition-colors">
                                 {event.title}
                               </h3>
 
                               {/* Time & Location - Refined */}
-                              <div className="flex flex-wrap gap-6 text-base text-rogue-slate mb-6">
-                                <div className="flex items-center gap-2.5">
-                                  <div className={`p-2 ${moduleColor.lightBg} rounded-lg`}>
-                                    <Clock className="h-4 w-4 text-rogue-forest" />
-                                  </div>
+                              <div className="flex flex-wrap gap-4 text-sm text-rogue-slate mb-4">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-rogue-forest" />
                                   <span className="font-medium">{formatEventTime(event.start_time, event.end_time)}</span>
                                 </div>
                                 {event.location_address && (
-                                  <div className="flex items-center gap-2.5">
-                                    <div className={`p-2 ${moduleColor.lightBg} rounded-lg`}>
-                                      <MapPin className="h-4 w-4 text-rogue-forest" />
-                                    </div>
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-rogue-forest" />
                                     <span className="font-medium line-clamp-1">{event.location_address}</span>
                                   </div>
                                 )}
@@ -307,7 +307,7 @@ export default function CalendarPage() {
                                     transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                                     className="overflow-hidden"
                                   >
-                                    <div className="mt-8 pt-8 border-t border-rogue-sage/20 space-y-6">
+                                    <div className="mt-6 pt-6 border-t border-rogue-sage/20 space-y-4">
                                       {event.description && (
                                         <div>
                                           <h4 className="text-xs font-bold text-rogue-forest/60 uppercase tracking-widest mb-4">
@@ -369,7 +369,7 @@ export default function CalendarPage() {
 
                   {/* Optional Events - Elevated Compact Design */}
                   {optional.length > 0 && (
-                    <div className="mt-8 ml-8 space-y-3">
+                    <div className="mt-6 ml-8 space-y-2.5">
                       {optional.map((event, index) => {
                         const isRegistered = registrations.has(event.id)
                         const isExpanded = expandedEventId === event.id
@@ -388,39 +388,46 @@ export default function CalendarPage() {
                               {/* Subtle Color Accent */}
                               <div className={`h-0.5 ${moduleColor.bg} opacity-50`} />
                               
-                              <CardContent className="p-6">
-                                <div className="flex items-start justify-between gap-4 mb-4">
-                                  <div className="flex-1">
-                                    <h4 className="text-xl font-bold text-rogue-forest mb-3 group-hover:text-rogue-pine transition-colors">
-                                      {event.title}
-                                    </h4>
-                                    <div className="flex flex-wrap items-center gap-4 text-sm text-rogue-slate/70">
-                                      <div className="flex items-center gap-2">
-                                        <Clock className="h-4 w-4" />
-                                        <span className="font-medium">
-                                          {formatDate(event.start_time, { month: 'short', day: 'numeric' })}, {formatEventTime(event.start_time, event.end_time)}
-                                        </span>
-                                      </div>
-                                      {event.location_type === 'virtual' && (
-                                        <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-xs">
-                                          <Video className="h-3 w-3 mr-1" />
-                                          Virtual
-                                        </Badge>
-                                      )}
-                                      {event.location_type === 'hybrid' && (
-                                        <Badge className="bg-purple-50 text-purple-700 border border-purple-200 text-xs">
-                                          Hybrid
-                                        </Badge>
-                                      )}
-                                    </div>
-                                  </div>
-
+                              <CardContent className="p-4">
+                                <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                                  <Badge variant="outline" className="text-xs border-rogue-sage/30 font-medium">
+                                    {EVENT_TYPES.find(t => t.value === event.event_type)?.label || event.event_type}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs border-rogue-sage/30">
+                                    {formatDate(event.start_time, { month: 'short', day: 'numeric' })}
+                                  </Badge>
+                                  {event.location_type === 'virtual' && (
+                                    <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-xs">
+                                      <Video className="h-3 w-3 mr-1" />
+                                      Virtual
+                                    </Badge>
+                                  )}
+                                  {event.location_type === 'in_person' && (
+                                    <Badge className="bg-rogue-forest/10 text-rogue-forest border border-rogue-forest/20 text-xs">
+                                      <Building2 className="h-3 w-3 mr-1" />
+                                      In-Person
+                                    </Badge>
+                                  )}
+                                  {event.location_type === 'hybrid' && (
+                                    <Badge className="bg-purple-50 text-purple-700 border border-purple-200 text-xs">
+                                      Hybrid
+                                    </Badge>
+                                  )}
                                   {isRegistered && (
-                                    <Badge className="bg-green-100 text-green-700 border border-green-200 flex-shrink-0 shadow-sm">
+                                    <Badge className="bg-green-100 text-green-700 border border-green-200 ml-auto shadow-sm">
                                       <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
                                       Registered
                                     </Badge>
                                   )}
+                                </div>
+
+                                <h4 className="text-lg font-bold text-rogue-forest mb-2 group-hover:text-rogue-pine transition-colors">
+                                  {event.title}
+                                </h4>
+
+                                <div className="flex items-center gap-2 text-sm text-rogue-slate/70 mb-3">
+                                  <Clock className="h-3.5 w-3.5" />
+                                  <span className="font-medium">{formatEventTime(event.start_time, event.end_time)}</span>
                                 </div>
 
                                 {/* Actions */}
@@ -471,7 +478,7 @@ export default function CalendarPage() {
                                       transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                                       className="overflow-hidden"
                                     >
-                                      <div className="mt-6 pt-6 border-t border-rogue-sage/20 space-y-5">
+                                      <div className="mt-4 pt-4 border-t border-rogue-sage/20 space-y-4">
                                         {event.description && (
                                           <div>
                                             <h5 className="text-xs font-bold text-rogue-forest/60 uppercase tracking-widest mb-3">
