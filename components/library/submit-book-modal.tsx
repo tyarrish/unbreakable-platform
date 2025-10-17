@@ -18,7 +18,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
 const BOOK_CATEGORIES = [
-  'Stoicism',
+  'Philosophy',
   'Team Leadership',
   'Decision Making',
   'Communication',

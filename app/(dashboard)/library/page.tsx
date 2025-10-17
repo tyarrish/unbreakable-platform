@@ -17,7 +17,7 @@ import { getMonthColor } from '@/lib/utils/month-colors'
 import type { Book } from '@/types/index.types'
 
 const BOOK_CATEGORIES = [
-  'Stoicism',
+  'Philosophy',
   'Team Leadership',
   'Decision Making',
   'Communication',
