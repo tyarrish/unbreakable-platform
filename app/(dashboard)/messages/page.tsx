@@ -59,7 +59,8 @@ export default function MessagesPage() {
       }
       
       setUserId(user.id)
-      await loadConversations()
+      // Call with user.id directly, not userId state
+      await loadConversations(user.id)
     } catch (error) {
       console.error('Error initializing messages:', error)
       toast.error('Failed to load messages')
@@ -68,11 +69,17 @@ export default function MessagesPage() {
     }
   }
 
-  async function loadConversations() {
+  async function loadConversations(userIdOverride?: string) {
     try {
-      if (!userId) return
+      const id = userIdOverride || userId
+      if (!id) {
+        console.log('loadConversations: No user ID available')
+        return
+      }
       
-      const data = await getUserConversations(userId, false)
+      console.log('loadConversations: Fetching for user', id)
+      const data = await getUserConversations(id, false)
+      console.log('loadConversations: Got', data.length, 'conversations')
       setConversations(data)
     } catch (error) {
       console.error('Error loading conversations:', error)
