@@ -14,7 +14,10 @@ export interface UserProfile {
   goals: string | null
   linkedin_url: string | null
   twitter_url: string | null
+  employer: string | null
+  current_role: string | null
   created_at: string
+  // NOTE: food_preferences and allergies are intentionally excluded - they are private
 }
 
 export interface UserFollow {

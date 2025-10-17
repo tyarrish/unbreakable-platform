@@ -10,6 +10,10 @@ export interface User {
   bio?: string
   learning_preferences?: Record<string, any>
   partner_id?: string
+  employer?: string
+  current_role?: string
+  food_preferences?: string
+  allergies?: string
   created_at: string
   updated_at: string
 }

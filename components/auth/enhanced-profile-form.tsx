@@ -61,6 +61,12 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
   const [linkedinUrl, setLinkedinUrl] = useState(user.linkedin_url || '')
   const [twitterUrl, setTwitterUrl] = useState(user.twitter_url || '')
   
+  // New onboarding fields
+  const [employer, setEmployer] = useState(user.employer || '')
+  const [currentRole, setCurrentRole] = useState(user.current_role || '')
+  const [foodPreferences, setFoodPreferences] = useState(user.food_preferences || '')
+  const [allergies, setAllergies] = useState(user.allergies || '')
+  
   const [isLoading, setIsLoading] = useState(false)
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const router = useRouter()
@@ -87,6 +93,10 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
           communication_style: communicationStyle,
           linkedin_url: linkedinUrl,
           twitter_url: twitterUrl,
+          employer,
+          current_role: currentRole,
+          food_preferences: foodPreferences,
+          allergies,
         })
         .eq('id', user.id)
 
@@ -264,6 +274,29 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
 
             {/* Professional Tab */}
             <TabsContent value="professional" className="space-y-6">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="employer">Employer / Organization</Label>
+                  <Input
+                    id="employer"
+                    value={employer}
+                    onChange={(e) => setEmployer(e.target.value)}
+                    placeholder="Company or organization name"
+                  />
+                  <p className="text-xs text-rogue-slate">Visible on your profile</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currentRole">Current Role / Title</Label>
+                  <Input
+                    id="currentRole"
+                    value={currentRole}
+                    onChange={(e) => setCurrentRole(e.target.value)}
+                    placeholder="Your job title"
+                  />
+                  <p className="text-xs text-rogue-slate">Visible on your profile</p>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="experienceLevel">Leadership Experience Level</Label>
                 <Select value={experienceLevel} onValueChange={setExperienceLevel}>
@@ -365,6 +398,39 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
                   onChange={(e) => setTwitterUrl(e.target.value)}
                   placeholder="https://twitter.com/username"
                 />
+              </div>
+
+              {/* Dietary Information */}
+              <div className="border-t border-rogue-sage/20 pt-6">
+                <div className="bg-rogue-sage/10 border border-rogue-sage/20 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-rogue-slate">
+                    🔒 <strong>Private Information:</strong> Dietary information is kept confidential and only used for planning in-person events. It will not be displayed on your public profile.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="foodPreferences">Food Preferences</Label>
+                  <Input
+                    id="foodPreferences"
+                    value={foodPreferences}
+                    onChange={(e) => setFoodPreferences(e.target.value)}
+                    placeholder="e.g., Vegetarian, Vegan, Pescatarian"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="allergies">Allergies & Dietary Restrictions</Label>
+                  <Textarea
+                    id="allergies"
+                    value={allergies}
+                    onChange={(e) => setAllergies(e.target.value)}
+                    placeholder="List any food allergies or restrictions"
+                    rows={3}
+                  />
+                  <p className="text-xs text-rogue-slate">
+                    Important for in-person events and catering
+                  </p>
+                </div>
               </div>
             </TabsContent>
           </Tabs>

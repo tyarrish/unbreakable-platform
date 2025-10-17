@@ -19,7 +19,8 @@ import {
   Linkedin,
   Twitter,
   Trophy,
-  Target
+  Target,
+  Briefcase
 } from 'lucide-react'
 import {
   getMemberProfile,
@@ -215,6 +216,23 @@ export default function MemberProfilePage() {
             {member.bio && (
               <div className="mt-6">
                 <p className="text-rogue-slate leading-relaxed">{member.bio}</p>
+              </div>
+            )}
+
+            {(member.employer || member.current_role) && (
+              <div className="mt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Briefcase size={16} className="text-rogue-gold" />
+                  <h3 className="font-medium text-rogue-forest">Professional</h3>
+                </div>
+                <div className="text-sm text-rogue-slate space-y-1">
+                  {member.current_role && (
+                    <p><span className="font-medium">Role:</span> {member.current_role}</p>
+                  )}
+                  {member.employer && (
+                    <p><span className="font-medium">Organization:</span> {member.employer}</p>
+                  )}
+                </div>
               </div>
             )}
 
