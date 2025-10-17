@@ -32,7 +32,7 @@ export default function NewBookPage() {
   const router = useRouter()
 
   const BOOK_CATEGORIES = [
-    'Stoicism',
+    'Philosophy',
     'Team Leadership',
     'Decision Making',
     'Communication',

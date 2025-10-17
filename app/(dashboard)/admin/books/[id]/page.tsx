@@ -31,10 +31,22 @@ export default function EditBookPage() {
   const [goodreadsLink, setGoodreadsLink] = useState('')
   const [assignedMonth, setAssignedMonth] = useState<number | undefined>()
   const [isFeatured, setIsFeatured] = useState(false)
+  const [category, setCategory] = useState('')
   const [reasoning, setReasoning] = useState('')
   const [keyTakeaways, setKeyTakeaways] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+
+  const BOOK_CATEGORIES = [
+    'Philosophy',
+    'Team Leadership',
+    'Decision Making',
+    'Communication',
+    'Personal Development',
+    'Biography',
+    'Strategy',
+    'General Leadership',
+  ]
 
   useEffect(() => {
     loadBook()
@@ -53,6 +65,7 @@ export default function EditBookPage() {
       setGoodreadsLink(data.goodreads_link || '')
       setAssignedMonth(data.assigned_month || undefined)
       setIsFeatured(data.is_featured)
+      setCategory((data as any).category || '')
       setReasoning(data.reasoning || '')
       setKeyTakeaways(data.key_takeaways?.join('\n') || '')
     } catch (error) {
@@ -74,6 +87,7 @@ export default function EditBookPage() {
         author,
         description,
         isbn,
+        category: category || undefined,
         cover_image_url: coverImageUrl || undefined,
         amazon_link: amazonLink || undefined,
         goodreads_link: goodreadsLink || undefined,
@@ -81,7 +95,7 @@ export default function EditBookPage() {
         is_featured: isFeatured,
         reasoning: reasoning || undefined,
         key_takeaways: keyTakeaways ? keyTakeaways.split('\n').filter(t => t.trim()) : undefined,
-      })
+      } as any)
 
       toast.success('Book updated successfully!')
       router.push('/admin/books')
@@ -167,7 +181,7 @@ export default function EditBookPage() {
                 disabled={isSaving}
               />
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="isbn">ISBN</Label>
                   <Input
@@ -185,10 +199,27 @@ export default function EditBookPage() {
                     type="number"
                     min="1"
                     max="8"
+                    placeholder="1-8"
                     value={assignedMonth || ''}
                     onChange={(e) => setAssignedMonth(e.target.value ? parseInt(e.target.value) : undefined)}
                     disabled={isSaving}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <select
+                    id="category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    disabled={isSaving}
+                    className="w-full h-10 px-3 py-2 rounded-lg border border-rogue-sage/20 bg-white text-rogue-forest focus:outline-none focus:ring-2 focus:ring-rogue-gold/50"
+                  >
+                    <option value="">Select a category...</option>
+                    {BOOK_CATEGORIES.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
