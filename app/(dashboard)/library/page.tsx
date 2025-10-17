@@ -125,7 +125,7 @@ export default function LibraryPage() {
                     <div className="h-1 w-20 bg-rogue-gold rounded-full" />
                   </div>
 
-                  <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
                     {featuredBooks.map((book, index) => {
                       const monthColor = book.assigned_month ? getMonthColor(book.assigned_month) : null
                       const progress = progressMap.get(book.id)
@@ -142,7 +142,7 @@ export default function LibraryPage() {
                         >
                           <div className="relative">
                             {/* Book Cover */}
-                            <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 bg-gradient-to-b from-rogue-sage/5 to-white">
+                            <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 bg-gradient-to-b from-rogue-sage/5 to-white relative">
                               {book.cover_image_url ? (
                                 <img
                                   src={book.cover_image_url}
@@ -151,25 +151,9 @@ export default function LibraryPage() {
                                 />
                               ) : (
                                 <div className="w-full h-full bg-gradient-to-br from-rogue-forest/10 to-rogue-gold/10 flex items-center justify-center">
-                                  <BookOpen className="h-8 w-8 text-rogue-forest/30" />
+                                  <BookOpen className="h-10 w-10 text-rogue-forest/30" />
                                 </div>
                               )}
-
-                              {/* Reading Status Overlay - Bottom */}
-                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                                {status === 'finished' && (
-                                  <div className="flex items-center gap-1 text-white text-xs font-semibold">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                                    <span>Done</span>
-                                  </div>
-                                )}
-                                {status === 'reading' && (
-                                  <div className="flex items-center gap-1 text-white text-xs font-semibold">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                                    <span>Reading</span>
-                                  </div>
-                                )}
-                              </div>
                             </div>
 
                             {/* Month Badge */}
@@ -181,12 +165,23 @@ export default function LibraryPage() {
                               </div>
                             )}
 
+                            {/* Reading Status Tag - Peeking from Bottom */}
+                            {status !== 'want_to_read' && (
+                              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-10">
+                                <div className={`px-3 py-1 rounded-full text-xs font-bold text-white shadow-lg ${
+                                  status === 'finished' ? 'bg-green-600' : 'bg-blue-600'
+                                }`}>
+                                  {status === 'finished' ? 'Done' : 'Reading'}
+                                </div>
+                              </div>
+                            )}
+
                             {/* Title & Author - Below Cover (visible on hover) */}
-                            <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <h3 className="font-semibold text-xs text-rogue-forest line-clamp-2">
+                            <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <h3 className="font-semibold text-sm text-rogue-forest line-clamp-2">
                                 {book.title}
                               </h3>
-                              <p className="text-xs text-rogue-slate/70 mt-0.5 truncate">{book.author}</p>
+                              <p className="text-xs text-rogue-slate/70 mt-1 truncate">{book.author}</p>
                             </div>
                           </div>
                         </motion.div>
@@ -198,7 +193,7 @@ export default function LibraryPage() {
 
               {/* Bookshelf - Non-Featured Books */}
               {Object.keys(booksByCategory).length > 0 && (
-                <div className="bg-gradient-to-b from-rogue-forest/5 to-rogue-pine/5 -mx-6 px-6 py-12 rounded-2xl">
+                <div className="bg-gradient-to-b from-rogue-forest/10 via-rogue-pine/10 to-rogue-forest/10 -mx-6 px-6 py-12 rounded-2xl">
                   <div className="mb-10">
                     <h2 className="text-3xl font-bold text-rogue-forest mb-2">Community Bookshelf</h2>
                     <p className="text-rogue-slate/70">Additional recommended reading</p>
@@ -215,7 +210,7 @@ export default function LibraryPage() {
                         </h3>
 
                         {/* Books Grid - Cover Only with Hover */}
-                        <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-3">
+                        <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-9 lg:grid-cols-10 gap-4">
                           {categoryBooks.map((book) => {
                             const progress = progressMap.get(book.id)
                             const status = progress?.status || 'want_to_read'
@@ -231,7 +226,7 @@ export default function LibraryPage() {
                                 transition={{ duration: 0.2 }}
                               >
                                 {/* Book Cover */}
-                                <div className="aspect-[2/3] rounded-md overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300 bg-gradient-to-b from-rogue-sage/5 to-white">
+                                <div className="aspect-[2/3] rounded-md overflow-hidden shadow-md group-hover:shadow-lg transition-shadow duration-300 bg-gradient-to-b from-rogue-sage/5 to-white">
                                   {book.cover_image_url ? (
                                     <img
                                       src={book.cover_image_url}
@@ -246,13 +241,13 @@ export default function LibraryPage() {
                                 </div>
 
                                 {/* Reading Status Circle - Top Right */}
-                                <div className="absolute top-1.5 right-1.5">
+                                <div className="absolute top-2 right-2">
                                   {status === 'finished' ? (
-                                    <div className="w-3 h-3 rounded-full bg-green-500 shadow-md border-2 border-white" />
+                                    <div className="w-3.5 h-3.5 rounded-full bg-green-500 shadow-md border-2 border-white" />
                                   ) : status === 'reading' ? (
-                                    <div className="w-3 h-3 rounded-full bg-blue-500 shadow-md border-2 border-white animate-pulse" />
+                                    <div className="w-3.5 h-3.5 rounded-full bg-blue-500 shadow-md border-2 border-white animate-pulse" />
                                   ) : (
-                                    <div className="w-3 h-3 rounded-full bg-gray-300 shadow-sm border-2 border-white" />
+                                    <div className="w-3.5 h-3.5 rounded-full bg-gray-300 shadow-sm border-2 border-white" />
                                   )}
                                 </div>
 
@@ -261,7 +256,7 @@ export default function LibraryPage() {
                                   <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="absolute inset-0 bg-gradient-to-t from-rogue-forest via-rogue-forest/95 to-rogue-forest/80 rounded-md p-2 flex flex-col justify-end text-white"
+                                    className="absolute inset-0 bg-gradient-to-t from-rogue-forest via-rogue-forest/95 to-rogue-forest/80 rounded-md p-2.5 flex flex-col justify-end text-white"
                                   >
                                     <h4 className="font-bold text-xs line-clamp-2 mb-1">{book.title}</h4>
                                     <p className="text-xs opacity-90 mb-1.5">{book.author}</p>
