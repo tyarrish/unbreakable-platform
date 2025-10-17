@@ -81,6 +81,19 @@ export default function BookDetailPage() {
     }
   }
 
+  function formatBookDescription(description: string): string {
+    if (description.includes('<p>') || description.includes('<div>')) {
+      return description
+    }
+
+    let formatted = description
+    formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-rogue-forest">$1</strong>')
+    formatted = formatted.replace(/\n/g, '<br/>')
+    formatted = formatted.replace(/- (.+?)(<br\/>|$)/g, '<div class="flex gap-2 mb-1"><span class="text-rogue-gold">•</span><span>$1</span></div>')
+    
+    return `<div>${formatted}</div>`
+  }
+
   if (isLoading) {
     return <PageLoader />
   }
@@ -266,7 +279,10 @@ export default function BookDetailPage() {
                   <CardTitle>About This Book</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-rogue-slate leading-relaxed">{book.description}</p>
+                  <div 
+                    className="text-rogue-slate leading-relaxed text-base"
+                    dangerouslySetInnerHTML={{ __html: formatBookDescription(book.description) }}
+                  />
                 </CardContent>
               </Card>
             )}
