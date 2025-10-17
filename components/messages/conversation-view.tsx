@@ -72,45 +72,42 @@ export function ConversationView({
     loadMessages()
     markAsRead()
 
-    // Set up real-time subscription - POLLING FALLBACK
+    // Set up real-time subscription - EXACT COPY OF WORKING DISCUSSIONS PATTERN
     console.log('🚀 Setting up realtime for conversation:', conversation.id)
     
     const channel = supabase
-      .channel(`conv-${conversation.id}`, {
-        config: {
-          broadcast: { self: true },
-          presence: { key: currentUserId }
-        }
-      })
+      .channel(`messages-${conversation.id}`)
       .on(
-        'postgres_changes' as any,
+        'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'discussion_posts',
           filter: `thread_id=eq.${conversation.id}`,
-        } as any,
-        (payload: any) => {
-          console.log('🔥 REALTIME EVENT:', payload.eventType, payload.new)
-          if (payload.eventType === 'INSERT' && payload.new.author_id !== currentUserId) {
-            console.log('Loading new messages from another user')
-            loadMessages()
-          }
+        },
+        () => {
+          console.log('🔥 New message added to conversation, reloading...')
+          loadMessages()
           markAsRead()
         }
       )
-      .subscribe((status: any, err: any) => {
-        if (err) {
-          console.error('❌ Subscription error:', err)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'discussion_posts',
+          filter: `thread_id=eq.${conversation.id}`,
+        },
+        () => {
+          console.log('Message updated, reloading...')
+          loadMessages()
         }
-        console.log('📡 Status:', status, 'Conv:', conversation.id.slice(0, 8))
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ REALTIME IS ACTIVE')
-        }
-      })
+      )
+      .subscribe()
 
     return () => {
-      console.log('🧹 Cleanup for:', conversation.id.slice(0, 8))
+      console.log('🧹 Cleanup realtime for:', conversation.id.slice(0, 8))
       supabase.removeChannel(channel)
     }
   }, [conversation.id])
