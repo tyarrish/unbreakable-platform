@@ -65,12 +65,14 @@ export default function DiscussionsPage() {
       }
 
       // Get threads with post counts and last activity
+      // Filter to only show public discussions (not direct messages or group chats)
       const { data, error } = await supabase
         .from('discussion_threads')
         .select(`
           *,
           created_by_profile:profiles!created_by(full_name, avatar_url, role)
         `)
+        .eq('conversation_type', 'public_discussion')
         .order('is_pinned', { ascending: false })
         .order('last_activity_at', { ascending: false })
 

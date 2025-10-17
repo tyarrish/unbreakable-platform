@@ -14,6 +14,7 @@ export async function getThreads(moduleId?: string) {
       created_by_profile:profiles!discussion_threads_created_by_fkey(full_name, avatar_url),
       posts:discussion_posts(count)
     `)
+    .eq('conversation_type', 'public_discussion')
     .order('is_pinned', { ascending: false })
     .order('updated_at', { ascending: false })
   
