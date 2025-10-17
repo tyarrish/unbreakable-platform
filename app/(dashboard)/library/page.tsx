@@ -140,9 +140,20 @@ export default function LibraryPage() {
                           className="group cursor-pointer"
                           onClick={() => router.push(`/library/${book.id}`)}
                         >
-                          <div className="relative">
-                            {/* Book Cover */}
-                            <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 bg-gradient-to-b from-rogue-sage/5 to-white relative">
+                          <div className="relative mb-4">
+                            {/* Reading Status Tag - Slides from underneath */}
+                            {status !== 'want_to_read' && (
+                              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-0 transition-all duration-300 group-hover:-bottom-4">
+                                <div className={`px-4 py-1.5 rounded-t-lg text-xs font-bold text-white shadow-xl ${
+                                  status === 'finished' ? 'bg-green-500' : 'bg-blue-500'
+                                }`}>
+                                  {status === 'finished' ? 'Done' : 'Reading'}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Book Cover - Sits on top of tag */}
+                            <div className="aspect-[2/3] rounded-lg overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-300 bg-gradient-to-b from-rogue-sage/5 to-white relative z-10">
                               {book.cover_image_url ? (
                                 <img
                                   src={book.cover_image_url}
@@ -154,30 +165,19 @@ export default function LibraryPage() {
                                   <BookOpen className="h-10 w-10 text-rogue-forest/30" />
                                 </div>
                               )}
+
+                              {/* Month Badge */}
+                              {book.assigned_month && monthColor && (
+                                <div className="absolute top-2 right-2">
+                                  <Badge className={`${monthColor.badge} shadow-md text-xs`}>
+                                    M{book.assigned_month}
+                                  </Badge>
+                                </div>
+                              )}
                             </div>
 
-                            {/* Month Badge */}
-                            {book.assigned_month && monthColor && (
-                              <div className="absolute top-2 right-2">
-                                <Badge className={`${monthColor.badge} shadow-md text-xs`}>
-                                  M{book.assigned_month}
-                                </Badge>
-                              </div>
-                            )}
-
-                            {/* Reading Status Tag - Peeking from Bottom */}
-                            {status !== 'want_to_read' && (
-                              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-10">
-                                <div className={`px-3 py-1 rounded-full text-xs font-bold text-white shadow-lg ${
-                                  status === 'finished' ? 'bg-green-600' : 'bg-blue-600'
-                                }`}>
-                                  {status === 'finished' ? 'Done' : 'Reading'}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Title & Author - Below Cover (visible on hover) */}
-                            <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {/* Title & Author - Below tag (visible on hover) */}
+                            <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                               <h3 className="font-semibold text-sm text-rogue-forest line-clamp-2">
                                 {book.title}
                               </h3>
