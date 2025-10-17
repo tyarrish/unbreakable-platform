@@ -146,7 +146,12 @@ export function ConversationView({
   async function markAsRead() {
     try {
       await markConversationAsRead(conversation.id, currentUserId)
+      console.log('✅ Marked conversation as read:', conversation.id.slice(0, 8))
+      // Force update of parent conversation list AND sidebar badge
       onRefresh()
+      
+      // Trigger a custom event to update sidebar badge immediately
+      window.dispatchEvent(new CustomEvent('conversation-read'))
     } catch (error) {
       console.error('Error marking as read:', error)
     }

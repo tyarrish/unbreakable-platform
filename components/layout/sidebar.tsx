@@ -98,8 +98,16 @@ export function Sidebar({ userRole, userProfile, userId }: SidebarProps) {
       // Subscribe to conversation updates
       const channel = subscribeToUserConversations(userId, loadUnreadCount)
       
+      // Also listen for manual read events
+      const handleConversationRead = () => {
+        console.log('🔔 Conversation marked as read, updating badge')
+        loadUnreadCount()
+      }
+      window.addEventListener('conversation-read', handleConversationRead)
+      
       return () => {
         supabase.removeChannel(channel)
+        window.removeEventListener('conversation-read', handleConversationRead)
       }
     }
   }, [userId])
