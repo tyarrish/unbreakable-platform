@@ -87,6 +87,14 @@ export default function MemberProfilePage() {
         user ? isFollowing(user.id, memberId) : Promise.resolve(false)
       ])
 
+      // Debug: Log the role data
+      console.log('Member Profile Data:', {
+        id: memberData?.id,
+        email: memberData?.email,
+        role: memberData?.role,
+        fullName: memberData?.full_name
+      })
+
       setMember(memberData)
       setActivities(activitiesData)
       setAchievements(achievementsData)

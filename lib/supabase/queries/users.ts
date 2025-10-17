@@ -165,12 +165,28 @@ export async function updateUserRole(userId: string, role: UserRole) {
     throw new Error('Cannot change your own role')
   }
 
+  console.log('Updating user role:', { userId, role })
+
   const { error } = await (supabase as any)
     .from('profiles')
-    .update({ role })
+    .update({ role, updated_at: new Date().toISOString() })
     .eq('id', userId)
 
-  if (error) throw error
+  if (error) {
+    console.error('Role update error:', error)
+    throw error
+  }
+
+  console.log('Role updated successfully')
+  
+  // Verify the update
+  const { data: updatedProfile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .single()
+  
+  console.log('Verified role after update:', updatedProfile)
 }
 
 /**
