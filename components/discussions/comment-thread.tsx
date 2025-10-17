@@ -140,12 +140,15 @@ function CommentItem({
 
     setIsSubmitting(true)
     try {
+      console.log('Submitting reply to comment:', comment.id)
       await onReply(comment.id, replyContent)
       setReplyContent('')
       setShowReplyBox(false)
-      toast.success('Reply posted')
+      toast.success('Reply posted!')
     } catch (error: any) {
-      toast.error(error.message || 'Failed to post reply')
+      console.error('Reply submission error:', error)
+      const errorMessage = error?.message || error?.toString() || 'Failed to post reply. Please try again.'
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }

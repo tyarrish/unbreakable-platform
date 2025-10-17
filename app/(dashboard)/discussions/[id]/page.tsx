@@ -308,9 +308,19 @@ export default function ThreadDetailPage() {
   }
 
   async function handleReply(parentId: string, content: string) {
-    if (!userId) return
+    if (!userId) {
+      console.error('No userId available for reply')
+      throw new Error('You must be logged in to reply')
+    }
 
-    const { error } = await (supabase as any)
+    console.log('Posting reply:', {
+      threadId,
+      userId,
+      parentId,
+      contentLength: content.length
+    })
+
+    const { data, error } = await (supabase as any)
       .from('discussion_posts')
       .insert({
         thread_id: threadId,
@@ -319,8 +329,15 @@ export default function ThreadDetailPage() {
         content,
         content_html: content,
       })
+      .select()
 
-    if (error) throw error
+    if (error) {
+      console.error('Reply error:', error)
+      throw new Error(error.message || 'Failed to post reply')
+    }
+
+    console.log('Reply posted successfully:', data)
+    return data
   }
 
   async function handleEdit(commentId: string, content: string) {
