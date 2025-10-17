@@ -243,6 +243,14 @@ export async function createGroupChat(
 ) {
   const supabase = createClient()
   
+  // Verify auth
+  const { data: { session } } = await supabase.auth.getSession()
+  console.log('Auth session exists:', !!session, 'User ID matches:', session?.user?.id === creatorId)
+  
+  if (!session) {
+    throw new Error('Not authenticated')
+  }
+  
   // Create group conversation
   const { data: thread, error: threadError } = await supabase
     .from('discussion_threads')
