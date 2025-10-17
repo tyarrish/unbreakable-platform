@@ -7,17 +7,38 @@ import type { Conversation, ConversationMember, DiscussionPost, User } from '@/t
 export async function getUserConversations(userId: string, includeArchived: boolean = false) {
   const supabase = createClient()
   
+  console.log('getUserConversations called for user:', userId)
+  
   // First get all conversation IDs where user is a member
-  const { data: membershipData } = await (supabase as any)
+  const { data: membershipData, error: memberError } = await (supabase as any)
     .from('conversation_members')
-    .select('thread_id')
+    .select('thread_id, is_archived')
     .eq('user_id', userId)
   
+  console.log('Memberships found:', membershipData?.length, membershipData)
+  
+  if (memberError) {
+    console.error('Error fetching memberships:', memberError)
+    throw memberError
+  }
+  
   if (!membershipData || membershipData.length === 0) {
+    console.log('No memberships found for user')
     return []
   }
   
-  const conversationIds = membershipData.map((m: any) => m.thread_id)
+  // Filter archived if needed
+  const relevantMemberships = includeArchived 
+    ? membershipData 
+    : membershipData.filter((m: any) => !m.is_archived)
+  
+  if (relevantMemberships.length === 0) {
+    console.log('All conversations are archived')
+    return []
+  }
+  
+  const conversationIds = relevantMemberships.map((m: any) => m.thread_id)
+  console.log('Fetching conversations:', conversationIds)
   
   const { data: threads, error } = await supabase
     .from('discussion_threads')
@@ -26,7 +47,12 @@ export async function getUserConversations(userId: string, includeArchived: bool
     .in('conversation_type', ['direct_message', 'group_chat'])
     .order('updated_at', { ascending: false })
   
-  if (error) throw error
+  if (error) {
+    console.error('Error fetching threads:', error)
+    throw error
+  }
+  
+  console.log('Threads found:', threads?.length)
   
   // Get members for each conversation
   const threadsWithMembers = await Promise.all(
@@ -46,19 +72,9 @@ export async function getUserConversations(userId: string, includeArchived: bool
     })
   )
   
-  const userConversations = threadsWithMembers
-  
-  // Filter archived if needed
-  const filtered = includeArchived 
-    ? userConversations 
-    : userConversations.filter(thread => {
-        const userMembership = thread.members?.find((m: any) => m.user_id === userId)
-        return !userMembership?.is_archived
-      })
-  
   // Get last message for each conversation
   const conversationsWithMessages = await Promise.all(
-    filtered.map(async (thread) => {
+    threadsWithMembers.map(async (thread) => {
       const { data: lastMessage } = await supabase
         .from('discussion_posts')
         .select(`
