@@ -234,7 +234,7 @@ export function Sidebar({ userRole, userProfile, userId }: SidebarProps) {
               >
                 <div className="relative flex-shrink-0">
                   <Icon size={20} />
-                  {showUnreadBadge && (
+                  {showUnreadBadge && isCollapsed && (
                     <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-red-500 text-white text-[10px] border-2 border-rogue-forest">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </Badge>

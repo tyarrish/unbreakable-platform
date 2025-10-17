@@ -252,9 +252,9 @@ export function ConversationList({
                           )}
                         </AvatarFallback>
                       </Avatar>
-                      {conversation.unread_count && conversation.unread_count > 0 && (
+                      {(conversation.unread_count ?? 0) > 0 && (
                         <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-rogue-gold text-white text-xs">
-                          {conversation.unread_count > 9 ? '9+' : conversation.unread_count}
+                          {conversation.unread_count! > 9 ? '9+' : conversation.unread_count}
                         </Badge>
                       )}
                     </div>
