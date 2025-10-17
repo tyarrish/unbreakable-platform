@@ -131,6 +131,7 @@ export interface Event {
 
 // Book types
 export type ReadingStatus = 'want_to_read' | 'reading' | 'finished'
+export type BookSubmissionStatus = 'pending' | 'approved' | 'rejected'
 
 export interface Book {
   id: string
@@ -146,6 +147,24 @@ export interface Book {
   reasoning?: string
   key_takeaways?: string[]
   created_at: string
+}
+
+export interface BookSubmission {
+  id: string
+  submitted_by: string
+  title: string
+  author: string
+  isbn?: string
+  amazon_link?: string
+  description?: string
+  reason_for_recommendation: string
+  category?: string
+  status: BookSubmissionStatus
+  reviewed_by?: string
+  reviewed_at?: string
+  review_notes?: string
+  created_at: string
+  updated_at: string
 }
 
 // Capstone types

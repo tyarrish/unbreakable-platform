@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/components/layout/container'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Library, BookOpen } from 'lucide-react'
+import { Library, BookOpen, BookPlus } from 'lucide-react'
 import { getBooks, getReadingProgress } from '@/lib/supabase/queries/books'
+import { SubmitBookModal } from '@/components/library/submit-book-modal'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { getMonthColor } from '@/lib/utils/month-colors'
@@ -32,6 +34,7 @@ export default function LibraryPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [hoveredBook, setHoveredBook] = useState<string | null>(null)
+  const [showSubmitModal, setShowSubmitModal] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -98,9 +101,18 @@ export default function LibraryPage() {
                 <h1 className="text-5xl font-bold text-rogue-forest mb-3 tracking-tight">Library</h1>
                 <p className="text-lg text-rogue-slate/80">Curated leadership reading</p>
               </div>
-              <div className="px-5 py-3 bg-white rounded-xl border border-rogue-sage/20 shadow-sm">
-                <p className="text-xs text-rogue-slate/60 uppercase tracking-wider mb-1">Total Books</p>
-                <p className="text-3xl font-bold text-rogue-forest">{books.length}</p>
+              <div className="flex items-center gap-4">
+                <Button
+                  onClick={() => setShowSubmitModal(true)}
+                  className="bg-rogue-gold hover:bg-rogue-gold-light text-rogue-forest shadow-md"
+                >
+                  <BookPlus className="h-4 w-4 mr-2" />
+                  Recommend a Book
+                </Button>
+                <div className="px-5 py-3 bg-white rounded-xl border border-rogue-sage/20 shadow-sm">
+                  <p className="text-xs text-rogue-slate/60 uppercase tracking-wider mb-1">Total Books</p>
+                  <p className="text-3xl font-bold text-rogue-forest">{books.length}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -289,6 +301,18 @@ export default function LibraryPage() {
           )}
         </div>
       </Container>
+
+      {/* Submit Book Modal */}
+      {userId && (
+        <SubmitBookModal
+          isOpen={showSubmitModal}
+          onClose={() => setShowSubmitModal(false)}
+          userId={userId}
+          onSuccess={() => {
+            toast.success('Your recommendation has been submitted!')
+          }}
+        />
+      )}
     </div>
   )
 }
