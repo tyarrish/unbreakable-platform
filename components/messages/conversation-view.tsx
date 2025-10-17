@@ -72,15 +72,34 @@ export function ConversationView({
     loadMessages()
     markAsRead()
 
-    // Set up real-time subscription for new messages
-    const channel = subscribeToConversation(conversation.id, () => {
-      console.log('Real-time: New message detected in conversation')
-      loadMessages()
-      markAsRead()
-    })
+    // Set up real-time subscription for new messages - DIRECT METHOD
+    console.log('Setting up direct realtime for conversation:', conversation.id)
+    
+    const channel = supabase
+      .channel(`messages-${conversation.id}`)
+      .on(
+        'postgres_changes' as any,
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'discussion_posts',
+          filter: `thread_id=eq.${conversation.id}`,
+        } as any,
+        (payload: any) => {
+          console.log('🔥 REALTIME MESSAGE RECEIVED:', payload)
+          // Only add if it's from someone else (we already optimistically added ours)
+          if (payload.new.author_id !== currentUserId) {
+            loadMessages()
+          }
+          markAsRead()
+        }
+      )
+      .subscribe((status: any) => {
+        console.log('📡 Channel subscription status:', status, 'for conversation:', conversation.id)
+      })
 
     return () => {
-      console.log('Cleaning up real-time subscription')
+      console.log('Cleaning up realtime subscription for:', conversation.id)
       supabase.removeChannel(channel)
     }
   }, [conversation.id])
@@ -93,7 +112,11 @@ export function ConversationView({
   }, [messages.length])
 
   useEffect(() => {
-    scrollToBottom()
+    // Auto-scroll with a slight delay to ensure DOM is updated
+    const timer = setTimeout(() => {
+      scrollToBottom()
+    }, 100)
+    return () => clearTimeout(timer)
   }, [messages])
 
   async function loadMessages() {
@@ -212,7 +235,8 @@ export function ConversationView({
   }
 
   function scrollToBottom() {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    console.log('Scrolling to bottom of messages')
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
   function getInitials(name: string) {
