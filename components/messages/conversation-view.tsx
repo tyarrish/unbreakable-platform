@@ -79,11 +79,11 @@ export function ConversationView({
       return
     }
 
-    // Set up real-time subscription
-    console.log('🚀 Setting up realtime for conversation:', conversation.id.slice(0, 8))
+    // Set up real-time subscription - SIMPLEST POSSIBLE
+    console.log('🚀 Setting up realtime for:', conversation.id.slice(0, 8))
     
     const channel = supabase
-      .channel(`messages-${conversation.id}`)
+      .channel(`msg-${conversation.id}`)
       .on(
         'postgres_changes',
         {
@@ -92,14 +92,20 @@ export function ConversationView({
           table: 'discussion_posts',
           filter: `thread_id=eq.${conversation.id}`,
         },
-        (payload) => {
-          console.log('🔥 INSERT event:', payload)
+        () => {
+          console.log('🔥 New message detected!')
           loadMessages()
-          markAsRead()
         }
       )
       .subscribe((status) => {
-        console.log('📡 Subscription status:', status)
+        console.log('📡 Status:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Connected!')
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Channel error - realtime not working')
+        } else if (status === 'CLOSED') {
+          console.error('❌ Channel closed')
+        }
       })
 
     subscriptionRef.current = channel
