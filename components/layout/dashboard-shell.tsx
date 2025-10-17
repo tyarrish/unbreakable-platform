@@ -124,7 +124,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen">
-      <Sidebar userRole={userRole} userProfile={userProfile} />
+      <Sidebar userRole={userRole} userProfile={userProfile} userId={userId} />
       <div className={cn(
         'min-h-screen bg-rogue-cream transition-all duration-300',
         sidebarCollapsed ? 'md:ml-20' : 'md:ml-64'

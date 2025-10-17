@@ -55,12 +55,16 @@ export interface LessonProgress {
   reflection_word_count?: number
 }
 
-// Discussion types
+// Discussion & Conversation types
+export type ConversationType = 'public_discussion' | 'direct_message' | 'group_chat'
+
 export interface DiscussionThread {
   id: string
   module_id?: string
   created_by: string
   title: string
+  conversation_type: ConversationType
+  conversation_name?: string
   is_pinned: boolean
   is_locked: boolean
   created_at: string
@@ -77,6 +81,28 @@ export interface DiscussionPost {
   is_edited: boolean
   created_at: string
   updated_at: string
+}
+
+// Messaging types (extends discussions)
+export interface ConversationMember {
+  id: string
+  thread_id: string
+  user_id: string
+  last_read_at?: string
+  is_archived: boolean
+  is_muted: boolean
+  joined_at: string
+  created_at: string
+}
+
+export interface Conversation extends DiscussionThread {
+  members?: ConversationMember[]
+  participants?: User[]
+  last_message?: DiscussionPost & {
+    author?: User
+  }
+  unread_count?: number
+  post_count?: number
 }
 
 // Event types

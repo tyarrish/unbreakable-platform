@@ -18,6 +18,7 @@ import {
   LayoutDashboard, 
   BookOpen, 
   MessageSquare, 
+  MessageCircle,
   Calendar, 
   Library, 
   Users, 
@@ -31,8 +32,11 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { signOut } from '@/app/actions/auth'
 import { toast } from 'sonner'
+import { getUnreadCount, subscribeToUserConversations } from '@/lib/supabase/queries/conversations'
+import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@/types/index.types'
 
 interface UserProfile {
@@ -45,12 +49,14 @@ interface UserProfile {
 interface SidebarProps {
   userRole: UserRole
   userProfile: UserProfile
+  userId: string
 }
 
 const participantNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/modules', label: 'Modules', icon: BookOpen },
   { href: '/discussions', label: 'Discussions', icon: MessageSquare },
+  { href: '/messages', label: 'Messages', icon: MessageCircle, hasUnreadBadge: true },
   { href: '/calendar', label: 'Events', icon: Calendar },
   { href: '/members', label: 'Members', icon: Users },
   { href: '/library', label: 'Library', icon: Library },
@@ -69,10 +75,12 @@ const adminNavItems = [
   { href: '/admin', label: 'Admin', icon: UserCog },
 ]
 
-export function Sidebar({ userRole, userProfile }: SidebarProps) {
+export function Sidebar({ userRole, userProfile, userId }: SidebarProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false) // Mobile menu
   const [isCollapsed, setIsCollapsed] = useState(false) // Desktop collapse
+  const [unreadCount, setUnreadCount] = useState(0)
+  const supabase = createClient()
   
   // Load collapsed state from localStorage
   useEffect(() => {
@@ -81,6 +89,29 @@ export function Sidebar({ userRole, userProfile }: SidebarProps) {
       setIsCollapsed(true)
     }
   }, [])
+
+  // Load unread message count
+  useEffect(() => {
+    if (userId) {
+      loadUnreadCount()
+      
+      // Subscribe to conversation updates
+      const channel = subscribeToUserConversations(userId, loadUnreadCount)
+      
+      return () => {
+        supabase.removeChannel(channel)
+      }
+    }
+  }, [userId])
+
+  async function loadUnreadCount() {
+    try {
+      const count = await getUnreadCount(userId)
+      setUnreadCount(count)
+    } catch (error) {
+      console.error('Error loading unread count:', error)
+    }
+  }
 
   // Save collapsed state to localStorage and dispatch event
   const toggleCollapse = () => {
@@ -185,6 +216,7 @@ export function Sidebar({ userRole, userProfile }: SidebarProps) {
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
+            const showUnreadBadge = (item as any).hasUnreadBadge && unreadCount > 0
             
             return (
               <Link
@@ -200,18 +232,31 @@ export function Sidebar({ userRole, userProfile }: SidebarProps) {
                 )}
                 title={isCollapsed ? item.label : undefined}
               >
-                <Icon size={20} className="flex-shrink-0" />
+                <div className="relative flex-shrink-0">
+                  <Icon size={20} />
+                  {showUnreadBadge && (
+                    <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-red-500 text-white text-[10px] border-2 border-rogue-forest">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Badge>
+                  )}
+                </div>
                 <span className={cn(
-                  'font-medium transition-all duration-200',
+                  'font-medium transition-all duration-200 flex-1',
                   isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
                 )}>
                   {item.label}
                 </span>
+                {showUnreadBadge && !isCollapsed && (
+                  <Badge className="bg-red-500 text-white text-xs h-5 min-w-[20px] flex items-center justify-center">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Badge>
+                )}
                 
                 {/* Tooltip on hover when collapsed */}
                 {isCollapsed && (
                   <div className="absolute left-full ml-2 px-3 py-1.5 bg-rogue-forest border border-rogue-gold/30 rounded-lg text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
                     {item.label}
+                    {showUnreadBadge && ` (${unreadCount})`}
                   </div>
                 )}
               </Link>
