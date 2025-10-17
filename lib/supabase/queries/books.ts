@@ -2,21 +2,41 @@ import { createClient } from '@/lib/supabase/client'
 import type { Book, ReadingStatus } from '@/types/index.types'
 
 /**
- * Get all books with submitter info
+ * Get all books
  */
 export async function getBooks() {
   const supabase = createClient()
   
   const { data, error } = await supabase
     .from('books')
-    .select(`
-      *,
-      submitted_by_profile:profiles!books_submitted_by_fkey(full_name)
-    `)
+    .select('*')
     .order('assigned_month', { ascending: true, nullsFirst: false })
     .order('title', { ascending: true })
   
-  if (error) throw error
+  if (error) {
+    console.error('Error fetching books:', error)
+    throw error
+  }
+  
+  // Fetch submitter info separately to avoid FK issues
+  if (data && data.length > 0) {
+    const submitterIds = data.filter(b => (b as any).submitted_by).map(b => (b as any).submitted_by)
+    if (submitterIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', submitterIds)
+      
+      // Attach submitter info
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
+      data.forEach((book: any) => {
+        if (book.submitted_by) {
+          book.submitted_by_profile = profileMap.get(book.submitted_by)
+        }
+      })
+    }
+  }
+  
   return data as any[]
 }
 
