@@ -66,14 +66,21 @@ export function ConversationView({
   const [isSending, setIsSending] = useState(false)
   const [editorKey, setEditorKey] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const subscriptionRef = useRef<any>(null)
   const supabase = createClient()
 
   useEffect(() => {
     loadMessages()
     markAsRead()
 
-    // Set up real-time subscription - EXACT COPY OF WORKING DISCUSSIONS PATTERN
-    console.log('🚀 Setting up realtime for conversation:', conversation.id)
+    // Prevent duplicate subscriptions
+    if (subscriptionRef.current) {
+      console.log('⚠️ Subscription already exists, skipping')
+      return
+    }
+
+    // Set up real-time subscription
+    console.log('🚀 Setting up realtime for conversation:', conversation.id.slice(0, 8))
     
     const channel = supabase
       .channel(`messages-${conversation.id}`)
@@ -85,30 +92,24 @@ export function ConversationView({
           table: 'discussion_posts',
           filter: `thread_id=eq.${conversation.id}`,
         },
-        () => {
-          console.log('🔥 New message added to conversation, reloading...')
+        (payload) => {
+          console.log('🔥 INSERT event:', payload)
           loadMessages()
           markAsRead()
         }
       )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'discussion_posts',
-          filter: `thread_id=eq.${conversation.id}`,
-        },
-        () => {
-          console.log('Message updated, reloading...')
-          loadMessages()
-        }
-      )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('📡 Subscription status:', status)
+      })
+
+    subscriptionRef.current = channel
 
     return () => {
-      console.log('🧹 Cleanup realtime for:', conversation.id.slice(0, 8))
-      supabase.removeChannel(channel)
+      console.log('🧹 Cleanup subscription')
+      if (subscriptionRef.current) {
+        supabase.removeChannel(subscriptionRef.current)
+        subscriptionRef.current = null
+      }
     }
   }, [conversation.id])
 
