@@ -52,27 +52,53 @@ interface SidebarProps {
   userId: string
 }
 
-const participantNavItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/modules', label: 'Modules', icon: BookOpen },
-  { href: '/discussions', label: 'Discussions', icon: MessageSquare },
-  { href: '/messages', label: 'Messages', icon: MessageCircle, hasUnreadBadge: true },
-  { href: '/calendar', label: 'Events', icon: Calendar },
-  { href: '/members', label: 'Members', icon: Users },
-  { href: '/library', label: 'Library', icon: Library },
-  { href: '/partner', label: 'My Partner', icon: Users },
+// Navigation structure with sections
+const participantNavSections = [
+  {
+    section: 'LEARN',
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/modules', label: 'Modules', icon: BookOpen },
+      { href: '/calendar', label: 'Events', icon: Calendar },
+    ]
+  },
+  {
+    section: 'CONNECT',
+    items: [
+      { href: '/discussions', label: 'Discussions', icon: MessageSquare },
+      { href: '/messages', label: 'Messages', icon: MessageCircle, hasUnreadBadge: true },
+      { href: '/members', label: 'Members', icon: Users },
+      { href: '/partner', label: 'My Partner', icon: Users },
+    ]
+  },
+  {
+    section: 'RESOURCES',
+    items: [
+      { href: '/library', label: 'Library', icon: Library },
+    ]
+  }
 ]
 
-const facilitatorNavItems = [
-  ...participantNavItems,
-  { href: '/capstone', label: 'Capstone', icon: Mountain },
-  { href: '/admin', label: 'Manage', icon: UserCog },
+const facilitatorNavSections = [
+  ...participantNavSections,
+  {
+    section: 'MANAGE',
+    items: [
+      { href: '/capstone', label: 'Capstone', icon: Mountain },
+      { href: '/admin', label: 'Manage', icon: UserCog },
+    ]
+  }
 ]
 
-const adminNavItems = [
-  ...participantNavItems,
-  { href: '/capstone', label: 'Capstone', icon: Mountain },
-  { href: '/admin', label: 'Admin', icon: UserCog },
+const adminNavSections = [
+  ...participantNavSections,
+  {
+    section: 'MANAGE',
+    items: [
+      { href: '/capstone', label: 'Capstone', icon: Mountain },
+      { href: '/admin', label: 'Admin', icon: UserCog },
+    ]
+  }
 ]
 
 export function Sidebar({ userRole, userProfile, userId }: SidebarProps) {
@@ -130,11 +156,11 @@ export function Sidebar({ userRole, userProfile, userId }: SidebarProps) {
     window.dispatchEvent(new CustomEvent('sidebar-toggle', { detail: { isCollapsed: newState } }))
   }
   
-  const navItems = userRole === 'admin'
-    ? adminNavItems
+  const navSections = userRole === 'admin'
+    ? adminNavSections
     : userRole === 'facilitator'
-    ? facilitatorNavItems
-    : participantNavItems
+    ? facilitatorNavSections
+    : participantNavSections
 
   // Get user initials for avatar fallback
   const getInitials = (name: string) => {
@@ -220,56 +246,72 @@ export function Sidebar({ userRole, userProfile, userId }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
-            const showUnreadBadge = (item as any).hasUnreadBadge && unreadCount > 0
-            
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className={cn(
-                  'flex items-center rounded-lg transition-all duration-200 group relative',
-                  isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3',
-                  isActive
-                    ? 'bg-rogue-gold text-white shadow-lg shadow-rogue-gold/20'
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
-                )}
-                title={isCollapsed ? item.label : undefined}
-              >
-                <div className="relative flex-shrink-0">
-                  <Icon size={20} />
-                  {showUnreadBadge && isCollapsed && (
-                    <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-red-500 text-white text-[10px] border-2 border-rogue-forest">
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </Badge>
-                  )}
+        <nav className="flex-1 p-4 overflow-y-auto">
+          {navSections.map((section, sectionIndex) => (
+            <div key={section.section} className={sectionIndex > 0 ? 'mt-6' : ''}>
+              {/* Section Header */}
+              {!isCollapsed && (
+                <div className="px-4 mb-2">
+                  <p className="text-xs font-bold text-white/40 uppercase tracking-widest">
+                    {section.section}
+                  </p>
                 </div>
-                <span className={cn(
-                  'font-medium transition-all duration-200 flex-1',
-                  isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
-                )}>
-                  {item.label}
-                </span>
-                {showUnreadBadge && !isCollapsed && (
-                  <Badge className="bg-red-500 text-white text-xs h-5 min-w-[20px] flex items-center justify-center">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </Badge>
-                )}
-                
-                {/* Tooltip on hover when collapsed */}
-                {isCollapsed && (
-                  <div className="absolute left-full ml-2 px-3 py-1.5 bg-rogue-forest border border-rogue-gold/30 rounded-lg text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
-                    {item.label}
-                    {showUnreadBadge && ` (${unreadCount})`}
-                  </div>
-                )}
-              </Link>
-            )
-          })}
+              )}
+              
+              {/* Section Items */}
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const Icon = item.icon
+                  const isActive = pathname === item.href
+                  const showUnreadBadge = (item as any).hasUnreadBadge && unreadCount > 0
+                  
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={cn(
+                        'flex items-center rounded-lg transition-all duration-200 group relative',
+                        isCollapsed ? 'justify-center px-3 py-3' : 'gap-3 px-4 py-3',
+                        isActive
+                          ? 'bg-rogue-gold text-white shadow-lg shadow-rogue-gold/20'
+                          : 'text-white/80 hover:bg-white/10 hover:text-white'
+                      )}
+                      title={isCollapsed ? item.label : undefined}
+                    >
+                      <div className="relative flex-shrink-0">
+                        <Icon size={20} />
+                        {showUnreadBadge && isCollapsed && (
+                          <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-red-500 text-white text-[10px] border-2 border-rogue-forest">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </Badge>
+                        )}
+                      </div>
+                      <span className={cn(
+                        'font-medium transition-all duration-200 flex-1',
+                        isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+                      )}>
+                        {item.label}
+                      </span>
+                      {showUnreadBadge && !isCollapsed && (
+                        <Badge className="bg-red-500 text-white text-xs h-5 min-w-[20px] flex items-center justify-center">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </Badge>
+                      )}
+                      
+                      {/* Tooltip on hover when collapsed */}
+                      {isCollapsed && (
+                        <div className="absolute left-full ml-2 px-3 py-1.5 bg-rogue-forest border border-rogue-gold/30 rounded-lg text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
+                          {item.label}
+                          {showUnreadBadge && ` (${unreadCount})`}
+                        </div>
+                      )}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* User Area Footer */}
