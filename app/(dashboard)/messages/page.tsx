@@ -121,8 +121,8 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
-      <div className="flex-1 overflow-hidden px-6 py-4">
+    <div className="bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
+      <div className="h-[calc(100vh-120px)] overflow-hidden px-6 py-4">
         <div className="h-full flex rounded-lg overflow-hidden border border-rogue-sage/20 bg-white shadow-lg">
           {/* Desktop: Two-column layout */}
           <div className="hidden lg:flex w-full">
