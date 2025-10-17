@@ -79,7 +79,10 @@ export async function createThread(thread: {
   
   const { data, error } = await (supabase
     .from('discussion_threads') as any)
-    .insert(thread)
+    .insert({
+      ...thread,
+      conversation_type: 'public_discussion'
+    })
     .select()
     .single()
   

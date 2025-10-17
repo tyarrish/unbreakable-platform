@@ -164,6 +164,7 @@ export default function DiscussionsPage() {
           content: newThreadContent,
           content_html: newThreadContent,
           created_by: userId,
+          conversation_type: 'public_discussion',
         })
         .select()
         .single()
