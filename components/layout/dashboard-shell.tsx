@@ -66,10 +66,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           .eq('id', session.user.id)
           .single<{ role: string; roles: string[]; full_name: string; email: string; avatar_url: string | null; is_active: boolean; profile_completed: boolean }>()
 
-        console.log('Dashboard: Profile data:', profile)
+        console.log('✅ Dashboard: Profile data:', profile)
 
         if (error || !profile) {
-          console.error('Dashboard: Profile error:', error)
+          console.error('❌ Dashboard: Profile error:', error)
+          console.error('❌ Error details:', error?.message, error?.code)
+          alert(`Login Error: Unable to load profile. ${error?.message || 'Unknown error'}`)
           router.push('/login')
           return
         }
