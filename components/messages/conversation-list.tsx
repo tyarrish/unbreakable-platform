@@ -186,7 +186,7 @@ export function ConversationList({
             className={filter === 'direct' ? 'bg-rogue-forest' : ''}
           >
             <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
-            Direct ({directCount})
+            Direct{directCount > 0 && ` (${directCount})`}
           </Button>
           <Button
             size="sm"
@@ -195,7 +195,7 @@ export function ConversationList({
             className={filter === 'groups' ? 'bg-rogue-forest' : ''}
           >
             <Users className="h-3.5 w-3.5 mr-1.5" />
-            Groups ({groupCount})
+            Groups{groupCount > 0 && ` (${groupCount})`}
           </Button>
         </div>
       </div>
@@ -262,7 +262,7 @@ export function ConversationList({
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
                           <h3 className="font-semibold text-rogue-forest truncate">
                             {getConversationTitle(conversation)}
                           </h3>
@@ -309,7 +309,7 @@ export function ConversationList({
                         {getLastMessagePreview(conversation)}
                       </p>
 
-                      {conversation.conversation_type === 'group_chat' && conversation.participants && (
+                      {conversation.conversation_type === 'group_chat' && conversation.participants && conversation.participants.length > 0 && (
                         <p className="text-xs text-rogue-slate/50 mt-1 truncate">
                           {conversation.participants.length} member{conversation.participants.length !== 1 ? 's' : ''}
                         </p>

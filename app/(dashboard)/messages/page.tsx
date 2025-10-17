@@ -32,9 +32,10 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (userId) {
-      // Subscribe to conversation updates
+      // Subscribe to conversation updates for real-time message list updates
       const channel = subscribeToUserConversations(userId, () => {
-        loadConversations()
+        console.log('Real-time update detected, refreshing conversations...')
+        loadConversations(userId)
       })
 
       return () => {
@@ -101,7 +102,8 @@ export default function MessagesPage() {
   }
 
   function handleConversationCreated(conversationId: string) {
-    loadConversations()
+    console.log('New conversation created:', conversationId)
+    loadConversations(userId || undefined)
     handleSelectConversation(conversationId)
   }
 
