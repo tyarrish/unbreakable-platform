@@ -5,7 +5,8 @@ export interface UserProfile {
   id: string
   email: string
   full_name: string
-  role: UserRole
+  role: UserRole // Deprecated - use roles instead
+  roles: UserRole[] // Array to support multiple roles
   avatar_url?: string
   is_active: boolean
   invited_by?: string
@@ -58,7 +59,7 @@ export async function getUsers(filters?: UserFilters): Promise<UserProfile[]> {
   const { data, error } = await query
 
   if (error) throw error
-  return data as UserProfile[]
+  return data as any as UserProfile[]
 }
 
 /**
@@ -154,7 +155,7 @@ export async function getInvites(status?: 'pending' | 'accepted' | 'expired'): P
 }
 
 /**
- * Update a user's role
+ * Update a user's role (deprecated - use updateUserRoles instead)
  */
 export async function updateUserRole(userId: string, role: UserRole) {
   const supabase = createClient()
@@ -169,7 +170,7 @@ export async function updateUserRole(userId: string, role: UserRole) {
 
   const { error } = await (supabase as any)
     .from('profiles')
-    .update({ role, updated_at: new Date().toISOString() })
+    .update({ role, roles: [role], updated_at: new Date().toISOString() })
     .eq('id', userId)
 
   if (error) {
@@ -182,11 +183,58 @@ export async function updateUserRole(userId: string, role: UserRole) {
   // Verify the update
   const { data: updatedProfile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, roles')
     .eq('id', userId)
     .single()
   
   console.log('Verified role after update:', updatedProfile)
+}
+
+/**
+ * Update a user's roles (supports multiple roles)
+ */
+export async function updateUserRoles(userId: string, roles: UserRole[]) {
+  const supabase = createClient()
+
+  // Prevent self-role change to avoid locking yourself out
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user?.id === userId) {
+    throw new Error('Cannot change your own roles')
+  }
+
+  if (roles.length === 0) {
+    throw new Error('User must have at least one role')
+  }
+
+  console.log('Updating user roles:', { userId, roles })
+
+  // Update both role (for backward compatibility) and roles
+  const primaryRole = roles.includes('admin') ? 'admin' : roles.includes('facilitator') ? 'facilitator' : 'participant'
+
+  const { error } = await (supabase as any)
+    .from('profiles')
+    .update({ 
+      role: primaryRole, // Keep single role for backward compatibility
+      roles: roles, 
+      updated_at: new Date().toISOString() 
+    })
+    .eq('id', userId)
+
+  if (error) {
+    console.error('Roles update error:', error)
+    throw error
+  }
+
+  console.log('Roles updated successfully')
+  
+  // Verify the update
+  const { data: updatedProfile } = await supabase
+    .from('profiles')
+    .select('role, roles')
+    .eq('id', userId)
+    .single()
+  
+  console.log('Verified roles after update:', updatedProfile)
 }
 
 /**
@@ -397,6 +445,6 @@ export async function getUserById(userId: string): Promise<UserProfile | null> {
     .single()
 
   if (error) return null
-  return data as UserProfile
+  return data as any as UserProfile
 }
 

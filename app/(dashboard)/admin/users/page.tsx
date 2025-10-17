@@ -87,12 +87,13 @@ export default function AdminUsersPage() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, roles')
       .eq('id', user.id)
-      .single<{ role: string }>()
+      .single<{ role: string; roles: string[] }>()
 
     // Only admins can access user management
-    if (profile?.role !== 'admin') {
+    const hasAdminRole = profile?.roles?.includes('admin') || profile?.role === 'admin'
+    if (!hasAdminRole) {
       router.push('/admin')
     }
   }
@@ -121,9 +122,12 @@ export default function AdminUsersPage() {
       )
     }
 
-    // Role filter
+    // Role filter - check both role and roles array
     if (roleFilter !== 'all') {
-      filtered = filtered.filter(u => u.role === roleFilter)
+      filtered = filtered.filter(u => {
+        // Check if user has this role in their roles array or single role field
+        return u.roles?.includes(roleFilter as UserRole) || u.role === roleFilter
+      })
     }
 
     // Status filter
@@ -377,9 +381,19 @@ export default function AdminUsersPage() {
                           </div>
                         </td>
                         <td className="p-4">
-                          <Badge className={`${getRoleBadgeColor(user.role)} border-0`}>
-                            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                          </Badge>
+                          <div className="flex flex-wrap gap-1">
+                            {user.roles && user.roles.length > 0 ? (
+                              user.roles.map((role) => (
+                                <Badge key={role} className={`${getRoleBadgeColor(role)} border-0`}>
+                                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                                </Badge>
+                              ))
+                            ) : (
+                              <Badge className={`${getRoleBadgeColor(user.role)} border-0`}>
+                                {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                              </Badge>
+                            )}
+                          </div>
                         </td>
                         <td className="p-4">
                           {user.is_active ? (

@@ -4,7 +4,8 @@ export interface UserProfile {
   id: string
   email: string
   full_name: string | null
-  role: string
+  role: string // Deprecated - use roles instead
+  roles: string[] // Array to support multiple roles
   avatar_url: string | null
   bio: string | null
   city: string | null
@@ -36,6 +37,19 @@ export async function getAllMembers(limit: number = 50, offset: number = 0): Pro
     .select('*')
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)) as any
+  
+  if (error) throw error
+  return data || []
+}
+
+export async function getFacilitators(): Promise<UserProfile[]> {
+  const supabase = createClient()
+  
+  const { data, error } = await (supabase
+    .from('profiles')
+    .select('*')
+    .contains('roles', ['facilitator'])
+    .order('created_at', { ascending: true })) as any
   
   if (error) throw error
   return data || []

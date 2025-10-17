@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -11,14 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { updateUserRole } from '@/lib/supabase/queries/users'
+import { updateUserRoles } from '@/lib/supabase/queries/users'
 import { toast } from 'sonner'
 import type { UserRole } from '@/types/index.types'
 import type { UserProfile } from '@/lib/supabase/queries/users'
@@ -30,24 +24,61 @@ interface EditRoleModalProps {
   onSuccess?: () => void
 }
 
+const roleDescriptions: Record<UserRole, { label: string; description: string; color: string }> = {
+  admin: {
+    label: 'Admin',
+    description: 'Full access to all platform features and user management',
+    color: 'text-rogue-forest',
+  },
+  facilitator: {
+    label: 'Facilitator',
+    description: 'Can manage content and moderate discussions',
+    color: 'text-blue-600',
+  },
+  participant: {
+    label: 'Participant',
+    description: 'Regular cohort member with access to learning materials',
+    color: 'text-rogue-sage',
+  },
+}
+
 export function EditRoleModal({ user, open, onClose, onSuccess }: EditRoleModalProps) {
-  const [role, setRole] = useState<UserRole>(user.role)
+  // Initialize with user's current roles, or fall back to single role
+  const initialRoles = user.roles && user.roles.length > 0 ? user.roles : [user.role]
+  const [selectedRoles, setSelectedRoles] = useState<UserRole[]>(initialRoles)
   const [isLoading, setIsLoading] = useState(false)
+
+  function toggleRole(role: UserRole) {
+    setSelectedRoles(prev => {
+      if (prev.includes(role)) {
+        // Don't allow removing the last role
+        if (prev.length === 1) {
+          toast.error('User must have at least one role')
+          return prev
+        }
+        return prev.filter(r => r !== role)
+      } else {
+        return [...prev, role]
+      }
+    })
+  }
+
+  const hasChanges = JSON.stringify([...selectedRoles].sort()) !== JSON.stringify([...initialRoles].sort())
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      await updateUserRole(user.id, role)
-      toast.success('User role updated successfully')
+      await updateUserRoles(user.id, selectedRoles)
+      toast.success('User roles updated successfully')
       
       if (onSuccess) {
         onSuccess()
       }
       onClose()
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update role')
+      toast.error(error.message || 'Failed to update roles')
     } finally {
       setIsLoading(false)
     }
@@ -57,48 +88,68 @@ export function EditRoleModal({ user, open, onClose, onSuccess }: EditRoleModalP
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit User Role</DialogTitle>
+          <DialogTitle>Edit User Roles</DialogTitle>
           <DialogDescription>
-            Change the role for {user.full_name || user.email}. This will affect their access level and permissions.
+            Select one or more roles for {user.full_name || user.email}. This will affect their access level and permissions.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
-            <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
-              <SelectTrigger id="role" disabled={isLoading}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="participant">Participant</SelectItem>
-                <SelectItem value="facilitator">Facilitator</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="text-xs text-rogue-slate space-y-1 mt-2">
-              {role === 'admin' && (
-                <p className="text-rogue-forest font-medium">
-                  • Full access to all platform features and user management
-                </p>
-              )}
-              {role === 'facilitator' && (
-                <p className="text-blue-600 font-medium">
-                  • Can manage content and moderate discussions
-                </p>
-              )}
-              {role === 'participant' && (
-                <p className="text-rogue-sage font-medium">
-                  • Regular cohort member with access to learning materials
-                </p>
-              )}
-            </div>
+          <div className="space-y-3">
+            <Label>Roles (select one or more)</Label>
+            
+            {(Object.keys(roleDescriptions) as UserRole[]).map((role) => {
+              const config = roleDescriptions[role]
+              const isChecked = selectedRoles.includes(role)
+              
+              return (
+                <div
+                  key={role}
+                  className={`flex items-start space-x-3 p-3 rounded-lg border transition-all ${
+                    isChecked 
+                      ? 'border-rogue-gold bg-rogue-gold/5' 
+                      : 'border-rogue-sage/20 hover:border-rogue-sage/40'
+                  }`}
+                >
+                  <Checkbox
+                    id={`role-${role}`}
+                    checked={isChecked}
+                    onCheckedChange={() => toggleRole(role)}
+                    disabled={isLoading}
+                  />
+                  <div className="flex-1">
+                    <label
+                      htmlFor={`role-${role}`}
+                      className="text-sm font-medium leading-none cursor-pointer"
+                    >
+                      {config.label}
+                    </label>
+                    <p className={`text-xs mt-1 ${config.color}`}>
+                      {config.description}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
-          {role !== user.role && (
+          {hasChanges && (
             <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
               <p className="text-sm text-orange-800">
-                <strong>Note:</strong> Changing this user's role will immediately affect their access and permissions.
+                <strong>Note:</strong> Changing roles will immediately affect the user's access and permissions.
+                {selectedRoles.length > 1 && (
+                  <span className="block mt-1">
+                    This user will have <strong>{selectedRoles.length} roles</strong> with combined permissions.
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
+
+          {selectedRoles.length === 0 && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800">
+                User must have at least one role.
               </p>
             </div>
           )}
@@ -107,8 +158,8 @@ export function EditRoleModal({ user, open, onClose, onSuccess }: EditRoleModalP
             <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading || role === user.role}>
-              {isLoading ? 'Updating...' : 'Update Role'}
+            <Button type="submit" disabled={isLoading || !hasChanges || selectedRoles.length === 0}>
+              {isLoading ? 'Updating...' : 'Update Roles'}
             </Button>
           </DialogFooter>
         </form>

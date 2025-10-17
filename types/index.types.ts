@@ -5,7 +5,8 @@ export interface User {
   id: string
   email: string
   full_name?: string
-  role: UserRole
+  role: UserRole // Deprecated - use roles instead
+  roles: UserRole[] // Array to support multiple roles
   avatar_url?: string
   bio?: string
   learning_preferences?: Record<string, any>

@@ -39,6 +39,7 @@ export default function ProfilePage() {
             email: profile.email,
             full_name: profile.full_name || undefined,
             role: profile.role,
+            roles: profile.roles || [profile.role],
             avatar_url: profile.avatar_url || undefined,
             bio: profile.bio || undefined,
             learning_preferences: profile.learning_preferences || undefined,
