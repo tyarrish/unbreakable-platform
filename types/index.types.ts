@@ -80,7 +80,7 @@ export interface DiscussionPost {
 }
 
 // Event types
-export type EventType = 'cohort_call' | 'workshop' | 'book_club' | 'office_hours'
+export type EventType = 'main_session' | 'workshop' | 'guest_speaker' | 'book_club' | 'panel_discussion' | 'office_hours' | 'fireside_chat' | 'networking_event' | 'celebration'
 export type AttendanceStatus = 'registered' | 'attended' | 'missed'
 export type LocationType = 'in_person' | 'virtual' | 'hybrid'
 

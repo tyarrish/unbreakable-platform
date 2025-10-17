@@ -33,7 +33,7 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
     title: event?.title || '',
     description: event?.description || '',
     presenter_bio: (event as any)?.presenter_bio || '',
-    event_type: event?.event_type || 'cohort_call',
+    event_type: event?.event_type || 'main_session',
     start_time: event?.start_time ? new Date(event.start_time).toISOString().slice(0, 16) : '',
     end_time: event?.end_time ? new Date(event.end_time).toISOString().slice(0, 16) : '',
     is_required: event?.is_required || false,

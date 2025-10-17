@@ -78,9 +78,9 @@ INSERT INTO events (
   zoom_link,
   created_by
 ) VALUES (
-  'Month 1 Cohort Call',
-  'Our first cohort call to discuss the leadership foundations module',
-  'cohort_call',
+  'Month 1 Main Session',
+  'Our first main session to discuss the leadership foundations module',
+  'main_session',
   '2025-11-01 18:00:00+00',
   '2025-11-01 19:30:00+00',
   true,

@@ -47,10 +47,15 @@ export const PROGRESS_METAPHORS = [
 
 // Event Types
 export const EVENT_TYPES = [
-  { value: 'cohort_call', label: 'Cohort Call', color: 'rogue-forest' },
+  { value: 'main_session', label: 'Main Session', color: 'rogue-forest' },
   { value: 'workshop', label: 'Workshop', color: 'rogue-gold' },
-  { value: 'book_club', label: 'Book Club', color: 'rogue-copper' },
-  { value: 'office_hours', label: 'Office Hours', color: 'rogue-sage' },
+  { value: 'guest_speaker', label: 'Guest Speaker', color: 'rogue-copper' },
+  { value: 'book_club', label: 'Book Club', color: 'rogue-sage' },
+  { value: 'panel_discussion', label: 'Panel Discussion', color: 'rogue-pine' },
+  { value: 'office_hours', label: 'Office Hours', color: 'rogue-slate' },
+  { value: 'fireside_chat', label: 'Fireside Chat', color: 'rogue-gold-light' },
+  { value: 'networking_event', label: 'Networking Event', color: 'rogue-forest' },
+  { value: 'celebration', label: 'Celebration', color: 'rogue-gold' },
 ]
 
 // Event Location Types
