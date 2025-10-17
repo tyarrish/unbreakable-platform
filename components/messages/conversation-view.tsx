@@ -73,50 +73,33 @@ export function ConversationView({
     loadMessages()
     markAsRead()
 
-    // Prevent duplicate subscriptions
-    if (subscriptionRef.current) {
-      console.log('⚠️ Subscription already exists, skipping')
-      return
-    }
+    // Set up realtime - using exact discussions pattern
+    function setupRealtime() {
+      console.log('🚀 Setup realtime for:', conversation.id.slice(0, 8))
+      
+      const channel = supabase
+        .channel(`thread-${conversation.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'discussion_posts',
+            filter: `thread_id=eq.${conversation.id}`,
+          },
+          () => {
+            console.log('🔥 New message, reloading...')
+            loadMessages()
+          }
+        )
+        .subscribe()
 
-    // Set up real-time subscription - SIMPLEST POSSIBLE
-    console.log('🚀 Setting up realtime for:', conversation.id.slice(0, 8))
-    
-    const channel = supabase
-      .channel(`msg-${conversation.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'discussion_posts',
-          filter: `thread_id=eq.${conversation.id}`,
-        },
-        () => {
-          console.log('🔥 New message detected!')
-          loadMessages()
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 Status:', status)
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Connected!')
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Channel error - realtime not working')
-        } else if (status === 'CLOSED') {
-          console.error('❌ Channel closed')
-        }
-      })
-
-    subscriptionRef.current = channel
-
-    return () => {
-      console.log('🧹 Cleanup subscription')
-      if (subscriptionRef.current) {
-        supabase.removeChannel(subscriptionRef.current)
-        subscriptionRef.current = null
+      return () => {
+        supabase.removeChannel(channel)
       }
     }
+
+    return setupRealtime()
   }, [conversation.id])
 
   // Mark as read whenever messages change
