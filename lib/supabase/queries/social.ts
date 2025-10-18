@@ -10,7 +10,6 @@ export interface UserProfile {
   bio: string | null
   city: string | null
   state: string | null
-  country: string | null
   interests: string[] | null
   goals: string | null
   linkedin_url: string | null
@@ -194,14 +193,13 @@ export async function getFollowingCount(userId: string): Promise<number> {
 export async function updateUserLocation(
   userId: string,
   city?: string,
-  state?: string,
-  country?: string
+  state?: string
 ): Promise<void> {
   const supabase = createClient()
   
   const { error } = await (supabase
     .from('profiles') as any)
-    .update({ city, state, country })
+    .update({ city, state })
     .eq('id', userId)
   
   if (error) throw error

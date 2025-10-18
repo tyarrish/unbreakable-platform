@@ -47,7 +47,6 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
   // Location
   const [city, setCity] = useState(user.city || '')
   const [state, setState] = useState(user.state || '')
-  const [country, setCountry] = useState(user.country || '')
   
   // Professional
   const [experienceLevel, setExperienceLevel] = useState(user.experience_level || '')
@@ -83,7 +82,6 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
           bio,
           city,
           state,
-          country,
           experience_level: experienceLevel,
           industry,
           team_size: teamSize,
@@ -241,32 +239,23 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
                 />
               </div>
 
-              <div className="grid sm:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="city">City</Label>
                   <Input
                     id="city"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    placeholder="Portland"
+                    placeholder="Grants Pass"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="state">State/Province</Label>
+                  <Label htmlFor="state">State</Label>
                   <Input
                     id="state"
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     placeholder="Oregon"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country">Country</Label>
-                  <Input
-                    id="country"
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    placeholder="USA"
                   />
                 </div>
               </div>
