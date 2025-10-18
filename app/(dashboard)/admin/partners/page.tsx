@@ -26,7 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Users, Search, UserPlus, X, TrendingUp } from 'lucide-react'
+import { Handshake, Search, UserPlus, X, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Profile {
@@ -361,7 +361,7 @@ export default function AdminPartnersPage() {
                   {partner ? (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-2">
-                        <Users className="h-4 w-4 text-green-600" />
+                        <Handshake className="h-4 w-4 text-green-600" />
                         <span className="text-xs font-medium text-green-800">Paired with</span>
                       </div>
                       <p className="text-sm font-medium text-green-900">{partner.full_name}</p>
@@ -477,7 +477,7 @@ export default function AdminPartnersPage() {
                               disabled={isMatching}
                               className="w-full"
                             >
-                              <Users className="h-3 w-3 mr-2" />
+                              <Handshake className="h-3 w-3 mr-2" />
                               Pair as Partners
                             </Button>
                           </div>
