@@ -127,7 +127,11 @@ function AcceptInviteContent() {
 
       console.log('User account created:', data.user.id)
 
+      // Small delay to let the handle_new_user trigger complete
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
       // Update profile with correct role and mark as incomplete
+      // The trigger already created the profile, so we're just updating it
       const { error: profileError } = await (supabase as any)
         .from('profiles')
         .update({
@@ -140,7 +144,17 @@ function AcceptInviteContent() {
 
       if (profileError) {
         console.error('Profile update error:', profileError)
-        // Don't fail - profile will be set up later
+        console.error('Profile error details:', {
+          code: profileError.code,
+          message: profileError.message,
+          details: profileError.details
+        })
+        // Don't fail - profile was created by trigger
+        toast('Profile created but some details may need updating', { 
+          description: 'You can complete your profile in settings'
+        })
+      } else {
+        console.log('✅ Profile updated successfully')
       }
 
       // Mark invite as accepted
