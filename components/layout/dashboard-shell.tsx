@@ -7,6 +7,7 @@ import { Sidebar } from '@/components/layout/sidebar'
 import { NotificationCenter } from '@/components/layout/notification-center'
 import { GlobalSearch } from '@/components/search/global-search'
 import { PageLoader } from '@/components/ui/loading-spinner'
+import { ProfileSetupModal } from '@/components/auth/profile-setup-modal'
 import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types/index.types'
 
@@ -23,6 +24,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [showProfileSetup, setShowProfileSetup] = useState(false)
+  const [profileCompleted, setProfileCompleted] = useState(true)
   const router = useRouter()
   const supabase = createClient()
 
@@ -93,7 +96,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         setUserRole((profile.roles?.includes('admin') ? 'admin' : profile.roles?.includes('facilitator') ? 'facilitator' : 'participant') as UserRole)
         setUserProfile(userProfileData)
+        setProfileCompleted(profile.profile_completed)
+        
+        // Show profile setup modal if profile not completed
+        if (!profile.profile_completed) {
+          setShowProfileSetup(true)
+        }
+        
         console.log('Dashboard: User role set:', profile.roles)
+        console.log('Dashboard: Profile completed:', profile.profile_completed)
       } catch (error) {
         console.error('Dashboard: Auth check error:', error)
         router.push('/login')
@@ -140,6 +151,20 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Profile Setup Modal for New Users */}
+      {showProfileSetup && userProfile && (
+        <ProfileSetupModal
+          open={showProfileSetup}
+          onClose={() => {
+            setShowProfileSetup(false)
+            setProfileCompleted(true)
+          }}
+          userId={userId}
+          userName={userProfile.full_name}
+          userEmail={userProfile.email}
+        />
+      )}
     </div>
   )
 }

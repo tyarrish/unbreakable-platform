@@ -132,7 +132,7 @@ function AcceptInviteContent() {
         .from('profiles')
         .update({
           full_name: invite.full_name,
-          role: invite.role,
+          roles: [invite.role],
           profile_completed: false,
           invited_by: invite.invited_by,
         })
