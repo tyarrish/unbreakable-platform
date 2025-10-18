@@ -209,9 +209,9 @@ export default function MembersPage() {
                   onClick={() => router.push(`/members/${facilitator.id}`)}
                 >
                   <CardContent className="p-0">
-                    <div className="flex min-h-[140px]">
+                    <div className="flex min-h-[140px] h-full">
                       {/* Full Height Image Section */}
-                      <div className="relative w-32 flex-shrink-0 overflow-hidden bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10 self-stretch">
+                      <div className="relative w-32 flex-shrink-0 overflow-hidden bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10 h-full">
                         {facilitator.avatar_url ? (
                           <Image
                             src={facilitator.avatar_url}
