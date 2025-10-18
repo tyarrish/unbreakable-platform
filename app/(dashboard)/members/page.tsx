@@ -211,13 +211,14 @@ export default function MembersPage() {
                   <CardContent className="p-0">
                     <div className="flex">
                       {/* Full Image Section */}
-                      <div className="relative w-32 flex-shrink-0 overflow-hidden bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10">
+                      <div className="relative w-32 h-32 flex-shrink-0 overflow-hidden bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10">
                         {facilitator.avatar_url ? (
                           <Image
                             src={facilitator.avatar_url}
                             alt={facilitator.full_name || 'Facilitator'}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes="128px"
+                            className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
                           <div className="absolute inset-0 bg-gradient-to-br from-rogue-forest to-rogue-sage flex items-center justify-center">
