@@ -111,13 +111,14 @@ export async function sendInvite(email: string, fullName: string, role: UserRole
 
   // Use Supabase Admin API to invite user by email
   // This sends a proper invite email (not a confirmation email)
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
   const { error: emailError } = await supabase.auth.admin.inviteUserByEmail(email, {
     data: {
       full_name: fullName,
       role,
       invite_id: invite.id,
     },
-    redirectTo: `${window.location.origin}/accept-invite`,
+    redirectTo: `${siteUrl}/accept-invite`,
   })
 
   if (emailError) {
