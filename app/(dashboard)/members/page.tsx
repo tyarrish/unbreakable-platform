@@ -14,6 +14,7 @@ import { RoleBadge } from '@/components/ui/role-badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Users, Search, Sparkles } from 'lucide-react'
+import Image from 'next/image'
 import {
   getAllMembers,
   searchMembers,
@@ -209,15 +210,24 @@ export default function MembersPage() {
                 >
                   <CardContent className="p-0">
                     <div className="flex">
-                      {/* Compact Image Section */}
-                      <div className="relative w-32 flex-shrink-0 bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10 p-4 flex items-center justify-center">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(212,175,55,0.15),transparent)]"></div>
-                        <Avatar className="relative h-20 w-20 border-2 border-white shadow-lg ring-2 ring-rogue-gold/20 group-hover:ring-rogue-gold/40 transition-all">
-                          <AvatarImage src={facilitator.avatar_url || undefined} className="object-cover" />
-                          <AvatarFallback className="bg-rogue-forest text-white text-2xl font-semibold">
-                            {facilitator.full_name?.[0] || facilitator.email[0].toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                      {/* Full Image Section */}
+                      <div className="relative w-32 flex-shrink-0 overflow-hidden bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10">
+                        {facilitator.avatar_url ? (
+                          <Image
+                            src={facilitator.avatar_url}
+                            alt={facilitator.full_name || 'Facilitator'}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-br from-rogue-forest to-rogue-sage flex items-center justify-center">
+                            <div className="text-white text-4xl font-bold">
+                              {facilitator.full_name?.[0] || facilitator.email[0].toUpperCase()}
+                            </div>
+                          </div>
+                        )}
+                        {/* Subtle overlay on hover */}
+                        <div className="absolute inset-0 bg-rogue-gold/0 group-hover:bg-rogue-gold/10 transition-colors duration-300"></div>
                       </div>
 
                       {/* Compact Content Section */}
