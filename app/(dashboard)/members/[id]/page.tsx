@@ -40,7 +40,10 @@ import {
   getTotalPoints,
   type UserAchievement
 } from '@/lib/supabase/queries/achievements'
+import { getUserReadingList } from '@/lib/supabase/queries/books'
+import { BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
+import Image from 'next/image'
 
 export default function MemberProfilePage() {
   const params = useParams()
@@ -57,6 +60,7 @@ export default function MemberProfilePage() {
   const [isFollowingUser, setIsFollowingUser] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [readingList, setReadingList] = useState<any[]>([])
 
   useEffect(() => {
     loadMemberProfile()
@@ -76,7 +80,8 @@ export default function MemberProfilePage() {
         points,
         followers,
         following,
-        followStatus
+        followStatus,
+        readingData
       ] = await Promise.all([
         getMemberProfile(memberId),
         getUserActivity(memberId, 10),
@@ -84,14 +89,15 @@ export default function MemberProfilePage() {
         getTotalPoints(memberId),
         getFollowerCount(memberId),
         getFollowingCount(memberId),
-        user ? isFollowing(user.id, memberId) : Promise.resolve(false)
+        user ? isFollowing(user.id, memberId) : Promise.resolve(false),
+        getUserReadingList(memberId)
       ])
 
       // Debug: Log the role data
       console.log('Member Profile Data:', {
         id: memberData?.id,
         email: memberData?.email,
-        role: memberData?.role,
+        roles: memberData?.roles,
         fullName: memberData?.full_name
       })
 
@@ -102,6 +108,7 @@ export default function MemberProfilePage() {
       setFollowerCount(followers)
       setFollowingCount(following)
       setIsFollowingUser(followStatus)
+      setReadingList(readingData || [])
     } catch (error) {
       console.error('Error loading member profile:', error)
       toast.error('Failed to load profile')
@@ -175,7 +182,7 @@ export default function MemberProfilePage() {
                 </div>
 
                 <div className="flex items-center gap-3 flex-wrap">
-                  <RoleBadge role={member.role as any} />
+                  <RoleBadge roles={member.roles as any} role={member.role as any} />
                   {(member.city || member.state) && (
                     <Badge variant="outline" className="flex items-center gap-1">
                       <MapPin size={14} />
@@ -285,6 +292,74 @@ export default function MemberProfilePage() {
                     </a>
                   </Button>
                 )}
+              </div>
+            )}
+
+            {/* Reading List - Compact Display */}
+            {readingList.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-rogue-sage/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <BookOpen size={16} className="text-rogue-gold" />
+                  <h3 className="font-medium text-rogue-forest">Reading Journey</h3>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {readingList
+                    .filter(item => item.status === 'reading')
+                    .map((item) => (
+                      <div key={item.id} className="flex-shrink-0 relative group">
+                        <div className="relative w-20 h-28 rounded-lg overflow-hidden shadow-md border-2 border-rogue-gold">
+                          {item.book?.cover_image_url ? (
+                            <Image
+                              src={item.book.cover_image_url}
+                              alt={item.book.title}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-rogue-forest to-rogue-sage flex items-center justify-center">
+                              <BookOpen size={24} className="text-white/50" />
+                            </div>
+                          )}
+                        </div>
+                        <Badge className="absolute -top-2 -right-2 bg-rogue-gold text-white text-xs px-1.5 py-0.5 shadow-sm">
+                          Reading
+                        </Badge>
+                        <p className="text-xs text-rogue-forest font-medium mt-1 w-20 truncate">
+                          {item.book?.title}
+                        </p>
+                      </div>
+                    ))}
+                  {readingList
+                    .filter(item => item.status === 'finished')
+                    .slice(0, 6)
+                    .map((item) => (
+                      <div key={item.id} className="flex-shrink-0 relative group">
+                        <div className="relative w-20 h-28 rounded-lg overflow-hidden shadow-sm border border-rogue-sage/20 hover:border-rogue-gold/40 transition-all">
+                          {item.book?.cover_image_url ? (
+                            <Image
+                              src={item.book.cover_image_url}
+                              alt={item.book.title}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-rogue-sage/20 to-rogue-forest/10 flex items-center justify-center">
+                              <BookOpen size={20} className="text-rogue-forest/40" />
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs text-rogue-slate mt-1 w-20 truncate">
+                          {item.book?.title}
+                        </p>
+                      </div>
+                    ))}
+                </div>
+                <p className="text-xs text-rogue-slate/60 mt-2">
+                  {readingList.filter(item => item.status === 'finished').length} books completed
+                  {readingList.filter(item => item.status === 'reading').length > 0 && 
+                    ` • Currently reading ${readingList.filter(item => item.status === 'reading').length}`
+                  }
+                </p>
               </div>
             )}
           </CardContent>
