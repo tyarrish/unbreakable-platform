@@ -87,12 +87,12 @@ export default function AdminUsersPage() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, roles')
+      .select('roles')
       .eq('id', user.id)
-      .single<{ role: string; roles: string[] }>()
+      .single<{ roles: string[] }>()
 
     // Only admins can access user management
-    const hasAdminRole = profile?.roles?.includes('admin') || profile?.role === 'admin'
+    const hasAdminRole = profile?.roles?.includes('admin')
     if (!hasAdminRole) {
       router.push('/admin')
     }

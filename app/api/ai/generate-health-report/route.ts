@@ -21,11 +21,11 @@ export async function POST(request: NextRequest) {
     // Check if user is admin
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, email')
+      .select('roles, email')
       .eq('id', user.id)
       .single()
 
-    if (!profile || !['admin', 'super_admin'].includes((profile as any).role)) {
+    if (!profile || !(profile as any).roles?.includes('admin')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

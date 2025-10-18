@@ -183,11 +183,11 @@ export async function updateUserRole(userId: string, role: UserRole) {
   // Verify the update
   const { data: updatedProfile } = await supabase
     .from('profiles')
-    .select('role, roles')
+    .select('roles')
     .eq('id', userId)
     .single()
   
-  console.log('Verified role after update:', updatedProfile)
+  console.log('Verified roles after update:', updatedProfile)
 }
 
 /**
@@ -230,7 +230,7 @@ export async function updateUserRoles(userId: string, roles: UserRole[]) {
   // Verify the update
   const { data: updatedProfile } = await supabase
     .from('profiles')
-    .select('role, roles')
+    .select('roles')
     .eq('id', userId)
     .single()
   

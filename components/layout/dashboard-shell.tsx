@@ -62,9 +62,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         // Get user profile to determine role and user info
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('role, roles, full_name, email, avatar_url, is_active, profile_completed')
+          .select('roles, full_name, email, avatar_url, is_active, profile_completed')
           .eq('id', session.user.id)
-          .single<{ role: string; roles: string[]; full_name: string; email: string; avatar_url: string | null; is_active: boolean; profile_completed: boolean }>()
+          .single<{ roles: string[]; full_name: string; email: string; avatar_url: string | null; is_active: boolean; profile_completed: boolean }>()
 
         console.log('✅ Dashboard: Profile data:', profile)
 
@@ -85,15 +85,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         }
 
         const userProfileData: UserProfile = {
-          role: profile.role as UserRole,
+          role: profile.roles?.[0] as UserRole || 'participant',
           full_name: profile.full_name,
           email: profile.email,
           avatar_url: profile.avatar_url || undefined
         }
 
-        setUserRole(profile.role as UserRole)
+        setUserRole((profile.roles?.includes('admin') ? 'admin' : profile.roles?.includes('facilitator') ? 'facilitator' : 'participant') as UserRole)
         setUserProfile(userProfileData)
-        console.log('Dashboard: User role set:', profile.role)
+        console.log('Dashboard: User role set:', profile.roles)
       } catch (error) {
         console.error('Dashboard: Auth check error:', error)
         router.push('/login')

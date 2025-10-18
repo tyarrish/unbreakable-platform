@@ -54,12 +54,12 @@ export function NewConversationModal({
       const supabase = createClient()
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, avatar_url, email, role')
+        .select('id, full_name, avatar_url, email, roles')
         .neq('id', currentUserId)
         .order('full_name')
       
       if (error) throw error
-      setUsers(data as User[])
+      setUsers(data as any as User[])
     } catch (error) {
       console.error('Error loading users:', error)
       toast.error('Failed to load users')

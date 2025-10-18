@@ -114,19 +114,19 @@ export default function ThreadDetailPage() {
         // Get user role
         const { data: profile } = await supabase
           .from('profiles')
-          .select('role')
+          .select('roles')
           .eq('id', user.id)
-          .single<{ role: string }>()
+          .single<{ roles: string[] }>()
         
-        if (profile?.role) {
-          setUserRole(profile.role as 'admin' | 'facilitator' | 'participant')
+        if (profile?.roles && profile.roles.length > 0) {
+          setUserRole((profile.roles?.includes('admin') ? 'admin' : profile.roles?.includes('facilitator') ? 'facilitator' : 'participant') as 'admin' | 'facilitator' | 'participant')
         }
       }
 
       // Get thread
       const { data: threadData, error: threadError } = await supabase
         .from('discussion_threads')
-        .select('*, created_by_profile:profiles!created_by(full_name, avatar_url, role)')
+        .select('*, created_by_profile:profiles!created_by(full_name, avatar_url, roles)')
         .eq('id', threadId)
         .single() as any
 
@@ -161,7 +161,7 @@ export default function ThreadDetailPage() {
       // Get all posts for this thread
       const { data: postsData, error: postsError } = await supabase
         .from('discussion_posts')
-        .select('*, author:profiles!author_id(full_name, avatar_url, role)')
+        .select('*, author:profiles!author_id(full_name, avatar_url, roles)')
         .eq('thread_id', threadId)
         .order('created_at', { ascending: true })
 

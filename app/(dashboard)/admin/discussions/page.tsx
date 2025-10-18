@@ -67,11 +67,11 @@ export default function AdminDiscussionsPage() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('roles')
       .eq('id', user.id)
-      .single<{ role: string }>()
+      .single<{ roles: string[] }>()
 
-    if (profile?.role !== 'admin' && profile?.role !== 'facilitator') {
+    if (!profile?.roles?.some(r => ['admin', 'facilitator'].includes(r))) {
       router.push('/dashboard')
     }
   }

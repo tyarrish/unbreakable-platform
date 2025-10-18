@@ -46,12 +46,12 @@ export default function AdminSettingsPage() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('roles')
       .eq('id', user.id)
-      .single<{ role: string }>()
+      .single<{ roles: string[] }>()
 
     // Only admins can access settings
-    if (profile?.role !== 'admin') {
+    if (!profile?.roles?.includes('admin')) {
       router.push('/admin')
     }
   }

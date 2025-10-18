@@ -29,16 +29,17 @@ export default function AdminPage() {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('role')
+          .select('roles')
           .eq('id', user.id)
-          .single<{ role: string }>()
+          .single<{ roles: string[] }>()
 
-        if (!profile || (profile.role !== 'admin' && profile.role !== 'facilitator')) {
+        const hasAdminAccess = profile?.roles?.some(r => ['admin', 'facilitator'].includes(r))
+        if (!profile || !hasAdminAccess) {
           router.push('/dashboard')
           return
         }
 
-        setUserRole(profile.role)
+        setUserRole(profile.roles.includes('admin') ? 'admin' : 'facilitator')
       } catch (error) {
         console.error('Error checking admin access:', error)
         router.push('/dashboard')
