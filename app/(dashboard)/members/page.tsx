@@ -208,31 +208,31 @@ export default function MembersPage() {
                   className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-rogue-gold/20 hover:border-rogue-gold/40 bg-gradient-to-br from-white to-rogue-cream/20 overflow-hidden"
                   onClick={() => router.push(`/members/${facilitator.id}`)}
                 >
-                  <CardContent className="p-0">
-                    <div className="flex min-h-[140px] h-full">
-                      {/* Full Height Image Section */}
-                      <div className="relative w-32 flex-shrink-0 overflow-hidden bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10 h-full">
-                        {facilitator.avatar_url ? (
-                          <Image
-                            src={facilitator.avatar_url}
-                            alt={facilitator.full_name || 'Facilitator'}
-                            fill
-                            sizes="128px"
-                            className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 bg-gradient-to-br from-rogue-forest to-rogue-sage flex items-center justify-center">
-                            <div className="text-white text-4xl font-bold">
-                              {facilitator.full_name?.[0] || facilitator.email[0].toUpperCase()}
-                            </div>
+                  <CardContent className="p-0 relative">
+                    {/* Full Height Image Section - Absolute positioning */}
+                    <div className="absolute left-0 top-0 bottom-0 w-32 overflow-hidden bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10">
+                      {facilitator.avatar_url ? (
+                        <Image
+                          src={facilitator.avatar_url}
+                          alt={facilitator.full_name || 'Facilitator'}
+                          fill
+                          sizes="128px"
+                          className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-rogue-forest to-rogue-sage flex items-center justify-center">
+                          <div className="text-white text-4xl font-bold">
+                            {facilitator.full_name?.[0] || facilitator.email[0].toUpperCase()}
                           </div>
-                        )}
-                        {/* Subtle overlay on hover */}
-                        <div className="absolute inset-0 bg-rogue-gold/0 group-hover:bg-rogue-gold/10 transition-colors duration-300"></div>
-                      </div>
+                        </div>
+                      )}
+                      {/* Subtle overlay on hover */}
+                      <div className="absolute inset-0 bg-rogue-gold/0 group-hover:bg-rogue-gold/10 transition-colors duration-300"></div>
+                    </div>
 
-                      {/* Compact Content Section */}
-                      <div className="flex-1 p-4">
+                    {/* Compact Content Section - with left padding to account for image */}
+                    <div className="pl-32">
+                      <div className="p-4 min-h-[140px]">
                         {/* Header */}
                         <div className="mb-2">
                           <div className="flex items-start justify-between gap-2 mb-1">
