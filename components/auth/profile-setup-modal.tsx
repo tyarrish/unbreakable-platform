@@ -76,22 +76,28 @@ export function ProfileSetupModal({ open, onClose, userId, userName, userEmail }
 
       // Upload avatar if selected
       if (avatarFile) {
-        const fileName = `${userId}-${Date.now()}.${avatarFile.name.split('.').pop()}`
-        const filePath = `avatars/${fileName}`
+        const fileExt = avatarFile.name.split('.').pop()
+        const fileName = `${Date.now()}.${fileExt}`
+        const filePath = `${userId}/${fileName}`
+
+        console.log('Uploading avatar to:', filePath)
 
         const { error: uploadError } = await supabase.storage
-          .from('uploads')
-          .upload(filePath, avatarFile)
+          .from('avatars')
+          .upload(filePath, avatarFile, {
+            upsert: true
+          })
 
         if (uploadError) {
           console.error('Avatar upload error:', uploadError)
-          toast.error('Failed to upload avatar')
+          toast.error(`Failed to upload avatar: ${uploadError.message}`)
         } else {
           const { data } = supabase.storage
-            .from('uploads')
+            .from('avatars')
             .getPublicUrl(filePath)
           
           finalAvatarUrl = data.publicUrl
+          console.log('Avatar uploaded successfully:', finalAvatarUrl)
         }
       }
 
