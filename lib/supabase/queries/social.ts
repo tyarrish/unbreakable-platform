@@ -8,8 +8,6 @@ export interface UserProfile {
   roles: string[] // Array to support multiple roles
   avatar_url: string | null
   bio: string | null
-  city: string | null
-  state: string | null
   interests: string[] | null
   goals: string | null
   linkedin_url: string | null
@@ -61,24 +59,6 @@ export async function searchMembers(query: string): Promise<UserProfile[]> {
     .select('*')
     .or(`full_name.ilike.%${query}%,email.ilike.%${query}%,bio.ilike.%${query}%`)
     .limit(20)) as any
-  
-  if (error) throw error
-  return data || []
-}
-
-export async function getMembersByLocation(city?: string, state?: string): Promise<UserProfile[]> {
-  const supabase = createClient()
-  
-  let query = supabase.from('profiles').select('*')
-  
-  if (city) {
-    query = query.ilike('city', `%${city}%`)
-  }
-  if (state) {
-    query = query.ilike('state', `%${state}%`)
-  }
-  
-  const { data, error } = await (query.limit(50)) as any
   
   if (error) throw error
   return data || []
@@ -189,22 +169,7 @@ export async function getFollowingCount(userId: string): Promise<number> {
   return count || 0
 }
 
-// Update user profile location and interests
-export async function updateUserLocation(
-  userId: string,
-  city?: string,
-  state?: string
-): Promise<void> {
-  const supabase = createClient()
-  
-  const { error } = await (supabase
-    .from('profiles') as any)
-    .update({ city, state })
-    .eq('id', userId)
-  
-  if (error) throw error
-}
-
+// Update user interests
 export async function updateUserInterests(userId: string, interests: string[]): Promise<void> {
   const supabase = createClient()
   

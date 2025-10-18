@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { RoleBadge } from '@/components/ui/role-badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Users, Search, MapPin, Sparkles } from 'lucide-react'
+import { Users, Search, Sparkles } from 'lucide-react'
 import {
   getAllMembers,
   searchMembers,
@@ -124,12 +124,6 @@ export default function MembersPage() {
 
           <div className="flex items-center gap-2 flex-wrap justify-center">
             <RoleBadge roles={member.roles as any} role={member.role as any} />
-            {(member.city || member.state) && (
-              <Badge variant="outline" className="text-xs">
-                <MapPin size={12} className="mr-1" />
-                {[member.city, member.state].filter(Boolean).join(', ')}
-              </Badge>
-            )}
           </div>
 
           {member.bio && (

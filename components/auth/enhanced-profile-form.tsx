@@ -44,10 +44,6 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
   const [bio, setBio] = useState(user.bio || '')
   const [avatarUrl, setAvatarUrl] = useState(user.avatar_url || '')
   
-  // Location
-  const [city, setCity] = useState(user.city || '')
-  const [state, setState] = useState(user.state || '')
-  
   // Professional
   const [experienceLevel, setExperienceLevel] = useState(user.experience_level || '')
   const [industry, setIndustry] = useState(user.industry || '')
@@ -55,7 +51,6 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
   const [goals, setGoals] = useState(user.goals || '')
   
   // Communication
-  const [timeZone, setTimeZone] = useState(user.time_zone || '')
   const [communicationStyle, setCommunicationStyle] = useState(user.communication_style || '')
   const [linkedinUrl, setLinkedinUrl] = useState(user.linkedin_url || '')
   
@@ -80,13 +75,10 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
         .update({
           full_name: fullName,
           bio: bio || null,
-          city: city || null,
-          state: state || null,
           experience_level: experienceLevel || null,
           industry: industry || null,
           team_size: teamSize || null,
           goals: goals || null,
-          time_zone: timeZone || null,
           communication_style: communicationStyle || null,
           linkedin_url: linkedinUrl || null,
           employer: employer || null,
@@ -239,26 +231,6 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
                 />
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Grants Pass"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state">State</Label>
-                  <Input
-                    id="state"
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    placeholder="Oregon"
-                  />
-                </div>
-              </div>
             </TabsContent>
 
             {/* Professional Tab */}
@@ -342,16 +314,6 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
 
             {/* Preferences Tab */}
             <TabsContent value="preferences" className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="timeZone">Time Zone</Label>
-                <Input
-                  id="timeZone"
-                  value={timeZone}
-                  onChange={(e) => setTimeZone(e.target.value)}
-                  placeholder="PST, EST, GMT, etc."
-                />
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="communicationStyle">Communication Style</Label>
                 <Select value={communicationStyle} onValueChange={setCommunicationStyle}>

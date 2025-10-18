@@ -13,7 +13,6 @@ import { RoleBadge } from '@/components/ui/role-badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import {
   ArrowLeft,
-  MapPin,
   UserPlus,
   UserMinus,
   Linkedin,
@@ -182,12 +181,6 @@ export default function MemberProfilePage() {
 
                 <div className="flex items-center gap-3 flex-wrap">
                   <RoleBadge roles={member.roles as any} role={member.role as any} />
-                  {(member.city || member.state) && (
-                    <Badge variant="outline" className="flex items-center gap-1">
-                      <MapPin size={14} />
-                      {[member.city, member.state].filter(Boolean).join(', ')}
-                    </Badge>
-                  )}
                   <Badge variant="outline" className="flex items-center gap-1">
                     <Trophy size={14} />
                     {totalPoints} points
