@@ -63,18 +63,64 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         setUserId(session.user.id)
 
         // Get user profile to determine role and user info
-        const { data: profile, error } = await supabase
+        let { data: profile, error } = await supabase
           .from('profiles')
           .select('roles, full_name, email, avatar_url, is_active, profile_completed')
           .eq('id', session.user.id)
-          .single<{ roles: string[]; full_name: string; email: string; avatar_url: string | null; is_active: boolean; profile_completed: boolean }>()
+          .maybeSingle<{ roles: string[]; full_name: string; email: string; avatar_url: string | null; is_active: boolean; profile_completed: boolean }>()
 
-        console.log('✅ Dashboard: Profile data:', profile)
+        console.log('✅ Dashboard: Profile query result:', profile, 'Error:', error)
 
-        if (error || !profile) {
+        // If profile doesn't exist, create it
+        if (!profile && !error) {
+          console.log('⚠️ Profile missing, creating now...')
+          
+          const { error: createError } = await (supabase as any)
+            .from('profiles')
+            .insert({
+              id: session.user.id,
+              email: session.user.email,
+              full_name: session.user.user_metadata?.full_name || null,
+              roles: [session.user.user_metadata?.role || 'participant'],
+              is_active: true,
+              profile_completed: false
+            })
+          
+          if (createError) {
+            console.error('❌ Failed to create profile:', createError)
+            alert(`Login Error: Unable to create profile. ${createError.message}`)
+            router.push('/login')
+            return
+          }
+          
+          // Reload profile after creation
+          const { data: newProfile, error: loadError } = await supabase
+            .from('profiles')
+            .select('roles, full_name, email, avatar_url, is_active, profile_completed')
+            .eq('id', session.user.id)
+            .maybeSingle<{ roles: string[]; full_name: string; email: string; avatar_url: string | null; is_active: boolean; profile_completed: boolean }>()
+          
+          if (loadError || !newProfile) {
+            console.error('❌ Failed to load newly created profile:', loadError)
+            alert('Failed to load newly created profile')
+            router.push('/login')
+            return
+          }
+          
+          profile = newProfile
+          console.log('✅ Profile created successfully')
+        }
+
+        if (error) {
           console.error('❌ Dashboard: Profile error:', error)
           console.error('❌ Error details:', error?.message, error?.code)
           alert(`Login Error: Unable to load profile. ${error?.message || 'Unknown error'}`)
+          router.push('/login')
+          return
+        }
+
+        if (!profile) {
+          alert('Profile not found after multiple attempts')
           router.push('/login')
           return
         }
