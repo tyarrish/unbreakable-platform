@@ -356,7 +356,7 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
                 <Label htmlFor="communicationStyle">Communication Style</Label>
                 <Select value={communicationStyle} onValueChange={setCommunicationStyle}>
                   <SelectTrigger id="communicationStyle">
-                    <SelectValue placeholder="Select..." />
+                    <SelectValue placeholder="Select your preferred style..." />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="direct">Direct & Candid</SelectItem>
@@ -365,6 +365,9 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
                     <SelectItem value="reflective">Reflective & Thoughtful</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-rogue-slate">
+                  How you prefer to communicate with your partner
+                </p>
               </div>
 
               <div className="space-y-2">
