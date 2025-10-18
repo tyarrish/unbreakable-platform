@@ -394,6 +394,8 @@ export async function validateInviteByToken(token: string): Promise<Invite | nul
 export async function acceptInvite(inviteId: string, userId: string) {
   const supabase = createClient()
 
+  console.log('acceptInvite called with:', { inviteId, userId })
+
   const { error } = await (supabase as any)
     .from('invites')
     .update({ 
@@ -402,7 +404,12 @@ export async function acceptInvite(inviteId: string, userId: string) {
     })
     .eq('id', inviteId)
 
-  if (error) throw error
+  if (error) {
+    console.error('Error updating invite status:', error)
+    throw error
+  }
+
+  console.log('Invite status updated to accepted')
 
   // Update profile with invited_by relationship
   const { data: invite } = await (supabase as any)
@@ -416,6 +423,8 @@ export async function acceptInvite(inviteId: string, userId: string) {
       .from('profiles')
       .update({ invited_by: invite.invited_by })
       .eq('id', userId)
+    
+    console.log('Profile invited_by relationship updated')
   }
 }
 

@@ -144,7 +144,15 @@ function AcceptInviteContent() {
       }
 
       // Mark invite as accepted
-      await acceptInvite(invite.id, data.user.id)
+      try {
+        console.log('Marking invite as accepted:', invite.id)
+        await acceptInvite(invite.id, data.user.id)
+        console.log('✅ Invite marked as accepted successfully')
+      } catch (inviteError) {
+        console.error('❌ Failed to mark invite as accepted:', inviteError)
+        // Don't fail the signup, but log the error
+        toast.error('Account created but invite status update failed')
+      }
 
       toast.success('Account created successfully! Welcome aboard.')
       
