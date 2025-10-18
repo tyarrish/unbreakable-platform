@@ -14,7 +14,6 @@ export interface UserProfile {
   interests: string[] | null
   goals: string | null
   linkedin_url: string | null
-  twitter_url: string | null
   employer: string | null
   current_role: string | null
   created_at: string
@@ -221,14 +220,13 @@ export async function updateUserInterests(userId: string, interests: string[]): 
 
 export async function updateUserSocialLinks(
   userId: string,
-  linkedinUrl?: string,
-  twitterUrl?: string
+  linkedinUrl?: string
 ): Promise<void> {
   const supabase = createClient()
   
   const { error } = await (supabase
     .from('profiles') as any)
-    .update({ linkedin_url: linkedinUrl, twitter_url: twitterUrl })
+    .update({ linkedin_url: linkedinUrl })
     .eq('id', userId)
   
   if (error) throw error

@@ -17,7 +17,6 @@ import {
   UserPlus,
   UserMinus,
   Linkedin,
-  Twitter,
   Trophy,
   Target,
   Briefcase
@@ -274,24 +273,14 @@ export default function MemberProfilePage() {
               </div>
             )}
 
-            {(member.linkedin_url || member.twitter_url) && (
-              <div className="mt-4 flex gap-3">
-                {member.linkedin_url && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer">
-                      <Linkedin size={16} className="mr-2" />
-                      LinkedIn
-                    </a>
-                  </Button>
-                )}
-                {member.twitter_url && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={member.twitter_url} target="_blank" rel="noopener noreferrer">
-                      <Twitter size={16} className="mr-2" />
-                      Twitter
-                    </a>
-                  </Button>
-                )}
+            {member.linkedin_url && (
+              <div className="mt-4">
+                <Button variant="outline" size="sm" asChild>
+                  <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer">
+                    <Linkedin size={16} className="mr-2" />
+                    LinkedIn
+                  </a>
+                </Button>
               </div>
             )}
 

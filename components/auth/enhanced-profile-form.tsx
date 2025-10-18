@@ -59,7 +59,6 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
   const [timeZone, setTimeZone] = useState(user.time_zone || '')
   const [communicationStyle, setCommunicationStyle] = useState(user.communication_style || '')
   const [linkedinUrl, setLinkedinUrl] = useState(user.linkedin_url || '')
-  const [twitterUrl, setTwitterUrl] = useState(user.twitter_url || '')
   
   // New onboarding fields
   const [employer, setEmployer] = useState(user.employer || '')
@@ -92,7 +91,6 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
           time_zone: timeZone,
           communication_style: communicationStyle,
           linkedin_url: linkedinUrl,
-          twitter_url: twitterUrl,
           employer,
           current_role: currentRole,
           food_preferences: foodPreferences,
@@ -388,17 +386,6 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
                   value={linkedinUrl}
                   onChange={(e) => setLinkedinUrl(e.target.value)}
                   placeholder="https://linkedin.com/in/username"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="twitterUrl">Twitter/X URL</Label>
-                <Input
-                  id="twitterUrl"
-                  type="url"
-                  value={twitterUrl}
-                  onChange={(e) => setTwitterUrl(e.target.value)}
-                  placeholder="https://twitter.com/username"
                 />
               </div>
 
