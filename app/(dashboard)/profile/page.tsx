@@ -44,9 +44,20 @@ export default function ProfilePage() {
             bio: profile.bio || undefined,
             learning_preferences: profile.learning_preferences || undefined,
             partner_id: profile.partner_id || undefined,
+            employer: profile.employer || undefined,
+            current_role: profile.current_role || undefined,
+            food_preferences: profile.food_preferences || undefined,
+            allergies: profile.allergies || undefined,
+            experience_level: profile.experience_level || undefined,
+            industry: profile.industry || undefined,
+            team_size: profile.team_size || undefined,
+            goals: profile.goals || undefined,
+            communication_style: profile.communication_style || undefined,
+            linkedin_url: profile.linkedin_url || undefined,
+            interests: profile.interests || undefined,
             created_at: profile.created_at,
             updated_at: profile.updated_at,
-          })
+          } as any)
         }
       } catch (error) {
         console.error('Error loading profile:', error)
