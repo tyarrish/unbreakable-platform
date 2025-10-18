@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/components/layout/container'
-import { ProfileForm } from '@/components/auth/profile-form'
+import { EnhancedProfileForm } from '@/components/auth/enhanced-profile-form'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { RoleBadge } from '@/components/ui/role-badge'
 import { Badge } from '@/components/ui/badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { formatDate } from '@/lib/utils/format-date'
-import { Settings, User, Award, Calendar, Users, Sparkles } from 'lucide-react'
+import { Settings, User, Award, Calendar, Handshake, Sparkles } from 'lucide-react'
 import type { User as UserType } from '@/types/index.types'
 
 export default function ProfilePage() {
@@ -119,7 +119,7 @@ export default function ProfilePage() {
                 
                 <div className="p-4 bg-rogue-sage/5 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
-                    <Users className="h-4 w-4 text-rogue-sage" />
+                    <Handshake className="h-4 w-4 text-rogue-sage" />
                     <p className="text-sm text-rogue-slate font-medium">Partner Status</p>
                   </div>
                   {user.partner_id ? (
@@ -136,7 +136,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Profile Form */}
-          <ProfileForm user={user} />
+          <EnhancedProfileForm user={user as any} />
           </div>
         </div>
       </Container>

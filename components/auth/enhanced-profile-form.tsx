@@ -129,14 +129,16 @@ export function EnhancedProfileForm({ user }: EnhancedProfileFormProps) {
       const filePath = `${user.id}/${fileName}`
 
       const { error: uploadError } = await supabase.storage
-        .from('uploads')
-        .upload(`avatars/${filePath}`, file)
+        .from('avatars')
+        .upload(filePath, file, {
+          upsert: true
+        })
 
       if (uploadError) throw uploadError
 
       const { data } = supabase.storage
-        .from('uploads')
-        .getPublicUrl(`avatars/${filePath}`)
+        .from('avatars')
+        .getPublicUrl(filePath)
 
       const { error: updateError } = await (supabase as any)
         .from('profiles')
