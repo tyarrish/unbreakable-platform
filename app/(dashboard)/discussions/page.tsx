@@ -70,12 +70,27 @@ export default function DiscussionsPage() {
         .from('discussion_threads')
         .select(`
           *,
-          created_by_profile:profiles!created_by(full_name, avatar_url, role)
+          created_by_profile:profiles!created_by(full_name, avatar_url, roles)
         `)
         .eq('conversation_type', 'public_discussion')
         .order('is_pinned', { ascending: false })
         .order('last_activity_at', { ascending: false })
 
+      if (error) {
+        console.error('Error loading discussions:', error)
+        throw error
+      }
+
+      console.log(`✅ Loaded ${data?.length || 0} public discussions`)
+
+      // Check total count for diagnostics
+      const { count: totalCount } = await supabase
+        .from('discussion_threads')
+        .select('*', { count: 'exact', head: true })
+        .eq('conversation_type', 'public_discussion')
+      
+      console.log(`📊 Total public discussions in database: ${totalCount}`)
+      
       if (error) throw error
 
       // Get post counts for each thread
