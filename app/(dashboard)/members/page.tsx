@@ -211,7 +211,7 @@ export default function MembersPage() {
                   <CardContent className="p-0">
                     <div className="flex min-h-[140px]">
                       {/* Full Height Image Section */}
-                      <div className="relative w-32 flex-shrink-0 overflow-hidden bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10">
+                      <div className="relative w-32 flex-shrink-0 overflow-hidden bg-gradient-to-br from-rogue-forest/10 to-rogue-sage/10 self-stretch">
                         {facilitator.avatar_url ? (
                           <Image
                             src={facilitator.avatar_url}
