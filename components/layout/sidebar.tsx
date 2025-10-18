@@ -21,7 +21,8 @@ import {
   MessageCircle,
   Calendar, 
   Library, 
-  Users, 
+  Users,
+  Handshake,
   Mountain,
   Settings,
   Menu,
@@ -68,7 +69,7 @@ const participantNavSections = [
       { href: '/discussions', label: 'Discussions', icon: MessageSquare },
       { href: '/messages', label: 'Messages', icon: MessageCircle, hasUnreadBadge: true },
       { href: '/members', label: 'Members', icon: Users },
-      { href: '/partner', label: 'My Partner', icon: Users },
+      { href: '/partner', label: 'My Partner', icon: Handshake },
     ]
   },
   {
