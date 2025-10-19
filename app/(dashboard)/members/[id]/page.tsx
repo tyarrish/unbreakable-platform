@@ -293,54 +293,64 @@ export default function MemberProfilePage() {
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   {readingList
                     .filter(item => item.status === 'reading')
-                    .map((item) => (
-                      <div key={item.id} className="flex-shrink-0 relative group">
-                        <div className="relative w-20 h-28 rounded-lg overflow-hidden shadow-md border-2 border-rogue-gold">
-                          {item.book?.cover_image_url ? (
-                            <Image
-                              src={item.book.cover_image_url}
-                              alt={item.book.title}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-rogue-forest to-rogue-sage flex items-center justify-center">
-                              <BookOpen size={24} className="text-white/50" />
-                            </div>
-                          )}
+                    .map((item) => {
+                      const [imageError, setImageError] = useState(false)
+                      
+                      return (
+                        <div key={item.id} className="flex-shrink-0 relative group">
+                          <div className="relative w-20 h-28 rounded-lg overflow-hidden shadow-md border-2 border-rogue-gold">
+                            {item.book?.cover_image_url && !imageError ? (
+                              <Image
+                                src={item.book.cover_image_url}
+                                alt={item.book.title}
+                                fill
+                                className="object-cover"
+                                onError={() => setImageError(true)}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-rogue-forest to-rogue-sage flex items-center justify-center">
+                                <BookOpen size={24} className="text-white/50" />
+                              </div>
+                            )}
+                          </div>
+                          <Badge className="absolute -top-2 -right-2 bg-rogue-gold text-white text-xs px-1.5 py-0.5 shadow-sm">
+                            Reading
+                          </Badge>
+                          <p className="text-xs text-rogue-forest font-medium mt-1 w-20 truncate">
+                            {item.book?.title}
+                          </p>
                         </div>
-                        <Badge className="absolute -top-2 -right-2 bg-rogue-gold text-white text-xs px-1.5 py-0.5 shadow-sm">
-                          Reading
-                        </Badge>
-                        <p className="text-xs text-rogue-forest font-medium mt-1 w-20 truncate">
-                          {item.book?.title}
-                        </p>
-                      </div>
-                    ))}
+                      )
+                    })}
                   {readingList
                     .filter(item => item.status === 'finished')
                     .slice(0, 6)
-                    .map((item) => (
-                      <div key={item.id} className="flex-shrink-0 relative group">
-                        <div className="relative w-20 h-28 rounded-lg overflow-hidden shadow-sm border border-rogue-sage/20 hover:border-rogue-gold/40 transition-all">
-                          {item.book?.cover_image_url ? (
-                            <Image
-                              src={item.book.cover_image_url}
-                              alt={item.book.title}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-rogue-sage/20 to-rogue-forest/10 flex items-center justify-center">
-                              <BookOpen size={20} className="text-rogue-forest/40" />
-                            </div>
-                          )}
+                    .map((item) => {
+                      const [imageError, setImageError] = useState(false)
+                      
+                      return (
+                        <div key={item.id} className="flex-shrink-0 relative group">
+                          <div className="relative w-20 h-28 rounded-lg overflow-hidden shadow-sm border border-rogue-sage/20 hover:border-rogue-gold/40 transition-all">
+                            {item.book?.cover_image_url && !imageError ? (
+                              <Image
+                                src={item.book.cover_image_url}
+                                alt={item.book.title}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform"
+                                onError={() => setImageError(true)}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-rogue-sage/20 to-rogue-forest/10 flex items-center justify-center">
+                                <BookOpen size={20} className="text-rogue-forest/40" />
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-rogue-slate mt-1 w-20 truncate">
+                            {item.book?.title}
+                          </p>
                         </div>
-                        <p className="text-xs text-rogue-slate mt-1 w-20 truncate">
-                          {item.book?.title}
-                        </p>
-                      </div>
-                    ))}
+                      )
+                    })}
                 </div>
                 <p className="text-xs text-rogue-slate/60 mt-2">
                   {readingList.filter(item => item.status === 'finished').length} books completed
