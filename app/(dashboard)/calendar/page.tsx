@@ -463,6 +463,34 @@ export default function CalendarPage() {
                                   {event.title}
                                 </h4>
 
+                                {/* Speakers - Compact */}
+                                {(event as any).speakers && (event as any).speakers.length > 0 && (
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <Mic size={12} className="text-rogue-copper flex-shrink-0" />
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      {(event as any).speakers.slice(0, 2).map((speaker: any, idx: number) => {
+                                        const speakerData = speaker.speaker_type === 'guest' ? speaker.guest_speaker : speaker.profile
+                                        return (
+                                          <div key={idx} className="flex items-center gap-1 bg-rogue-sage/5 px-1.5 py-0.5 rounded-full">
+                                            <Avatar className="h-5 w-5">
+                                              <AvatarImage src={speakerData?.avatar_url} />
+                                              <AvatarFallback className="bg-rogue-copper text-white text-[10px]">
+                                                {speakerData?.full_name?.[0]}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                            <span className="text-xs font-semibold text-rogue-forest">
+                                              {speakerData?.full_name}
+                                            </span>
+                                          </div>
+                                        )
+                                      })}
+                                      {(event as any).speakers.length > 2 && (
+                                        <span className="text-xs text-rogue-slate">+{(event as any).speakers.length - 2}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
                                 <div className="flex items-center gap-2 text-sm text-rogue-slate/70 mb-3">
                                   <Clock className="h-3.5 w-3.5" />
                                   <span className="font-medium">{formatEventTime(event.start_time, event.end_time)}</span>
