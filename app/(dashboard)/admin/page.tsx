@@ -8,7 +8,7 @@ import { PageHeader } from '@/components/layout/page-header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PageLoader } from '@/components/ui/loading-spinner'
-import { Users, BookOpen, MessageSquare, Calendar, Library, Settings, BarChart, Sparkles, Brain } from 'lucide-react'
+import { Users, BookOpen, MessageSquare, Calendar, Library, Settings, BarChart, Sparkles, Brain, Mic } from 'lucide-react'
 import type { UserRole } from '@/types/index.types'
 
 export default function AdminPage() {
@@ -149,6 +149,12 @@ export default function AdminPage() {
             title="Events"
             description="Schedule cohort calls and workshops"
             href="/admin/events"
+          />
+          <AdminCard
+            icon={<Mic className="h-6 w-6" />}
+            title="Guest Speakers"
+            description="Manage speakers for events"
+            href="/admin/speakers"
           />
           <AdminCard
             icon={<Library className="h-6 w-6" />}
