@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Calendar, Clock, MapPin, Users, Video, Building2, CheckCircle, ChevronDown, ChevronUp, UserCircle, ExternalLink } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Video, Building2, CheckCircle, ChevronDown, ChevronUp, UserCircle, ExternalLink, Mic, Linkedin, Globe } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getEvents, registerForEvent, unregisterFromEvent, isRegisteredForEvent } from '@/lib/supabase/queries/events'
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
@@ -491,16 +492,79 @@ export default function CalendarPage() {
                                           </div>
                                         )}
 
-                                        {(event as any).presenter_bio && (
-                                          <div className="bg-rogue-cream/50 rounded-xl p-5 border border-rogue-sage/10">
-                                            <h5 className="text-xs font-bold text-rogue-forest/60 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                              <UserCircle className="h-3.5 w-3.5" />
-                                              Presenter
+                                        {/* Speakers Section */}
+                                        {(event as any).speakers && (event as any).speakers.length > 0 && (
+                                          <div className="bg-gradient-to-br from-rogue-cream/50 to-white rounded-xl p-5 border border-rogue-gold/20">
+                                            <h5 className="text-xs font-bold text-rogue-forest/60 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                              <Mic className="h-3.5 w-3.5 text-rogue-gold" />
+                                              {(event as any).speakers.length === 1 ? 'Speaker' : 'Speakers'}
                                             </h5>
-                                            <div 
-                                              className="text-sm text-rogue-slate leading-relaxed"
-                                              dangerouslySetInnerHTML={{ __html: formatEventDescription((event as any).presenter_bio) }}
-                                            />
+                                            <div className="space-y-4">
+                                              {(event as any).speakers.map((speaker: any, idx: number) => {
+                                                const speakerData = speaker.speaker_type === 'guest' ? speaker.guest_speaker : speaker.profile
+                                                const isGuest = speaker.speaker_type === 'guest'
+                                                
+                                                return (
+                                                  <div key={idx} className="flex gap-4">
+                                                    <Avatar className="h-16 w-16 flex-shrink-0">
+                                                      <AvatarImage src={speakerData?.avatar_url} />
+                                                      <AvatarFallback className="bg-rogue-copper text-white text-xl">
+                                                        {speakerData?.full_name?.[0]}
+                                                      </AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex-1 min-w-0">
+                                                      <h6 className="font-semibold text-rogue-forest mb-0.5">
+                                                        {speakerData?.full_name}
+                                                      </h6>
+                                                      {isGuest && speakerData?.title && (
+                                                        <p className="text-sm text-rogue-slate/80">
+                                                          {speakerData.title}
+                                                          {speakerData.organization && ` at ${speakerData.organization}`}
+                                                        </p>
+                                                      )}
+                                                      {!isGuest && speakerData?.current_role && (
+                                                        <p className="text-sm text-rogue-slate/80">
+                                                          {speakerData.current_role}
+                                                          {speakerData.employer && ` at ${speakerData.employer}`}
+                                                        </p>
+                                                      )}
+                                                      {speakerData?.bio && (
+                                                        <p className="text-sm text-rogue-slate mt-2 leading-relaxed">
+                                                          {speakerData.bio}
+                                                        </p>
+                                                      )}
+                                                      {/* Links for guest speakers */}
+                                                      {isGuest && (speakerData?.linkedin_url || speakerData?.website_url) && (
+                                                        <div className="flex gap-2 mt-2">
+                                                          {speakerData.linkedin_url && (
+                                                            <a
+                                                              href={speakerData.linkedin_url}
+                                                              target="_blank"
+                                                              rel="noopener noreferrer"
+                                                              className="text-xs flex items-center gap-1 text-rogue-forest hover:text-rogue-pine transition-colors"
+                                                            >
+                                                              <Linkedin size={12} />
+                                                              LinkedIn
+                                                            </a>
+                                                          )}
+                                                          {speakerData.website_url && (
+                                                            <a
+                                                              href={speakerData.website_url}
+                                                              target="_blank"
+                                                              rel="noopener noreferrer"
+                                                              className="text-xs flex items-center gap-1 text-rogue-forest hover:text-rogue-pine transition-colors"
+                                                            >
+                                                              <Globe size={12} />
+                                                              Website
+                                                            </a>
+                                                          )}
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                )
+                                              })}
+                                            </div>
                                           </div>
                                         )}
 

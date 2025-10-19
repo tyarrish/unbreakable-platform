@@ -18,6 +18,27 @@ export async function getEvents() {
     .order('start_time', { ascending: true })
   
   if (error) throw error
+  
+  // Fetch speakers for each event
+  if (data) {
+    const eventsWithSpeakers = await Promise.all(
+      data.map(async (event) => {
+        const { data: speakers } = await (supabase as any)
+          .from('event_speakers')
+          .select(`
+            *,
+            profile:profiles(full_name, avatar_url),
+            guest_speaker:guest_speakers(full_name, avatar_url)
+          `)
+          .eq('event_id', event.id)
+          .order('display_order', { ascending: true })
+        
+        return { ...event, speakers: speakers || [] }
+      })
+    )
+    return eventsWithSpeakers
+  }
+  
   return data
 }
 
@@ -39,7 +60,19 @@ export async function getEvent(eventId: string) {
     .single()
   
   if (error) throw error
-  return data
+  
+  // Fetch speakers for this event
+  const { data: speakers } = await (supabase as any)
+    .from('event_speakers')
+    .select(`
+      *,
+      profile:profiles(full_name, avatar_url, bio, employer, current_role),
+      guest_speaker:guest_speakers(*)
+    `)
+    .eq('event_id', eventId)
+    .order('display_order', { ascending: true })
+  
+  return { ...data, speakers: speakers || [] }
 }
 
 /**

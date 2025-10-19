@@ -22,7 +22,9 @@ import {
   Building2,
   AlertCircle,
   CheckCircle,
+  Mic,
 } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getEvents, deleteEvent } from '@/lib/supabase/queries/events'
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
@@ -197,6 +199,33 @@ export default function AdminEventsPage() {
                             className="mt-2 text-sm text-rogue-slate/80 leading-relaxed space-y-1 line-clamp-3"
                             dangerouslySetInnerHTML={{ __html: formatEventDescription(event.description) }}
                           />
+                        )}
+                        {/* Speakers Preview */}
+                        {event.speakers && event.speakers.length > 0 && (
+                          <div className="flex items-center gap-2 mt-3">
+                            <Mic size={14} className="text-rogue-copper" />
+                            <div className="flex items-center gap-2">
+                              {event.speakers.slice(0, 3).map((speaker: any, idx: number) => {
+                                const speakerData = speaker.speaker_type === 'guest' ? speaker.guest_speaker : speaker.profile
+                                return (
+                                  <div key={idx} className="flex items-center gap-1.5">
+                                    <Avatar className="h-6 w-6">
+                                      <AvatarImage src={speakerData?.avatar_url} />
+                                      <AvatarFallback className="bg-rogue-copper text-white text-xs">
+                                        {speakerData?.full_name?.[0]}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm font-medium text-rogue-forest">
+                                      {speakerData?.full_name}
+                                    </span>
+                                  </div>
+                                )
+                              })}
+                              {event.speakers.length > 3 && (
+                                <span className="text-xs text-rogue-slate">+{event.speakers.length - 3} more</span>
+                              )}
+                            </div>
+                          </div>
                         )}
                       </div>
                       <div className="flex gap-2">
