@@ -122,14 +122,7 @@ export function SpeakerSelector({ selectedSpeakers, onChange }: SpeakerSelectorP
               {facilitators.map((person) => (
                 <div
                   key={person.id}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-rogue-sage/5 cursor-pointer"
-                  onClick={() => toggleSpeaker({
-                    type: 'facilitator',
-                    id: person.id,
-                    name: person.full_name,
-                    avatar_url: person.avatar_url,
-                    subtitle: person.current_role || person.employer
-                  })}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-rogue-sage/5"
                 >
                   <Checkbox
                     checked={isSpeakerSelected('facilitator', person.id)}
@@ -176,14 +169,7 @@ export function SpeakerSelector({ selectedSpeakers, onChange }: SpeakerSelectorP
                 guests.map((guest) => (
                   <div
                     key={guest.id}
-                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-rogue-sage/5 cursor-pointer"
-                    onClick={() => toggleSpeaker({
-                      type: 'guest',
-                      id: guest.id,
-                      name: guest.full_name,
-                      avatar_url: guest.avatar_url,
-                      subtitle: [guest.title, guest.organization].filter(Boolean).join(' at ')
-                    })}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-rogue-sage/5"
                   >
                     <Checkbox
                       checked={isSpeakerSelected('guest', guest.id)}
@@ -228,14 +214,7 @@ export function SpeakerSelector({ selectedSpeakers, onChange }: SpeakerSelectorP
               {members.filter(m => !m.roles?.includes('facilitator')).map((member) => (
                 <div
                   key={member.id}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-rogue-sage/5 cursor-pointer"
-                  onClick={() => toggleSpeaker({
-                    type: 'member',
-                    id: member.id,
-                    name: member.full_name || member.email,
-                    avatar_url: member.avatar_url,
-                    subtitle: member.current_role || member.employer
-                  })}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-rogue-sage/5"
                 >
                   <Checkbox
                     checked={isSpeakerSelected('member', member.id)}
