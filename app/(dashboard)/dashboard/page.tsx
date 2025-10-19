@@ -7,6 +7,7 @@ import { PracticeGrid } from '@/components/dashboard/practice-grid'
 import { CohortActivity } from '@/components/dashboard/cohort-activity'
 import { PracticeActions } from '@/components/dashboard/practice-actions'
 import { JourneyContext } from '@/components/dashboard/journey-context'
+import { DiscussionEngagementCard } from '@/components/dashboard/discussion-engagement-card'
 
 export const revalidate = 300 // Revalidate every 5 minutes
 
@@ -115,6 +116,9 @@ export default async function DashboardPage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Left Column: Main Content */}
             <div className="lg:col-span-2 space-y-8">
+              {/* Discussion Engagement Prompt - High Priority */}
+              <DiscussionEngagementCard userId={user.id} />
+
               {/* This Month's Practice Grid */}
               <PracticeGrid
                 currentModule={{
