@@ -8,6 +8,7 @@ import { CohortActivity } from '@/components/dashboard/cohort-activity'
 import { PracticeActions } from '@/components/dashboard/practice-actions'
 import { JourneyContext } from '@/components/dashboard/journey-context'
 import { DiscussionEngagementCard } from '@/components/dashboard/discussion-engagement-card'
+import { NextEventCard } from '@/components/dashboard/next-event-card'
 
 export const revalidate = 300 // Revalidate every 5 minutes
 
@@ -164,6 +165,18 @@ export default async function DashboardPage() {
 
             {/* Right Column: Sidebar */}
             <div className="space-y-8">
+              {/* Next Gathering - High Priority */}
+              <NextEventCard nextEvent={
+                nextEventData
+                  ? {
+                      id: nextEventData.id,
+                      title: nextEventData.title,
+                      startTime: nextEventData.start_time,
+                      location: nextEventData.location,
+                    }
+                  : null
+              } />
+
               {/* Your Practice This Week */}
               <PracticeActions actions={personalizedActions} />
 
