@@ -12,9 +12,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { RichTextEditor } from '@/components/discussions/rich-text-editor'
 import { createEvent, updateEvent } from '@/lib/supabase/queries/events'
 import { getModules } from '@/lib/supabase/queries/modules'
+import { getEventSpeakers, addEventSpeakers } from '@/lib/supabase/queries/speakers'
+import { SpeakerSelector, type SelectedSpeaker } from '@/components/events/speaker-selector'
 import { EVENT_TYPES, LOCATION_TYPES } from '@/lib/constants'
 import { toast } from 'sonner'
-import { Calendar, Clock, MapPin, Users, Video, Building2, UserCircle } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Video, Building2, Mic } from 'lucide-react'
 import type { Event, Module } from '@/types/index.types'
 
 interface EventFormProps {
@@ -27,12 +29,12 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
   const supabase = createClient()
   const [isLoading, setIsLoading] = useState(false)
   const [modules, setModules] = useState<Module[]>([])
+  const [selectedSpeakers, setSelectedSpeakers] = useState<SelectedSpeaker[]>([])
 
   // Form state
   const [formData, setFormData] = useState({
     title: event?.title || '',
     description: event?.description || '',
-    presenter_bio: (event as any)?.presenter_bio || '',
     event_type: event?.event_type || 'main_session',
     start_time: event?.start_time ? new Date(event.start_time).toISOString().slice(0, 16) : '',
     end_time: event?.end_time ? new Date(event.end_time).toISOString().slice(0, 16) : '',
@@ -47,6 +49,9 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
 
   useEffect(() => {
     loadModules()
+    if (event?.id) {
+      loadEventSpeakers()
+    }
   }, [])
 
   async function loadModules() {
@@ -55,6 +60,30 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       setModules(data)
     } catch (error) {
       console.error('Error loading modules:', error)
+    }
+  }
+
+  async function loadEventSpeakers() {
+    if (!event?.id) return
+    
+    try {
+      const speakers = await getEventSpeakers(event.id)
+      const selected: SelectedSpeaker[] = speakers.map(speaker => ({
+        type: speaker.speaker_type,
+        id: speaker.speaker_type === 'guest' ? speaker.guest_speaker_id! : speaker.profile_id!,
+        name: speaker.speaker_type === 'guest' 
+          ? speaker.guest_speaker!.full_name 
+          : speaker.profile!.full_name,
+        avatar_url: speaker.speaker_type === 'guest'
+          ? speaker.guest_speaker!.avatar_url
+          : speaker.profile!.avatar_url,
+        subtitle: speaker.speaker_type === 'guest'
+          ? [speaker.guest_speaker?.title, speaker.guest_speaker?.organization].filter(Boolean).join(' at ') || null
+          : speaker.profile?.current_role || speaker.profile?.employer || null
+      }))
+      setSelectedSpeakers(selected)
+    } catch (error) {
+      console.error('Error loading event speakers:', error)
     }
   }
 
@@ -80,6 +109,12 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
         return
       }
 
+      // Validate speakers
+      if (selectedSpeakers.length === 0) {
+        toast.error('Please select at least one speaker')
+        return
+      }
+
       // Validate end time is after start time
       if (new Date(formData.end_time) <= new Date(formData.start_time)) {
         toast.error('End time must be after start time')
@@ -102,7 +137,6 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
       const eventData = {
         title: formData.title,
         description: formData.description || undefined,
-        presenter_bio: formData.presenter_bio || undefined,
         event_type: formData.event_type,
         start_time: new Date(formData.start_time).toISOString(),
         end_time: new Date(formData.end_time).toISOString(),
@@ -116,15 +150,29 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
         created_by: user.id,
       } as any
 
+      let eventId: string
+
       if (event?.id) {
         // Update existing event
         await updateEvent(event.id, eventData)
+        eventId = event.id
         toast.success('Event updated successfully!')
       } else {
         // Create new event
-        await createEvent(eventData)
+        const newEvent = await createEvent(eventData)
+        eventId = newEvent.id
         toast.success('Event created successfully!')
       }
+
+      // Save speakers
+      await addEventSpeakers(
+        eventId,
+        selectedSpeakers.map(s => ({
+          type: s.type,
+          id: s.id
+        }))
+      )
+      console.log('Speakers saved successfully')
 
       if (onSuccess) {
         onSuccess()
@@ -181,19 +229,16 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="presenter_bio" className="flex items-center gap-2">
-                <UserCircle size={16} />
-                Presenter Bio (Optional)
+              <Label className="flex items-center gap-2">
+                <Mic size={16} />
+                Speakers <span className="text-red-500">*</span>
               </Label>
-              <div className="border border-rogue-sage/20 rounded-lg overflow-hidden">
-                <RichTextEditor
-                  content={formData.presenter_bio}
-                  onChange={(html) => handleChange('presenter_bio', html)}
-                  placeholder="Add presenter background, credentials, or relevant experience..."
-                />
-              </div>
+              <SpeakerSelector
+                selectedSpeakers={selectedSpeakers}
+                onChange={setSelectedSpeakers}
+              />
               <p className="text-xs text-rogue-slate/70">
-                Information about the facilitator or guest presenter for this event
+                Select facilitators, guest speakers, or cohort members presenting at this event
               </p>
             </div>
 
