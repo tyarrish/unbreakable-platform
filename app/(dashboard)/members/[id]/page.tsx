@@ -35,8 +35,10 @@ import {
 } from '@/lib/supabase/queries/activity'
 import {
   getUserAchievements,
+  getAllAchievements,
   getTotalPoints,
-  type UserAchievement
+  type UserAchievement,
+  type Achievement
 } from '@/lib/supabase/queries/achievements'
 import { getUserReadingList } from '@/lib/supabase/queries/books'
 import { BookOpen } from 'lucide-react'
@@ -52,6 +54,7 @@ export default function MemberProfilePage() {
   const [member, setMember] = useState<UserProfile | null>(null)
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [achievements, setAchievements] = useState<UserAchievement[]>([])
+  const [allAchievements, setAllAchievements] = useState<Achievement[]>([])
   const [totalPoints, setTotalPoints] = useState(0)
   const [followerCount, setFollowerCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
@@ -75,6 +78,7 @@ export default function MemberProfilePage() {
         memberData,
         activitiesData,
         achievementsData,
+        allAchievementsData,
         points,
         followers,
         following,
@@ -84,6 +88,7 @@ export default function MemberProfilePage() {
         getMemberProfile(memberId),
         getUserActivity(memberId, 10),
         getUserAchievements(memberId),
+        getAllAchievements(),
         getTotalPoints(memberId),
         getFollowerCount(memberId),
         getFollowingCount(memberId),
@@ -102,6 +107,7 @@ export default function MemberProfilePage() {
       setMember(memberData)
       setActivities(activitiesData)
       setAchievements(achievementsData)
+      setAllAchievements(allAchievementsData)
       setTotalPoints(points)
       setFollowerCount(followers)
       setFollowingCount(following)
@@ -354,34 +360,43 @@ export default function MemberProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-rogue-gold" />
-                Achievements ({achievements.length})
+                Achievements ({achievements.length}/{allAchievements.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {achievements.length === 0 ? (
-                <p className="text-sm text-rogue-slate py-8 text-center">
-                  No achievements yet
-                </p>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {achievements.map((userAchievement) => (
+              <div className="grid grid-cols-2 gap-3">
+                {allAchievements.map((achievement) => {
+                  const userAchievement = achievements.find(
+                    ua => ua.achievement_id === achievement.id
+                  )
+                  const isEarned = !!userAchievement
+
+                  return (
                     <div
-                      key={userAchievement.id}
-                      className="flex items-center gap-2 p-3 rounded-lg bg-rogue-sage/5 border border-rogue-sage/20"
+                      key={achievement.id}
+                      className={`flex items-center gap-2 p-3 rounded-lg transition-all ${
+                        isEarned
+                          ? 'bg-rogue-sage/10 border-2 border-rogue-sage/30 shadow-sm'
+                          : 'bg-rogue-sage/5 border-2 border-dashed border-rogue-sage/20 opacity-50 grayscale'
+                      }`}
                     >
-                      <div className="text-2xl">{userAchievement.achievement?.icon}</div>
+                      <div className={`text-2xl ${!isEarned && 'opacity-40'}`}>
+                        {achievement.icon}
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-rogue-forest truncate">
-                          {userAchievement.achievement?.name}
+                        <p className={`text-xs font-medium truncate ${
+                          isEarned ? 'text-rogue-forest' : 'text-rogue-slate'
+                        }`}>
+                          {achievement.name}
                         </p>
                         <p className="text-xs text-rogue-slate">
-                          {userAchievement.achievement?.points} pts
+                          {achievement.points} pts
                         </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  )
+                })}
+              </div>
             </CardContent>
           </Card>
 
