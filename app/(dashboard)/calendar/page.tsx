@@ -205,17 +205,25 @@ export default function CalendarPage() {
                             <div className={`h-1.5 ${moduleColor.bg}`} />
                             
                             <CardContent className="p-5">
-                              {/* Top Row - Badges */}
-                              <div className="flex flex-wrap items-center gap-2 mb-3">
-                                <Badge className={`${moduleColor.badge} text-xs font-semibold px-2.5 py-0.5 shadow-sm`}>
-                                  Required
-                                </Badge>
-                                <Badge variant="outline" className="text-xs border-rogue-sage/30 font-medium">
-                                  {EVENT_TYPES.find(t => t.value === event.event_type)?.label || event.event_type}
-                                </Badge>
-                                <Badge variant="outline" className="text-xs border-rogue-sage/30">
-                                  {formatDate(event.start_time, { month: 'short', day: 'numeric' })}
-                                </Badge>
+                              {/* Date Box - Prominent */}
+                              <div className="flex items-center gap-3 mb-4">
+                                <div className={`flex flex-col items-center justify-center w-14 h-14 rounded-lg ${moduleColor.bg} text-white shadow-md flex-shrink-0`}>
+                                  <div className="text-[10px] font-medium opacity-90">
+                                    {new Date(event.start_time).toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
+                                  </div>
+                                  <div className="text-xl font-bold leading-none">
+                                    {new Date(event.start_time).getDate()}
+                                  </div>
+                                </div>
+
+                                {/* Top Row - Badges */}
+                                <div className="flex flex-wrap items-center gap-2 flex-1">
+                                  <Badge className={`${moduleColor.badge} text-xs font-semibold px-2.5 py-0.5 shadow-sm`}>
+                                    Required
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs border-rogue-sage/30 font-medium">
+                                    {EVENT_TYPES.find(t => t.value === event.event_type)?.label || event.event_type}
+                                  </Badge>
                                 {event.location_type === 'virtual' && (
                                   <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-xs">
                                     <Video className="h-3 w-3 mr-1" />
@@ -233,12 +241,13 @@ export default function CalendarPage() {
                                     Hybrid
                                   </Badge>
                                 )}
-                                {isRegistered && (
-                                  <Badge className="bg-green-100 text-green-700 border border-green-200 ml-auto shadow-sm">
-                                    <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
-                                    Registered
-                                  </Badge>
-                                )}
+                                  {isRegistered && (
+                                    <Badge className="bg-green-100 text-green-700 border border-green-200 shadow-sm">
+                                      <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                                      Registered
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
 
                               {/* Title */}
