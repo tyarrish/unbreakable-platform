@@ -20,7 +20,9 @@ export function DiscussionEngagementCard({ userId }: DiscussionEngagementCardPro
   const supabase = createClient()
 
   useEffect(() => {
-    checkUserEngagement()
+    if (userId) {
+      checkUserEngagement()
+    }
   }, [userId])
 
   async function checkUserEngagement() {
