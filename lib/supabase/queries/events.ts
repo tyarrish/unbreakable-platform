@@ -27,8 +27,8 @@ export async function getEvents() {
           .from('event_speakers')
           .select(`
             *,
-            profile:profiles(full_name, avatar_url),
-            guest_speaker:guest_speakers(full_name, avatar_url)
+            profile:profiles(full_name, avatar_url, bio, employer, current_role),
+            guest_speaker:guest_speakers(*)
           `)
           .eq('event_id', event.id)
           .order('display_order', { ascending: true })
