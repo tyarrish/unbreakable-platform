@@ -246,6 +246,34 @@ export default function CalendarPage() {
                                 {event.title}
                               </h3>
 
+                              {/* Speakers - NEW */}
+                              {(event as any).speakers && (event as any).speakers.length > 0 && (
+                                <div className="flex items-center gap-2 mb-4 pb-4 border-b border-rogue-sage/10">
+                                  <Mic size={14} className="text-rogue-copper flex-shrink-0" />
+                                  <div className="flex items-center gap-3 flex-wrap">
+                                    {(event as any).speakers.slice(0, 3).map((speaker: any, idx: number) => {
+                                      const speakerData = speaker.speaker_type === 'guest' ? speaker.guest_speaker : speaker.profile
+                                      return (
+                                        <div key={idx} className="flex items-center gap-1.5 bg-rogue-sage/5 px-2 py-1 rounded-full">
+                                          <Avatar className="h-6 w-6 border border-white">
+                                            <AvatarImage src={speakerData?.avatar_url} />
+                                            <AvatarFallback className="bg-rogue-copper text-white text-xs">
+                                              {speakerData?.full_name?.[0]}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          <span className="text-sm font-semibold text-rogue-forest">
+                                            {speakerData?.full_name}
+                                          </span>
+                                        </div>
+                                      )
+                                    })}
+                                    {(event as any).speakers.length > 3 && (
+                                      <span className="text-xs text-rogue-slate font-medium">+{(event as any).speakers.length - 3} more</span>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
                               {/* Time & Location - Refined */}
                               <div className="flex flex-wrap gap-4 text-sm text-rogue-slate mb-4">
                                 <div className="flex items-center gap-2">
