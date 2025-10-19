@@ -45,6 +45,49 @@ import { BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 
+// Book cover component to avoid hooks in map
+function BookCoverCard({ imageUrl, title, isReading }: { imageUrl?: string; title: string; isReading: boolean }) {
+  const [imageError, setImageError] = useState(false)
+  
+  return (
+    <div className="flex-shrink-0 relative group">
+      <div className={`relative w-20 h-28 rounded-lg overflow-hidden ${
+        isReading 
+          ? 'shadow-md border-2 border-rogue-gold' 
+          : 'shadow-sm border border-rogue-sage/20 hover:border-rogue-gold/40 transition-all'
+      }`}>
+        {imageUrl && !imageError ? (
+          <Image
+            src={imageUrl}
+            alt={title}
+            fill
+            className={`object-cover ${!isReading && 'group-hover:scale-105 transition-transform'}`}
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className={`w-full h-full bg-gradient-to-br ${
+            isReading 
+              ? 'from-rogue-forest to-rogue-sage' 
+              : 'from-rogue-sage/20 to-rogue-forest/10'
+          } flex items-center justify-center`}>
+            <BookOpen size={isReading ? 24 : 20} className={isReading ? 'text-white/50' : 'text-rogue-forest/40'} />
+          </div>
+        )}
+      </div>
+      {isReading && (
+        <Badge className="absolute -top-2 -right-2 bg-rogue-gold text-white text-xs px-1.5 py-0.5 shadow-sm">
+          Reading
+        </Badge>
+      )}
+      <p className={`text-xs mt-1 w-20 truncate ${
+        isReading ? 'text-rogue-forest font-medium' : 'text-rogue-slate'
+      }`}>
+        {title}
+      </p>
+    </div>
+  )
+}
+
 export default function MemberProfilePage() {
   const params = useParams()
   const router = useRouter()
@@ -293,64 +336,25 @@ export default function MemberProfilePage() {
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   {readingList
                     .filter(item => item.status === 'reading')
-                    .map((item) => {
-                      const [imageError, setImageError] = useState(false)
-                      
-                      return (
-                        <div key={item.id} className="flex-shrink-0 relative group">
-                          <div className="relative w-20 h-28 rounded-lg overflow-hidden shadow-md border-2 border-rogue-gold">
-                            {item.book?.cover_image_url && !imageError ? (
-                              <Image
-                                src={item.book.cover_image_url}
-                                alt={item.book.title}
-                                fill
-                                className="object-cover"
-                                onError={() => setImageError(true)}
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-rogue-forest to-rogue-sage flex items-center justify-center">
-                                <BookOpen size={24} className="text-white/50" />
-                              </div>
-                            )}
-                          </div>
-                          <Badge className="absolute -top-2 -right-2 bg-rogue-gold text-white text-xs px-1.5 py-0.5 shadow-sm">
-                            Reading
-                          </Badge>
-                          <p className="text-xs text-rogue-forest font-medium mt-1 w-20 truncate">
-                            {item.book?.title}
-                          </p>
-                        </div>
-                      )
-                    })}
+                    .map((item) => (
+                      <BookCoverCard
+                        key={item.id}
+                        imageUrl={item.book?.cover_image_url}
+                        title={item.book?.title}
+                        isReading={true}
+                      />
+                    ))}
                   {readingList
                     .filter(item => item.status === 'finished')
                     .slice(0, 6)
-                    .map((item) => {
-                      const [imageError, setImageError] = useState(false)
-                      
-                      return (
-                        <div key={item.id} className="flex-shrink-0 relative group">
-                          <div className="relative w-20 h-28 rounded-lg overflow-hidden shadow-sm border border-rogue-sage/20 hover:border-rogue-gold/40 transition-all">
-                            {item.book?.cover_image_url && !imageError ? (
-                              <Image
-                                src={item.book.cover_image_url}
-                                alt={item.book.title}
-                                fill
-                                className="object-cover group-hover:scale-105 transition-transform"
-                                onError={() => setImageError(true)}
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-rogue-sage/20 to-rogue-forest/10 flex items-center justify-center">
-                                <BookOpen size={20} className="text-rogue-forest/40" />
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-xs text-rogue-slate mt-1 w-20 truncate">
-                            {item.book?.title}
-                          </p>
-                        </div>
-                      )
-                    })}
+                    .map((item) => (
+                      <BookCoverCard
+                        key={item.id}
+                        imageUrl={item.book?.cover_image_url}
+                        title={item.book?.title}
+                        isReading={false}
+                      />
+                    ))}
                 </div>
                 <p className="text-xs text-rogue-slate/60 mt-2">
                   {readingList.filter(item => item.status === 'finished').length} books completed
