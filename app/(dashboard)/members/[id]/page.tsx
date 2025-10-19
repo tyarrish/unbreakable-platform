@@ -364,7 +364,7 @@ export default function MemberProfilePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
                 {allAchievements.map((achievement) => {
                   const userAchievement = achievements.find(
                     ua => ua.achievement_id === achievement.id
@@ -374,25 +374,50 @@ export default function MemberProfilePage() {
                   return (
                     <div
                       key={achievement.id}
-                      className={`flex items-center gap-2 p-3 rounded-lg transition-all ${
+                      className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all group cursor-default ${
                         isEarned
-                          ? 'bg-rogue-sage/10 border-2 border-rogue-sage/30 shadow-sm'
-                          : 'bg-rogue-sage/5 border-2 border-dashed border-rogue-sage/20 opacity-50 grayscale'
+                          ? 'bg-gradient-to-br from-rogue-gold/20 via-rogue-gold/10 to-transparent border-2 border-rogue-gold/40 shadow-md hover:shadow-lg'
+                          : 'bg-rogue-sage/5 border-2 border-dashed border-rogue-slate/20'
                       }`}
+                      title={achievement.description}
                     >
-                      <div className={`text-2xl ${!isEarned && 'opacity-40'}`}>
-                        {achievement.icon}
+                      {/* Badge Circle */}
+                      <div className={`relative flex items-center justify-center w-16 h-16 rounded-full transition-all ${
+                        isEarned
+                          ? 'bg-gradient-to-br from-rogue-gold to-rogue-gold-light shadow-lg shadow-rogue-gold/30 group-hover:scale-110'
+                          : 'bg-rogue-slate/10 opacity-40 grayscale'
+                      }`}>
+                        {/* Decorative ring for earned */}
+                        {isEarned && (
+                          <div className="absolute inset-0 rounded-full border-2 border-white/30"></div>
+                        )}
+                        <div className={`text-3xl ${isEarned ? 'drop-shadow-sm' : 'opacity-50'}`}>
+                          {achievement.icon}
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-xs font-medium truncate ${
-                          isEarned ? 'text-rogue-forest' : 'text-rogue-slate'
+                      
+                      {/* Badge Info */}
+                      <div className="text-center space-y-0.5">
+                        <p className={`text-xs font-semibold leading-tight line-clamp-2 ${
+                          isEarned ? 'text-rogue-forest' : 'text-rogue-slate/60'
                         }`}>
                           {achievement.name}
                         </p>
-                        <p className="text-xs text-rogue-slate">
+                        <p className={`text-xs font-medium ${
+                          isEarned ? 'text-rogue-gold' : 'text-rogue-slate/50'
+                        }`}>
                           {achievement.points} pts
                         </p>
                       </div>
+                      
+                      {/* Earned indicator */}
+                      {isEarned && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
                   )
                 })}
