@@ -228,27 +228,38 @@ export function EventDetailsModal({ event, open, onOpenChange }: EventDetailsMod
                   Speaker{event.speaker_profiles.length > 1 ? 's' : ''}
                 </p>
                 <div className="space-y-3">
-                  {event.speaker_profiles.map((speaker, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      {speaker.avatar_url ? (
-                        <img 
-                          src={speaker.avatar_url} 
-                          alt={speaker.full_name}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-rogue-forest/10 flex items-center justify-center text-rogue-forest font-semibold">
-                          {speaker.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <p className="font-medium text-rogue-forest">{speaker.full_name}</p>
-                        {speaker.bio && (
-                          <p className="text-sm text-rogue-slate mt-1">{speaker.bio}</p>
+                  {event.speaker_profiles.map((speaker, index) => {
+                    if (!speaker || !speaker.full_name) return null
+                    
+                    const initials = speaker.full_name
+                      .split(' ')
+                      .map(n => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2)
+                    
+                    return (
+                      <div key={index} className="flex items-start gap-3">
+                        {speaker.avatar_url ? (
+                          <img 
+                            src={speaker.avatar_url} 
+                            alt={speaker.full_name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-rogue-forest/10 flex items-center justify-center text-rogue-forest font-semibold">
+                            {initials}
+                          </div>
                         )}
+                        <div className="flex-1">
+                          <p className="font-medium text-rogue-forest">{speaker.full_name}</p>
+                          {speaker.bio && (
+                            <p className="text-sm text-rogue-slate mt-1">{speaker.bio}</p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </>

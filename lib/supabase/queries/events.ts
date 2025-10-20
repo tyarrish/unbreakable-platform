@@ -220,13 +220,13 @@ export async function getEventsByModule(moduleId: string) {
         
         // Format speaker profiles for the modal
         const speaker_profiles = speakers?.map((speaker: any) => {
-          if (speaker.profile) {
+          if (speaker.profile && speaker.profile.full_name) {
             return {
               full_name: speaker.profile.full_name,
               avatar_url: speaker.profile.avatar_url,
               bio: speaker.profile.bio || `${speaker.profile.current_role || ''}${speaker.profile.employer ? ` at ${speaker.profile.employer}` : ''}`.trim(),
             }
-          } else if (speaker.guest_speaker) {
+          } else if (speaker.guest_speaker && speaker.guest_speaker.name) {
             return {
               full_name: speaker.guest_speaker.name,
               avatar_url: speaker.guest_speaker.photo_url,
@@ -234,7 +234,7 @@ export async function getEventsByModule(moduleId: string) {
             }
           }
           return null
-        }).filter(Boolean)
+        }).filter((profile: any) => profile !== null && profile?.full_name)
         
         return { ...event, speakers: speakers || [], speaker_profiles: speaker_profiles || [] }
       })
