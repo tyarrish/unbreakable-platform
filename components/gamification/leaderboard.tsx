@@ -128,5 +128,3 @@ export function Leaderboard({ limit = 10, currentUserId }: LeaderboardProps) {
 
 
 
-
-

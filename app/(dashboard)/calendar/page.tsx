@@ -77,18 +77,17 @@ export default function CalendarPage() {
         setRegistrations(prev => new Set(prev).add(eventId))
         toast.success('Registered for event!')
         
-        // TODO: Re-enable confirmation email once Vercel deployment is stable
         // Send confirmation email with calendar links
-        // try {
-        //   await fetch('/api/events/send-registration-email', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ eventId }),
-        //   })
-        // } catch (emailError) {
-        //   console.error('Error sending confirmation email:', emailError)
-        //   // Don't show error to user - registration still succeeded
-        // }
+        try {
+          await fetch('/api/events/send-registration-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ eventId }),
+          })
+        } catch (emailError) {
+          console.error('Error sending confirmation email:', emailError)
+          // Don't show error to user - registration still succeeded
+        }
       }
     } catch (error) {
       console.error('Error toggling registration:', error)
