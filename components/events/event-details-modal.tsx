@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Calendar, Clock, MapPin, Video, Building2, AlertCircle, CheckCircle, Users, ExternalLink } from 'lucide-react'
+import { Calendar, Clock, MapPin, Video, Building2, AlertCircle, CheckCircle, Users, ExternalLink, Linkedin, Globe } from 'lucide-react'
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { EVENT_TYPES, LOCATION_TYPES } from '@/lib/constants'
 
@@ -27,6 +27,10 @@ interface Event {
     full_name: string
     avatar_url?: string
     bio?: string
+    title?: string
+    organization?: string
+    linkedin_url?: string
+    website_url?: string
   }>
 }
 
@@ -227,7 +231,7 @@ export function EventDetailsModal({ event, open, onOpenChange }: EventDetailsMod
                 <p className="font-semibold text-rogue-forest mb-3">
                   Speaker{event.speaker_profiles.length > 1 ? 's' : ''}
                 </p>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {event.speaker_profiles.map((speaker, index) => {
                     if (!speaker || !speaker.full_name) return null
                     
@@ -239,22 +243,53 @@ export function EventDetailsModal({ event, open, onOpenChange }: EventDetailsMod
                       .slice(0, 2)
                     
                     return (
-                      <div key={index} className="flex items-start gap-3">
+                      <div key={index} className="flex items-start gap-3 p-4 rounded-lg border border-rogue-sage/20 hover:border-rogue-gold/30 transition-colors">
                         {speaker.avatar_url ? (
                           <img 
                             src={speaker.avatar_url} 
                             alt={speaker.full_name}
-                            className="w-12 h-12 rounded-full object-cover"
+                            className="w-16 h-16 rounded-full object-cover flex-shrink-0"
                           />
                         ) : (
-                          <div className="w-12 h-12 rounded-full bg-rogue-forest/10 flex items-center justify-center text-rogue-forest font-semibold">
+                          <div className="w-16 h-16 rounded-full bg-rogue-forest/10 flex items-center justify-center text-rogue-forest font-semibold text-lg flex-shrink-0">
                             {initials}
                           </div>
                         )}
-                        <div className="flex-1">
-                          <p className="font-medium text-rogue-forest">{speaker.full_name}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-rogue-forest text-lg">{speaker.full_name}</p>
+                          {(speaker.title || speaker.organization) && (
+                            <p className="text-sm text-rogue-slate mt-0.5">
+                              {speaker.title}{speaker.title && speaker.organization ? ' at ' : ''}{speaker.organization}
+                            </p>
+                          )}
                           {speaker.bio && (
-                            <p className="text-sm text-rogue-slate mt-1">{speaker.bio}</p>
+                            <p className="text-sm text-rogue-slate mt-2 leading-relaxed">{speaker.bio}</p>
+                          )}
+                          {(speaker.linkedin_url || speaker.website_url) && (
+                            <div className="flex items-center gap-2 mt-3">
+                              {speaker.linkedin_url && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-3"
+                                  onClick={() => window.open(speaker.linkedin_url, '_blank')}
+                                >
+                                  <Linkedin className="h-3.5 w-3.5 mr-1.5" />
+                                  LinkedIn
+                                </Button>
+                              )}
+                              {speaker.website_url && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-3"
+                                  onClick={() => window.open(speaker.website_url, '_blank')}
+                                >
+                                  <Globe className="h-3.5 w-3.5 mr-1.5" />
+                                  Website
+                                </Button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>

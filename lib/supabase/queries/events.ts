@@ -225,12 +225,20 @@ export async function getEventsByModule(moduleId: string) {
               full_name: speaker.profile.full_name,
               avatar_url: speaker.profile.avatar_url,
               bio: speaker.profile.bio || `${speaker.profile.current_role || ''}${speaker.profile.employer ? ` at ${speaker.profile.employer}` : ''}`.trim(),
+              title: speaker.profile.current_role,
+              organization: speaker.profile.employer,
+              linkedin_url: null,
+              website_url: null,
             }
-          } else if (speaker.guest_speaker && speaker.guest_speaker.name) {
+          } else if (speaker.guest_speaker && speaker.guest_speaker.full_name) {
             return {
-              full_name: speaker.guest_speaker.name,
-              avatar_url: speaker.guest_speaker.photo_url,
+              full_name: speaker.guest_speaker.full_name,
+              avatar_url: speaker.guest_speaker.avatar_url,
               bio: speaker.guest_speaker.bio,
+              title: speaker.guest_speaker.title,
+              organization: speaker.guest_speaker.organization,
+              linkedin_url: speaker.guest_speaker.linkedin_url,
+              website_url: speaker.guest_speaker.website_url,
             }
           }
           return null
