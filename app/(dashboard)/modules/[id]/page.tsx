@@ -283,7 +283,7 @@ export default function ModuleDetailPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="lessons" className="space-y-4">
+          <TabsContent value="lessons" className="space-y-2">
             {lessons.length === 0 ? (
               <Card>
                 <CardContent className="py-12">
@@ -293,7 +293,7 @@ export default function ModuleDetailPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {lessons.map((lesson) => {
                   const progress = progressMap.get(lesson.id)
                   const status = progress?.status || 'not_started'
@@ -304,33 +304,33 @@ export default function ModuleDetailPage() {
                       className="group border-0 shadow-lg hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-0.5 bg-gradient-to-br from-white to-rogue-sage/5"
                       onClick={() => router.push(`/modules/${moduleId}/lessons/${lesson.id}`)}
                     >
-                      <CardContent className="pt-6 pb-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                              <Badge className={`${status === 'completed' ? 'bg-green-600 text-white' : 'bg-rogue-forest text-white'} border-0`}>
+                      <CardContent className="py-4 px-6">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className={`${status === 'completed' ? 'bg-green-600 text-white' : 'bg-rogue-forest text-white'} border-0 text-xs`}>
                                 Lesson {lesson.order_number}
                               </Badge>
                               {lesson.duration_minutes && (
-                                <div className="flex items-center gap-1 px-2 py-1 bg-rogue-sage/10 rounded-md">
-                                  <Clock size={12} className="text-rogue-forest" />
+                                <div className="flex items-center gap-1 px-2 py-0.5 bg-rogue-sage/10 rounded">
+                                  <Clock size={11} className="text-rogue-forest" />
                                   <span className="text-xs text-rogue-forest font-medium">{lesson.duration_minutes} min</span>
                                 </div>
                               )}
                               <LessonStatusBadge status={status} />
                             </div>
-                            <h3 className="font-semibold text-lg text-rogue-forest group-hover:text-rogue-gold transition-colors mb-2">
+                            <h3 className="font-semibold text-base text-rogue-forest group-hover:text-rogue-gold transition-colors">
                               {lesson.title}
                             </h3>
-                            {progress?.time_spent_minutes && (
-                              <p className="text-sm text-rogue-slate">
+                            {progress?.time_spent_minutes ? (
+                              <p className="text-xs text-rogue-slate mt-1">
                                 Time spent: {formatTimeSpent(progress.time_spent_minutes)}
                               </p>
-                            )}
+                            ) : null}
                           </div>
                           <Button
                             variant={status === 'completed' ? 'outline' : 'default'}
-                            size="lg"
+                            size="sm"
                             className={status === 'completed' ? '' : 'bg-gradient-to-r from-rogue-forest to-rogue-pine'}
                           >
                             {status === 'completed' ? 'Review' : 'Start'}
