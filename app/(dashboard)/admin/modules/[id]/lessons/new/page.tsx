@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/components/layout/container'
 import { PageHeader } from '@/components/layout/page-header'
 import { Button } from '@/components/ui/button'
@@ -9,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { RichTextEditor } from '@/components/modules/rich-text-editor'
-import { createLesson } from '@/lib/supabase/queries/modules'
+import { createLesson, getLessons } from '@/lib/supabase/queries/modules'
 import { toast } from 'sonner'
 import { ArrowLeft } from 'lucide-react'
 
@@ -17,12 +18,35 @@ export default function NewLessonPage() {
   const params = useParams()
   const router = useRouter()
   const moduleId = params.id as string
+  const supabase = createClient()
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [orderNumber, setOrderNumber] = useState(1)
   const [durationMinutes, setDurationMinutes] = useState<number | undefined>()
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingLessons, setIsLoadingLessons] = useState(true)
+
+  useEffect(() => {
+    loadNextLessonNumber()
+  }, [moduleId])
+
+  async function loadNextLessonNumber() {
+    try {
+      const lessons = await getLessons(moduleId)
+      // Find the highest lesson number and add 1
+      const maxOrderNumber = lessons.reduce((max, lesson) => 
+        Math.max(max, lesson.order_number), 0
+      )
+      setOrderNumber(maxOrderNumber + 1)
+    } catch (error) {
+      console.error('Error loading lessons:', error)
+      // Default to 1 if there's an error
+      setOrderNumber(1)
+    } finally {
+      setIsLoadingLessons(false)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -121,8 +145,8 @@ export default function NewLessonPage() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? 'Creating...' : 'Create Lesson'}
+                <Button type="submit" disabled={isLoading || isLoadingLessons}>
+                  {isLoading ? 'Creating...' : isLoadingLessons ? 'Loading...' : 'Create Lesson'}
                 </Button>
                 <Button
                   type="button"
