@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { resend, EMAIL_CONFIG } from '@/lib/email/resend'
 import { EventRegistrationEmail } from '@/lib/email/templates/event-registration-email'
 import { generateAllCalendarLinks } from '@/lib/utils/calendar-links'
-import { render } from '@react-email/render'
 
 export async function POST(request: NextRequest) {
   try {
