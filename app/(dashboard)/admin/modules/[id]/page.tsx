@@ -17,7 +17,7 @@ import { getBooksByMonth } from '@/lib/supabase/queries/books'
 import { ModuleEventsBanner } from '@/components/modules/module-events-banner'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { ArrowLeft, Plus, BookOpen } from 'lucide-react'
+import { ArrowLeft, Plus, BookOpen, Eye } from 'lucide-react'
 import type { Module, Lesson } from '@/types/index.types'
 import { LessonsList } from '@/components/modules/lessons-list'
 
@@ -137,10 +137,19 @@ export default function EditModulePage() {
   return (
     <div className="py-8">
       <Container size="lg">
-        <div className="mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <Button variant="ghost" onClick={() => router.push('/admin/modules')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Modules
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={() => window.open(`/modules/${moduleId}`, '_blank')}
+            className="bg-rogue-gold/10 border-rogue-gold text-rogue-forest hover:bg-rogue-gold/20"
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            Preview as Participant
           </Button>
         </div>
 

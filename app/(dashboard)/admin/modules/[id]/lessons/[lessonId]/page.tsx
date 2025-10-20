@@ -17,7 +17,7 @@ import { VideoUpload } from '@/components/modules/video-upload'
 import { PageLoader } from '@/components/ui/loading-spinner'
 import { getLesson, updateLesson } from '@/lib/supabase/queries/modules'
 import { toast } from 'sonner'
-import { ArrowLeft, Upload } from 'lucide-react'
+import { ArrowLeft, Upload, Eye } from 'lucide-react'
 import type { Lesson } from '@/types/index.types'
 
 export default function EditLessonPage() {
@@ -127,10 +127,19 @@ export default function EditLessonPage() {
   return (
     <div className="py-8">
       <Container size="lg">
-        <div className="mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <Button variant="ghost" onClick={() => router.push(`/admin/modules/${moduleId}?tab=lessons`)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Module
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={() => window.open(`/modules/${moduleId}/lessons/${lessonId}`, '_blank')}
+            className="bg-rogue-gold/10 border-rogue-gold text-rogue-forest hover:bg-rogue-gold/20"
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            Preview as Participant
           </Button>
         </div>
 
