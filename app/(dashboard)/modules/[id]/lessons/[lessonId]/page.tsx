@@ -255,7 +255,7 @@ export default function LessonViewPage() {
             {/* Lesson Content */}
             {lesson.content && (
               <Card className="mb-8 border-0 shadow-xl bg-white">
-                <CardHeader>
+                <CardHeader className="pb-2">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="p-2 bg-rogue-forest/10 rounded-lg">
                       <BookOpen className="h-5 w-5 text-rogue-forest" />
@@ -263,7 +263,7 @@ export default function LessonViewPage() {
                   </div>
                   <CardTitle className="text-2xl">Lesson Content</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-8 md:px-12 py-8">
                   <div
                     className="prose-rogue prose-lg max-w-none"
                     dangerouslySetInnerHTML={{ __html: (lesson.content as any)?.html || '' }}

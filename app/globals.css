@@ -181,4 +181,214 @@
   .ProseMirror pre code {
     @apply bg-transparent p-0;
   }
+
+  /* Medium-inspired prose styles for lesson content */
+  .prose-rogue {
+    @apply text-rogue-slate;
+    font-family: charter, Georgia, Cambria, "Times New Roman", Times, serif;
+    font-size: 21px;
+    line-height: 1.58;
+    letter-spacing: -0.003em;
+  }
+
+  /* Headings */
+  .prose-rogue h1 {
+    @apply text-rogue-forest font-bold mb-4 mt-12 first:mt-0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 2.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.022em;
+  }
+
+  .prose-rogue h2 {
+    @apply text-rogue-forest font-bold mb-4 mt-10 first:mt-0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 2rem;
+    line-height: 1.25;
+    letter-spacing: -0.019em;
+  }
+
+  .prose-rogue h3 {
+    @apply text-rogue-forest font-bold mb-3 mt-8 first:mt-0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 1.625rem;
+    line-height: 1.3;
+    letter-spacing: -0.014em;
+  }
+
+  .prose-rogue h4 {
+    @apply text-rogue-forest font-semibold mb-3 mt-6;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 1.375rem;
+    line-height: 1.35;
+    letter-spacing: -0.011em;
+  }
+
+  /* Paragraphs */
+  .prose-rogue p {
+    @apply mb-7 last:mb-0;
+    line-height: 1.7;
+  }
+
+  /* First paragraph or paragraph after heading - slightly larger */
+  .prose-rogue h1 + p,
+  .prose-rogue h2 + p,
+  .prose-rogue h3 + p {
+    font-size: 1.15em;
+    line-height: 1.65;
+    margin-top: 0.5rem;
+  }
+
+  /* Links */
+  .prose-rogue a {
+    @apply text-rogue-forest underline decoration-rogue-forest/30 hover:decoration-rogue-forest transition-colors;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+
+  /* Strong and emphasis */
+  .prose-rogue strong {
+    @apply text-rogue-forest font-semibold;
+    letter-spacing: -0.005em;
+  }
+
+  .prose-rogue em {
+    @apply italic;
+    font-style: italic;
+  }
+
+  /* Blockquotes - Medium style */
+  .prose-rogue blockquote {
+    @apply border-l-4 border-rogue-forest/80 pl-5 pr-5 py-1 my-8 italic;
+    font-size: 1.15em;
+    line-height: 1.65;
+    letter-spacing: 0.001em;
+    color: rgba(41, 41, 41, 1);
+  }
+
+  .prose-rogue blockquote p {
+    @apply mb-4;
+  }
+
+  /* Lists */
+  .prose-rogue ul {
+    @apply list-none mb-7 mt-7;
+    padding-left: 0;
+  }
+
+  .prose-rogue ul li {
+    @apply mb-3.5;
+    padding-left: 30px;
+    position: relative;
+    line-height: 1.7;
+  }
+
+  .prose-rogue ul li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    @apply text-rogue-forest;
+    font-size: 1.2em;
+  }
+
+  .prose-rogue ol {
+    @apply list-none mb-7 mt-7;
+    counter-reset: list-counter;
+    padding-left: 0;
+  }
+
+  .prose-rogue ol li {
+    @apply mb-3.5;
+    padding-left: 36px;
+    position: relative;
+    counter-increment: list-counter;
+    line-height: 1.7;
+  }
+
+  .prose-rogue ol li::before {
+    content: counter(list-counter) ".";
+    position: absolute;
+    left: 0;
+    @apply text-rogue-forest font-semibold;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  /* Nested lists */
+  .prose-rogue li > ul,
+  .prose-rogue li > ol {
+    @apply mt-3 mb-0;
+  }
+
+  /* Code */
+  .prose-rogue code {
+    @apply bg-rogue-forest/5 text-rogue-forest px-2 py-0.5 rounded;
+    font-family: Menlo, Monaco, "Courier New", monospace;
+    font-size: 0.85em;
+    letter-spacing: 0;
+  }
+
+  .prose-rogue pre {
+    @apply bg-rogue-forest/5 rounded-lg p-5 mb-7 mt-7 overflow-x-auto;
+    font-size: 0.85em;
+    line-height: 1.6;
+  }
+
+  .prose-rogue pre code {
+    @apply bg-transparent p-0;
+    font-size: 1em;
+  }
+
+  /* Images */
+  .prose-rogue img {
+    @apply rounded-lg my-10 max-w-full h-auto shadow-lg;
+  }
+
+  /* Horizontal rule */
+  .prose-rogue hr {
+    @apply border-0 border-t border-rogue-sage/20 my-12;
+  }
+
+  /* Tables */
+  .prose-rogue table {
+    @apply w-full mb-7 mt-7 border-collapse;
+  }
+
+  .prose-rogue thead {
+    @apply border-b-2 border-rogue-sage/30;
+  }
+
+  .prose-rogue th {
+    @apply text-left font-semibold text-rogue-forest p-3;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.9em;
+  }
+
+  .prose-rogue td {
+    @apply p-3 border-b border-rogue-sage/20;
+  }
+
+  /* iframe embeds */
+  .prose-rogue iframe {
+    @apply rounded-lg my-10 w-full;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Figure captions */
+  .prose-rogue figcaption {
+    @apply text-center text-sm text-rogue-slate/70 mt-2 italic;
+  }
+
+  /* Special formatting for first letter (optional drop cap) */
+  .prose-rogue.with-drop-cap > p:first-of-type::first-letter {
+    @apply text-rogue-forest font-bold float-left;
+    font-size: 4.5em;
+    line-height: 0.85;
+    margin: 0.1em 0.1em 0 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  /* Make prose-lg have proper spacing */
+  .prose-lg {
+    max-width: 65ch;
+  }
 }
