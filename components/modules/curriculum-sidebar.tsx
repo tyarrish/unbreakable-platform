@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -20,7 +21,9 @@ interface CurriculumSidebarProps {
 export function CurriculumSidebar({ modules, progressMap, currentLessonId, className }: CurriculumSidebarProps) {
   const router = useRouter()
   const params = useParams()
+  const supabase = createClient()
   const [isOpen, setIsOpen] = useState(false)
+  const [isAdminOrFacilitator, setIsAdminOrFacilitator] = useState(false)
   
   // Initialize with only the current module expanded
   const [expandedModules, setExpandedModules] = useState<Set<string>>(() => {
@@ -29,6 +32,26 @@ export function CurriculumSidebar({ modules, progressMap, currentLessonId, class
     }
     return new Set()
   })
+
+  // Check if user is admin or facilitator
+  useEffect(() => {
+    async function checkRole() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await (supabase
+          .from('profiles')
+          .select('roles')
+          .eq('id', user.id)
+          .single() as any)
+        
+        if (profile?.roles) {
+          const hasAdminAccess = profile.roles.includes('admin') || profile.roles.includes('facilitator')
+          setIsAdminOrFacilitator(hasAdminAccess)
+        }
+      }
+    }
+    checkRole()
+  }, [])
 
   // Calculate overall progress
   const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0)
@@ -124,7 +147,9 @@ export function CurriculumSidebar({ modules, progressMap, currentLessonId, class
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {modules.map((module) => {
             const isExpanded = expandedModules.has(module.id)
-            const isLocked = !!(module.release_date && new Date(module.release_date) > new Date())
+            const isUnreleased = !!(module.release_date && new Date(module.release_date) > new Date())
+            // Only lock for non-admin users
+            const isLocked = isUnreleased && !isAdminOrFacilitator
             const completedCount = module.lessons.filter(
               l => progressMap.get(l.id)?.status === 'completed'
             ).length
@@ -134,13 +159,14 @@ export function CurriculumSidebar({ modules, progressMap, currentLessonId, class
               <div key={module.id} className="space-y-1">
                 {/* Module Header */}
                 <button
-                  onClick={() => !isLocked && toggleModule(module.id)}
+                  onClick={() => toggleModule(module.id)}
                   disabled={isLocked}
                   className={cn(
                     'w-full text-left p-3 rounded-lg transition-all duration-200',
                     isLocked 
                       ? 'opacity-50 cursor-not-allowed bg-rogue-slate/5'
-                      : 'hover:bg-rogue-sage/5 cursor-pointer'
+                      : 'hover:bg-rogue-sage/5 cursor-pointer',
+                    isUnreleased && !isLocked && 'bg-rogue-gold/5 border border-rogue-gold/20'
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -160,6 +186,11 @@ export function CurriculumSidebar({ modules, progressMap, currentLessonId, class
                           Module {module.order_number}
                         </span>
                         <ProgressCircle progress={moduleProgress} size={16} />
+                        {isUnreleased && !isLocked && (
+                          <span className="text-xs px-1.5 py-0.5 bg-rogue-gold/20 text-rogue-forest rounded">
+                            Preview
+                          </span>
+                        )}
                       </div>
                       <h3 className="font-semibold text-sm text-rogue-forest leading-tight">
                         {module.title}
@@ -179,7 +210,7 @@ export function CurriculumSidebar({ modules, progressMap, currentLessonId, class
                 </button>
 
                 {/* Lessons List */}
-                {isExpanded && !isLocked && (
+                {isExpanded && (
                   <div className="ml-7 space-y-1 animate-in slide-in-from-top-2 duration-200">
                     {module.lessons.map((lesson) => {
                       const lessonProgress = progressMap.get(lesson.id)
