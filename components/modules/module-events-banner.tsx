@@ -52,7 +52,8 @@ export function ModuleEventsBanner({ events }: ModuleEventsBannerProps) {
         return (
           <Card 
             key={event.id} 
-            className="border-l-4 border-l-rogue-gold hover:shadow-md transition-all duration-200"
+            className="border-l-4 border-l-rogue-gold hover:shadow-md transition-all duration-200 cursor-pointer"
+            onClick={() => handleViewDetails(event)}
           >
             <CardContent className="py-4">
               <div className="flex items-center justify-between gap-4">
@@ -114,7 +115,10 @@ export function ModuleEventsBanner({ events }: ModuleEventsBannerProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleViewDetails(event)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleViewDetails(event)
+                    }}
                   >
                     View Details
                   </Button>

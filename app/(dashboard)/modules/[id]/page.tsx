@@ -180,7 +180,10 @@ export default function ModuleDetailPage() {
                 {events.map((event: Event) => (
                   <div
                     key={event.id}
-                    onClick={() => router.push(`/calendar?event=${event.id}`)}
+                    onClick={() => {
+                      setSelectedEvent(event)
+                      setIsEventModalOpen(true)
+                    }}
                     className="group flex items-start gap-3 p-3 rounded-lg border border-rogue-sage/10 hover:border-rogue-gold/30 hover:bg-rogue-gold/5 cursor-pointer transition-all"
                   >
                     <div className="flex-shrink-0 w-1 h-full bg-rogue-gold rounded-full" />

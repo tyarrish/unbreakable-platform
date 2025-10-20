@@ -203,6 +203,45 @@ export async function getEventsByModule(moduleId: string) {
     .order('start_time', { ascending: true })) as any
   
   if (error) throw error
+  
+  // Fetch speakers for each event
+  if (data) {
+    const eventsWithSpeakers = await Promise.all(
+      data.map(async (event: any) => {
+        const { data: speakers } = await (supabase as any)
+          .from('event_speakers')
+          .select(`
+            *,
+            profile:profiles(full_name, avatar_url, bio, employer, current_role),
+            guest_speaker:guest_speakers(*)
+          `)
+          .eq('event_id', event.id)
+          .order('display_order', { ascending: true })
+        
+        // Format speaker profiles for the modal
+        const speaker_profiles = speakers?.map((speaker: any) => {
+          if (speaker.profile) {
+            return {
+              full_name: speaker.profile.full_name,
+              avatar_url: speaker.profile.avatar_url,
+              bio: speaker.profile.bio || `${speaker.profile.current_role || ''}${speaker.profile.employer ? ` at ${speaker.profile.employer}` : ''}`.trim(),
+            }
+          } else if (speaker.guest_speaker) {
+            return {
+              full_name: speaker.guest_speaker.name,
+              avatar_url: speaker.guest_speaker.photo_url,
+              bio: speaker.guest_speaker.bio,
+            }
+          }
+          return null
+        }).filter(Boolean)
+        
+        return { ...event, speakers: speakers || [], speaker_profiles: speaker_profiles || [] }
+      })
+    )
+    return eventsWithSpeakers
+  }
+  
   return data
 }
 
