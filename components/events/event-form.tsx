@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { RichTextEditor } from '@/components/discussions/rich-text-editor'
@@ -288,10 +289,21 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
 
           {/* Date and Time */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-rogue-forest flex items-center gap-2">
-              <Clock size={20} />
-              Schedule
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-rogue-forest flex items-center gap-2">
+                <Clock size={20} />
+                Schedule
+              </h3>
+              <Badge variant="outline" className="border-blue-500/30 bg-blue-50 text-blue-700">
+                🕐 Pacific Time (PST/PDT)
+              </Badge>
+            </div>
+
+            <div className="bg-blue-50/50 border border-blue-200 rounded-lg p-3 mb-2">
+              <p className="text-sm text-blue-800">
+                <strong>Important:</strong> Enter all times in <strong>Pacific Time</strong>. Times will automatically be stored correctly for your Grants Pass-based cohort.
+              </p>
+            </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -305,6 +317,9 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
                   onChange={(e) => handleChange('start_time', e.target.value)}
                   required
                 />
+                <p className="text-xs text-rogue-slate">
+                  Example: Oct 23, 2025 at 4:00 PM (Pacific)
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -318,6 +333,9 @@ export function EventForm({ event, onSuccess }: EventFormProps) {
                   onChange={(e) => handleChange('end_time', e.target.value)}
                   required
                 />
+                <p className="text-xs text-rogue-slate">
+                  End time in Pacific Time
+                </p>
               </div>
             </div>
 
