@@ -265,7 +265,7 @@ export default function LessonViewPage() {
                 </CardHeader>
                 <CardContent className="px-8 md:px-12 py-8">
                   <div
-                    className="prose-rogue prose-lg max-w-none"
+                    className="prose-rogue prose-lg"
                     dangerouslySetInnerHTML={{ __html: (lesson.content as any)?.html || '' }}
                   />
                 </CardContent>
