@@ -1,5 +1,6 @@
 /**
  * Format a date string or Date object to a readable format
+ * Always uses Pacific timezone
  */
 export function formatDate(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date
@@ -8,6 +9,7 @@ export function formatDate(date: string | Date, options?: Intl.DateTimeFormatOpt
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone: 'America/Los_Angeles',
     ...options,
   }
   
@@ -33,6 +35,7 @@ export function formatRelativeTime(date: string | Date): string {
 
 /**
  * Format time for event display
+ * Always uses Pacific timezone
  */
 export function formatEventTime(startTime: string, endTime: string): string {
   const start = new Date(startTime)
@@ -42,6 +45,8 @@ export function formatEventTime(startTime: string, endTime: string): string {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
+    timeZone: 'America/Los_Angeles',
+    timeZoneName: 'short',
   }
   
   return `${start.toLocaleTimeString('en-US', timeFormat)} - ${end.toLocaleTimeString('en-US', timeFormat)}`

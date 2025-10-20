@@ -1,5 +1,6 @@
 /**
  * Generate calendar links for various calendar services
+ * All times are in Pacific timezone (America/Los_Angeles)
  */
 
 interface CalendarEvent {
@@ -12,6 +13,7 @@ interface CalendarEvent {
 
 /**
  * Convert date to format required by calendar services
+ * Note: Calendar services expect UTC time in the URL, but we display Pacific time to users
  */
 function formatDateForCalendar(date: string): string {
   return new Date(date).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'

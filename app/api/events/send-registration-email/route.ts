@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     // Generate calendar links
     const calendarEvent = {
-      title: event.title,
+      title: `RLTE - ${event.title}`,
       description: event.description || '',
       location: event.location_type === 'virtual' 
         ? 'Virtual (Zoom)' 

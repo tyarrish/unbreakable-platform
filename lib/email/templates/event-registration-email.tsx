@@ -52,20 +52,20 @@ export const EventRegistrationEmail = ({
       month: 'long',
       day: 'numeric',
       year: 'numeric',
+      timeZone: 'America/Los_Angeles',
     })
   }
 
   const formatTime = (start: string, end: string) => {
-    const startTime = new Date(start).toLocaleTimeString('en-US', {
+    const timeFormat = {
       hour: 'numeric',
       minute: '2-digit',
+      timeZone: 'America/Los_Angeles',
       timeZoneName: 'short',
-    })
-    const endTime = new Date(end).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      timeZoneName: 'short',
-    })
+    } as const
+    
+    const startTime = new Date(start).toLocaleTimeString('en-US', timeFormat)
+    const endTime = new Date(end).toLocaleTimeString('en-US', timeFormat)
     return `${startTime} - ${endTime}`
   }
 
@@ -138,7 +138,7 @@ export const EventRegistrationEmail = ({
                 fontWeight: '700',
                 margin: '0 0 16px 0',
               }}>
-                {eventTitle}
+                RLTE - {eventTitle}
               </Heading>
 
               {isRequired && (
