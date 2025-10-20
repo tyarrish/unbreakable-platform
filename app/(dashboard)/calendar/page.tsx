@@ -76,6 +76,18 @@ export default function CalendarPage() {
         await registerForEvent(eventId, userId)
         setRegistrations(prev => new Set(prev).add(eventId))
         toast.success('Registered for event!')
+        
+        // Send confirmation email with calendar links
+        try {
+          await fetch('/api/events/send-registration-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ eventId }),
+          })
+        } catch (emailError) {
+          console.error('Error sending confirmation email:', emailError)
+          // Don't show error to user - registration still succeeded
+        }
       }
     } catch (error) {
       console.error('Error toggling registration:', error)
