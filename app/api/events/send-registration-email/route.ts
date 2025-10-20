@@ -4,8 +4,20 @@ import { resend, EMAIL_CONFIG } from '@/lib/email/resend'
 import { EventRegistrationEmail } from '@/lib/email/templates/event-registration-email'
 import { generateAllCalendarLinks } from '@/lib/utils/calendar-links'
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
+    // Check if Resend is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('RESEND_API_KEY not configured - skipping email')
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Email service not configured' 
+      }, { status: 200 })
+    }
+
     const supabase = await createClient()
     
     // Verify authentication
