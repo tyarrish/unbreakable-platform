@@ -65,18 +65,18 @@ export function DiscussionEngagementCard({ userId }: DiscussionEngagementCardPro
           {/* Decorative background pattern */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(212,175,55,0.15),transparent)]"></div>
           
-          <div className="relative p-6">
+          <div className="relative p-4 sm:p-6">
             {/* Header */}
-            <div className="flex items-start gap-4 mb-4">
-              <div className="p-3 bg-rogue-gold/20 rounded-xl">
-                <MessageSquare className="h-6 w-6 text-rogue-gold" />
+            <div className="flex items-start gap-3 sm:gap-4 mb-4">
+              <div className="p-2 sm:p-3 bg-rogue-gold/20 rounded-xl flex-shrink-0">
+                <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-rogue-gold" />
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-xl font-bold text-rogue-forest">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                  <h3 className="text-lg sm:text-xl font-bold text-rogue-forest">
                     Your Cohort Needs Your Voice
                   </h3>
-                  <Badge className="bg-rogue-gold text-white">
+                  <Badge className="bg-rogue-gold text-white w-fit text-xs sm:text-sm">
                     Action Needed
                   </Badge>
                 </div>
@@ -90,36 +90,36 @@ export function DiscussionEngagementCard({ userId }: DiscussionEngagementCardPro
             </div>
 
             {/* Stats */}
-            <div className="flex items-center gap-6 mb-6 p-4 bg-white/50 rounded-lg border border-rogue-sage/20">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-6 p-3 sm:p-4 bg-white/50 rounded-lg border border-rogue-sage/20">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-rogue-forest" />
-                <div>
+                <TrendingUp className="h-4 w-4 text-rogue-forest flex-shrink-0" />
+                <div className="min-w-0">
                   <p className="text-xs text-rogue-slate">Active This Week</p>
-                  <p className="text-lg font-bold text-rogue-forest">{activeDiscussionCount}</p>
+                  <p className="text-base sm:text-lg font-bold text-rogue-forest">{activeDiscussionCount}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-rogue-sage" />
-                <div>
-                  <p className="text-xs text-rogue-slate">Leaders Engaging</p>
-                  <p className="text-lg font-bold text-rogue-forest">See Discussions</p>
+                <Users className="h-4 w-4 text-rogue-sage flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs text-rogue-slate truncate">Leaders Engaging</p>
+                  <p className="text-sm sm:text-lg font-bold text-rogue-forest">See Discussions</p>
                 </div>
               </div>
             </div>
 
             {/* Prompts */}
-            <div className="space-y-3 mb-6">
+            <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
               <p className="text-sm font-semibold text-rogue-forest">What to share:</p>
               <div className="space-y-2">
-                <div className="flex items-start gap-2 text-sm text-rogue-slate">
+                <div className="flex items-start gap-2 text-xs sm:text-sm text-rogue-slate">
                   <Sparkles className="h-4 w-4 text-rogue-gold flex-shrink-0 mt-0.5" />
                   <p>A specific challenge you're facing in your leadership right now</p>
                 </div>
-                <div className="flex items-start gap-2 text-sm text-rogue-slate">
+                <div className="flex items-start gap-2 text-xs sm:text-sm text-rogue-slate">
                   <Sparkles className="h-4 w-4 text-rogue-gold flex-shrink-0 mt-0.5" />
                   <p>A question from this month's module that's stuck with you</p>
                 </div>
-                <div className="flex items-start gap-2 text-sm text-rogue-slate">
+                <div className="flex items-start gap-2 text-xs sm:text-sm text-rogue-slate">
                   <Sparkles className="h-4 w-4 text-rogue-gold flex-shrink-0 mt-0.5" />
                   <p>How you're applying what you're learning in real situations</p>
                 </div>
@@ -127,10 +127,10 @@ export function DiscussionEngagementCard({ userId }: DiscussionEngagementCardPro
             </div>
 
             {/* CTAs */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Button 
                 onClick={() => router.push('/discussions')}
-                className="flex-1 bg-gradient-to-r from-rogue-forest to-rogue-pine hover:from-rogue-pine hover:to-rogue-forest shadow-md"
+                className="w-full sm:flex-1 bg-gradient-to-r from-rogue-forest to-rogue-pine hover:from-rogue-pine hover:to-rogue-forest shadow-md"
                 size="lg"
               >
                 <MessageSquare className="mr-2 h-4 w-4" />
@@ -139,9 +139,9 @@ export function DiscussionEngagementCard({ userId }: DiscussionEngagementCardPro
               <Button 
                 onClick={() => router.push('/discussions')}
                 variant="outline"
-                className="border-rogue-forest/30 hover:bg-rogue-forest hover:text-white"
+                className="w-full sm:w-auto border-rogue-forest/30 hover:bg-rogue-forest hover:text-white"
               >
-                Start New Discussion
+                Start New
               </Button>
             </div>
           </div>
