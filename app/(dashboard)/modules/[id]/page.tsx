@@ -12,6 +12,7 @@ import { PageLoader } from '@/components/ui/loading-spinner'
 import { LessonStatusBadge } from '@/components/ui/status-badge'
 import { CurriculumSidebar } from '@/components/modules/curriculum-sidebar'
 import { ModuleEventsBanner } from '@/components/modules/module-events-banner'
+import { EventDetailsModal } from '@/components/events/event-details-modal'
 import { getModule, getModules, getLessons, getLessonProgress } from '@/lib/supabase/queries/modules'
 import { getEventsByModule } from '@/lib/supabase/queries/events'
 import { getBooksByMonth } from '@/lib/supabase/queries/books'
@@ -36,6 +37,8 @@ export default function ModuleDetailPage() {
   const [books, setBooks] = useState<any[]>([])
   const [userId, setUserId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null)
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false)
 
   useEffect(() => {
     loadModuleAndLessons()
@@ -222,7 +225,8 @@ export default function ModuleDetailPage() {
                       className="flex-shrink-0 text-xs h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={(e) => {
                         e.stopPropagation()
-                        router.push(`/calendar?event=${event.id}`)
+                        setSelectedEvent(event)
+                        setIsEventModalOpen(true)
                       }}
                     >
                       Details
@@ -363,6 +367,13 @@ export default function ModuleDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Event Details Modal */}
+      <EventDetailsModal
+        event={selectedEvent}
+        open={isEventModalOpen}
+        onOpenChange={setIsEventModalOpen}
+      />
     </div>
   )
 }

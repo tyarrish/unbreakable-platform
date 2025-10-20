@@ -1,12 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, MapPin, Video, Building2, AlertCircle, CheckCircle } from 'lucide-react'
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { EVENT_TYPES, LOCATION_TYPES } from '@/lib/constants'
-import { useRouter } from 'next/navigation'
+import { EventDetailsModal } from '@/components/events/event-details-modal'
 
 interface Event {
   id: string
@@ -28,15 +29,22 @@ interface ModuleEventsBannerProps {
 }
 
 export function ModuleEventsBanner({ events }: ModuleEventsBannerProps) {
-  const router = useRouter()
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   if (events.length === 0) {
     return null
   }
 
+  const handleViewDetails = (event: Event) => {
+    setSelectedEvent(event)
+    setIsModalOpen(true)
+  }
+
   return (
-    <div className="space-y-3">
-      {events.map((event) => {
+    <>
+      <div className="space-y-3">
+        {events.map((event) => {
         const eventType = EVENT_TYPES.find(t => t.value === event.event_type)
         const locationType = LOCATION_TYPES.find(l => l.value === event.location_type)
         const isPast = new Date(event.end_time) < new Date()
@@ -106,7 +114,7 @@ export function ModuleEventsBanner({ events }: ModuleEventsBannerProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => router.push('/calendar')}
+                    onClick={() => handleViewDetails(event)}
                   >
                     View Details
                   </Button>
@@ -115,8 +123,15 @@ export function ModuleEventsBanner({ events }: ModuleEventsBannerProps) {
             </CardContent>
           </Card>
         )
-      })}
-    </div>
+        })}
+      </div>
+
+      <EventDetailsModal
+        event={selectedEvent}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
+    </>
   )
 }
 
