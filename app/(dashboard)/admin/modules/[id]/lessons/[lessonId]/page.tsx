@@ -107,7 +107,7 @@ export default function EditLessonPage() {
       } as any)
 
       toast.success('Lesson updated successfully!')
-      router.push(`/admin/modules/${moduleId}`)
+      // Don't redirect - stay on page for further edits
     } catch (error) {
       console.error('Error updating lesson:', error)
       toast.error('Failed to update lesson')
@@ -128,7 +128,7 @@ export default function EditLessonPage() {
     <div className="py-8">
       <Container size="lg">
         <div className="mb-6">
-          <Button variant="ghost" onClick={() => router.push(`/admin/modules/${moduleId}`)}>
+          <Button variant="ghost" onClick={() => router.push(`/admin/modules/${moduleId}?tab=lessons`)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Module
           </Button>
@@ -208,7 +208,7 @@ export default function EditLessonPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => router.push(`/admin/modules/${moduleId}`)}
+                      onClick={() => router.push(`/admin/modules/${moduleId}?tab=lessons`)}
                       disabled={isSaving}
                     >
                       Cancel

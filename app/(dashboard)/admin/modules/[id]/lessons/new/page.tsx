@@ -38,7 +38,7 @@ export default function NewLessonPage() {
       })
 
       toast.success('Lesson created successfully!')
-      router.push(`/admin/modules/${moduleId}`)
+      // Don't redirect - stay on page for further edits
     } catch (error) {
       console.error('Error creating lesson:', error)
       toast.error('Failed to create lesson')
@@ -51,7 +51,7 @@ export default function NewLessonPage() {
     <div className="py-8">
       <Container size="lg">
         <div className="mb-6">
-          <Button variant="ghost" onClick={() => router.back()}>
+          <Button variant="ghost" onClick={() => router.push(`/admin/modules/${moduleId}?tab=lessons`)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Module
           </Button>
@@ -127,7 +127,7 @@ export default function NewLessonPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.back()}
+                  onClick={() => router.push(`/admin/modules/${moduleId}?tab=lessons`)}
                   disabled={isLoading}
                 >
                   Cancel

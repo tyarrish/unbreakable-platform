@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Container } from '@/components/layout/container'
 import { PageHeader } from '@/components/layout/page-header'
 import { Button } from '@/components/ui/button'
@@ -24,7 +24,9 @@ import { LessonsList } from '@/components/modules/lessons-list'
 export default function EditModulePage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const moduleId = params.id as string
+  const activeTab = searchParams.get('tab') || 'details'
 
   const supabase = createClient()
   const [module, setModule] = useState<Module | null>(null)
@@ -164,7 +166,7 @@ export default function EditModulePage() {
           </div>
         )}
 
-        <Tabs defaultValue="details" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={(value) => router.push(`/admin/modules/${moduleId}?tab=${value}`)} className="space-y-6">
           <TabsList>
             <TabsTrigger value="details">Module Details</TabsTrigger>
             <TabsTrigger value="lessons">Lessons ({lessons.length})</TabsTrigger>
