@@ -112,6 +112,23 @@ export default function ModuleDetailPage() {
     progressMap.get(lesson.id)?.status === 'completed'
   ).length
   const progressPercentage = calculateProgress(completedLessons, lessons.length)
+  
+  // Calculate time estimates
+  const totalTime = lessons.reduce((sum, lesson) => sum + (lesson.duration_minutes || 0), 0)
+  const remainingLessons = lessons.filter(lesson => 
+    progressMap.get(lesson.id)?.status !== 'completed'
+  )
+  const remainingTime = remainingLessons.reduce((sum, lesson) => sum + (lesson.duration_minutes || 0), 0)
+  
+  // Format time display (e.g., "2h 30m" or "45m")
+  const formatTime = (minutes: number) => {
+    if (minutes === 0) return '0m'
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    if (hours > 0 && mins > 0) return `${hours}h ${mins}m`
+    if (hours > 0) return `${hours}h`
+    return `${mins}m`
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rogue-cream via-white to-rogue-sage/5">
@@ -161,6 +178,22 @@ export default function ModuleDetailPage() {
               <span className="text-sm font-semibold text-rogue-forest">{completedLessons} of {lessons.length} lessons</span>
             </div>
             <ProgressTree progress={progressPercentage} />
+            
+            {/* Time Estimates */}
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-rogue-sage/10">
+              <div className="flex items-center gap-4 text-xs text-rogue-slate">
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>Total: <span className="font-semibold text-rogue-forest">{formatTime(totalTime)}</span></span>
+                </div>
+                {remainingTime > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <span>•</span>
+                    <span>Remaining: <span className="font-semibold text-rogue-gold">{formatTime(remainingTime)}</span></span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Events Listing */}
