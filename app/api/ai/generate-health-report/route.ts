@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const { count: totalMembers } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
-      .eq('role', 'member')
+      .contains('roles', ['participant'])
       .eq('is_active', true)
 
     // Get activity this week and last week

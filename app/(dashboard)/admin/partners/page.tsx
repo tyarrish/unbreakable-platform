@@ -88,7 +88,7 @@ export default function AdminPartnersPage() {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'participant')
+        .contains('roles', ['participant'])
         .eq('is_active', true)
         .order('full_name', { ascending: true })
 

@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, full_name, email')
-      .eq('role', 'member')
+      .contains('roles', ['participant'])
       .eq('is_active', true)
 
     if (!profiles || profiles.length === 0) {

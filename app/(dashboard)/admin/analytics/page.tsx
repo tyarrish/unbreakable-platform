@@ -48,7 +48,7 @@ export default function AnalyticsPage() {
       const { count: userCount } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true })
-        .eq('role', 'participant')
+        .contains('roles', ['participant'])
 
       // Get login rate (users who have logged in at least once)
       const { count: loggedInCount } = await supabase

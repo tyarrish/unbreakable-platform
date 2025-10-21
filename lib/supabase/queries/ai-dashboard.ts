@@ -93,7 +93,7 @@ export async function gatherCommunityContext(): Promise<CommunityContext> {
   const { count: totalUsers } = await supabase
     .from('profiles')
     .select('*', { count: 'exact', head: true })
-    .eq('role', 'member')
+    .contains('roles', ['participant'])
     .eq('is_active', true)
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -179,7 +179,7 @@ export async function getAllUsersActivityMetrics() {
   const { data: profiles } = await supabase
     .from('profiles')
     .select('id, full_name, email')
-    .eq('role', 'member')
+    .contains('roles', ['participant'])
     .eq('is_active', true)
 
   if (!profiles) return []

@@ -45,7 +45,7 @@ export async function getUsers(filters?: UserFilters): Promise<UserProfile[]> {
     .order('created_at', { ascending: false })
 
   if (filters?.role) {
-    query = query.eq('role', filters.role)
+    query = (query as any).contains('roles', [filters.role])
   }
 
   if (filters?.isActive !== undefined) {
