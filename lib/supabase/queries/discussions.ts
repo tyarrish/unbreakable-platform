@@ -38,7 +38,7 @@ export async function getThread(threadId: string) {
     .from('discussion_threads')
     .select(`
       *,
-      created_by_profile:profiles!discussion_threads_created_by_fkey(full_name, avatar_url, role)
+      created_by_profile:profiles!discussion_threads_created_by_fkey(full_name, avatar_url)
     `)
     .eq('id', threadId)
     .single()
@@ -57,7 +57,7 @@ export async function getThreadPosts(threadId: string) {
     .from('discussion_posts')
     .select(`
       *,
-      author:profiles!discussion_posts_author_id_fkey(full_name, avatar_url, role),
+      author:profiles!discussion_posts_author_id_fkey(full_name, avatar_url),
       reactions:post_reactions(*)
     `)
     .eq('thread_id', threadId)
@@ -107,7 +107,7 @@ export async function createPost(post: {
     .insert(post)
     .select(`
       *,
-      author:profiles!discussion_posts_author_id_fkey(full_name, avatar_url, role)
+      author:profiles!discussion_posts_author_id_fkey(full_name, avatar_url)
     `)
     .single()
   

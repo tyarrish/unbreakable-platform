@@ -30,7 +30,7 @@ export async function getBookComments(bookId: string, userId?: string) {
     .from('book_comments')
     .select(`
       *,
-      user:profiles!book_comments_user_id_fkey(id, full_name, avatar_url, role)
+      user:profiles!book_comments_user_id_fkey(id, full_name, avatar_url)
     `)
     .eq('book_id', bookId)
     .order('created_at', { ascending: true })) as any

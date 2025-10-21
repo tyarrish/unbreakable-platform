@@ -156,8 +156,7 @@ export async function getConversationMessages(conversationId: string) {
       author:profiles!discussion_posts_author_id_fkey(
         id,
         full_name,
-        avatar_url,
-        role
+        avatar_url
       ),
       reactions:post_reactions(*)
     `)
@@ -326,8 +325,7 @@ export async function sendMessage(
       author:profiles!discussion_posts_author_id_fkey(
         id,
         full_name,
-        avatar_url,
-        role
+        avatar_url
       )
     `)
     .single()
