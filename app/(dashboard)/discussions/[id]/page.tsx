@@ -102,7 +102,10 @@ export default function ThreadDetailPage() {
   useEffect(() => {
     loadThread()
     incrementViewCount()
-    setupRealtimeSubscription()
+    
+    // Set up realtime subscription with cleanup
+    const cleanup = setupRealtimeSubscription()
+    return cleanup
   }, [threadId])
 
   async function loadThread() {
@@ -222,6 +225,8 @@ export default function ThreadDetailPage() {
   }
 
   function setupRealtimeSubscription() {
+    console.log('Setting up realtime subscription for thread:', threadId)
+    
     const channel = supabase
       .channel(`thread-${threadId}`)
       .on(
@@ -232,8 +237,8 @@ export default function ThreadDetailPage() {
           table: 'discussion_posts',
           filter: `thread_id=eq.${threadId}`,
         },
-        () => {
-          console.log('New comment added, reloading...')
+        (payload) => {
+          console.log('Real-time: New comment added', payload)
           loadThread()
         }
       )
@@ -245,8 +250,8 @@ export default function ThreadDetailPage() {
           table: 'discussion_posts',
           filter: `thread_id=eq.${threadId}`,
         },
-        () => {
-          console.log('Comment updated, reloading...')
+        (payload) => {
+          console.log('Real-time: Comment updated', payload)
           loadThread()
         }
       )
@@ -258,14 +263,29 @@ export default function ThreadDetailPage() {
           table: 'discussion_posts',
           filter: `thread_id=eq.${threadId}`,
         },
-        () => {
-          console.log('Comment deleted, reloading...')
+        (payload) => {
+          console.log('Real-time: Comment deleted', payload)
           loadThread()
         }
       )
-      .subscribe()
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'post_reactions',
+        },
+        (payload) => {
+          console.log('Real-time: Reaction changed', payload)
+          loadThread()
+        }
+      )
+      .subscribe((status) => {
+        console.log('Discussion realtime subscription status:', status)
+      })
 
     return () => {
+      console.log('Cleaning up realtime subscription for thread:', threadId)
       supabase.removeChannel(channel)
     }
   }
