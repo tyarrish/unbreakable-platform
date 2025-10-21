@@ -70,7 +70,7 @@ export default function DiscussionsPage() {
         .from('discussion_threads')
         .select(`
           *,
-          created_by_profile:profiles!created_by(full_name, avatar_url, roles)
+          created_by_profile:profiles!discussion_threads_created_by_fkey(full_name, avatar_url)
         `)
         .eq('conversation_type', 'public_discussion')
         .order('is_pinned', { ascending: false })

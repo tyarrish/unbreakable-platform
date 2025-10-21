@@ -80,7 +80,7 @@ export default function AdminDiscussionsPage() {
     try {
       const { data, error } = await supabase
         .from('discussion_threads')
-        .select('*, created_by_profile:profiles!created_by(full_name)')
+        .select('*, created_by_profile:profiles!discussion_threads_created_by_fkey(full_name)')
         .order('created_at', { ascending: false })
 
       if (error) throw error

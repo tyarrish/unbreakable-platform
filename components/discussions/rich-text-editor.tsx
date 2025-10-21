@@ -55,11 +55,7 @@ export function RichTextEditor({ content, onChange, placeholder = 'Write your po
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [2, 3],
-        },
-      }),
+      StarterKit,
       Image.configure({
         HTMLAttributes: {
           class: 'rounded-lg max-w-full h-auto',

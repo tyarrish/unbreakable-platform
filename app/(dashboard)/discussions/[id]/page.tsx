@@ -126,7 +126,7 @@ export default function ThreadDetailPage() {
       // Get thread
       const { data: threadData, error: threadError } = await supabase
         .from('discussion_threads')
-        .select('*, created_by_profile:profiles!created_by(full_name, avatar_url, roles)')
+        .select('*, created_by_profile:profiles!discussion_threads_created_by_fkey(full_name, avatar_url)')
         .eq('id', threadId)
         .single() as any
 
