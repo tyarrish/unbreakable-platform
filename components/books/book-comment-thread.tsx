@@ -131,7 +131,7 @@ export function BookCommentThread({ bookId, userId }: BookCommentThreadProps) {
               <span className="font-medium text-rogue-forest">
                 {comment.user?.full_name || 'Anonymous'}
               </span>
-              {comment.user?.role && <RoleBadge role={comment.user.role as UserRole} />}
+              {comment.user?.roles?.[0] && <RoleBadge role={comment.user.roles[0] as UserRole} />}
               <span className="text-xs text-rogue-slate">
                 {formatDate(comment.created_at)}
                 {comment.is_edited && ' (edited)'}

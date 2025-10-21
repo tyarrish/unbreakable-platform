@@ -43,8 +43,8 @@ const roleDescriptions: Record<UserRole, { label: string; description: string; c
 }
 
 export function EditRoleModal({ user, open, onClose, onSuccess }: EditRoleModalProps) {
-  // Initialize with user's current roles, or fall back to single role
-  const initialRoles = user.roles && user.roles.length > 0 ? user.roles : [user.role]
+  // Initialize with user's current roles, or fall back to participant
+  const initialRoles = (user.roles && user.roles.length > 0 ? user.roles : ['participant']) as UserRole[]
   const [selectedRoles, setSelectedRoles] = useState<UserRole[]>(initialRoles)
   const [isLoading, setIsLoading] = useState(false)
 

@@ -13,7 +13,7 @@ export interface BookComment {
     id: string
     full_name?: string
     avatar_url?: string
-    role: string
+    roles?: string[]
   }
   replies?: BookComment[]
   like_count?: number

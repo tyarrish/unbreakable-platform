@@ -248,7 +248,7 @@ export function NewConversationModal({
                           </p>
                         </div>
                         <Badge variant="outline" className="capitalize">
-                          {user.role}
+                          {user.roles?.[0] || 'participant'}
                         </Badge>
                       </div>
                     </div>
@@ -370,7 +370,7 @@ export function NewConversationModal({
                             </p>
                           </div>
                           <Badge variant="outline" className="capitalize">
-                            {user.role}
+                            {user.roles?.[0] || 'participant'}
                           </Badge>
                         </div>
                       </div>
