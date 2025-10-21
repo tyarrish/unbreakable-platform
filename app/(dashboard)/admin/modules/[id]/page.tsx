@@ -53,12 +53,14 @@ export default function EditModulePage() {
   async function checkRole() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      const { data: profile } = await supabase
+      const { data: profile } = await (supabase
         .from('profiles')
-        .select('role')
+        .select('roles')
         .eq('id', user.id)
-        .single<{ role: string }>()
-      setUserRole(profile?.role || '')
+        .single() as any)
+      // Get primary role from roles array
+      const primaryRole = profile?.roles?.[0] || ''
+      setUserRole(primaryRole)
     }
   }
 

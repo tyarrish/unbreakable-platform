@@ -39,14 +39,18 @@ export default function CapstonePage() {
       return
     }
 
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase
       .from('profiles')
-      .select('role')
+      .select('roles')
       .eq('id', user.id)
-      .single<{ role: string }>()
+      .single() as any)
 
     // Only admins and facilitators can access capstone
-    if (profile?.role === 'participant') {
+    const isParticipantOnly = profile?.roles && 
+      !profile.roles.includes('admin') && 
+      !profile.roles.includes('facilitator')
+    
+    if (isParticipantOnly) {
       router.push('/dashboard')
     }
   }

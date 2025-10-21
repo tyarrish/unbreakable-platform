@@ -76,10 +76,10 @@ export default function MembersPage() {
       
       // When searching, separate facilitators and members
       const searchedFacilitators = data.filter(
-        member => member.roles?.includes('facilitator') || member.role === 'facilitator'
+        member => member.roles?.includes('facilitator')
       )
       const searchedMembers = data.filter(
-        member => !member.roles?.includes('facilitator') && member.role !== 'facilitator'
+        member => !member.roles?.includes('facilitator')
       )
       
       setFacilitators(searchedFacilitators)

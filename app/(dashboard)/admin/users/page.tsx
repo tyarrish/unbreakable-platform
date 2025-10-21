@@ -122,11 +122,11 @@ export default function AdminUsersPage() {
       )
     }
 
-    // Role filter - check both role and roles array
+    // Role filter
     if (roleFilter !== 'all') {
       filtered = filtered.filter(u => {
-        // Check if user has this role in their roles array or single role field
-        return u.roles?.includes(roleFilter as UserRole) || u.role === roleFilter
+        // Check if user has this role in their roles array
+        return u.roles?.includes(roleFilter as UserRole)
       })
     }
 
@@ -389,8 +389,8 @@ export default function AdminUsersPage() {
                                 </Badge>
                               ))
                             ) : (
-                              <Badge className={`${getRoleBadgeColor(user.role)} border-0`}>
-                                {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                              <Badge className="bg-gray-200 text-gray-600 border-0">
+                                No Role
                               </Badge>
                             )}
                           </div>
