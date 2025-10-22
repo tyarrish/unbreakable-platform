@@ -11,7 +11,8 @@ import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Calendar, Clock, MapPin, Users, Video, Building2, CheckCircle, ChevronDown, ChevronUp, UserCircle, ExternalLink, Mic, Linkedin, Globe } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { getEvents, registerForEvent, unregisterFromEvent, isRegisteredForEvent } from '@/lib/supabase/queries/events'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { getEvents, registerForEvent, unregisterFromEvent, isRegisteredForEvent, getEventAttendees } from '@/lib/supabase/queries/events'
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -22,6 +23,7 @@ import type { Event } from '@/types/index.types'
 export default function CalendarPage() {
   const [events, setEvents] = useState<Event[]>([])
   const [registrations, setRegistrations] = useState<Set<string>>(new Set())
+  const [eventAttendees, setEventAttendees] = useState<Map<string, any[]>>(new Map())
   const [userId, setUserId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null)
@@ -52,6 +54,16 @@ export default function CalendarPage() {
         if (isReg) newRegs.add(eventsData[index].id)
       })
       setRegistrations(newRegs)
+
+      // Load attendees for each event
+      const attendeePromises = eventsData.map(event => getEventAttendees(event.id))
+      const attendeeResults = await Promise.all(attendeePromises)
+      
+      const newAttendees = new Map<string, any[]>()
+      attendeeResults.forEach((attendees, index) => {
+        newAttendees.set(eventsData[index].id, attendees)
+      })
+      setEventAttendees(newAttendees)
     } catch (error) {
       console.error('Error loading events:', error)
       toast.error('Failed to load events')
@@ -89,6 +101,10 @@ export default function CalendarPage() {
           // Don't show error to user - registration still succeeded
         }
       }
+      
+      // Reload attendees for this event
+      const attendees = await getEventAttendees(eventId)
+      setEventAttendees(prev => new Map(prev).set(eventId, attendees))
     } catch (error) {
       console.error('Error toggling registration:', error)
       toast.error('Failed to update registration')
@@ -545,6 +561,36 @@ export default function CalendarPage() {
                                     )}
                                   </button>
                                 </div>
+
+                                {/* Registered Attendees */}
+                                {eventAttendees.get(event.id) && eventAttendees.get(event.id)!.length > 0 && (
+                                  <div className="flex items-center gap-3 mt-3 pt-3 border-t border-rogue-sage/10">
+                                    <span className="text-xs text-rogue-slate font-medium">
+                                      {eventAttendees.get(event.id)!.length} registered
+                                    </span>
+                                    <TooltipProvider>
+                                      <div className="flex items-center">
+                                        {eventAttendees.get(event.id)!.map((attendee: any, idx: number) => (
+                                          <Tooltip key={attendee.user_id} delayDuration={0}>
+                                            <TooltipTrigger asChild>
+                                              <div className="-ml-2 first:ml-0">
+                                                <Avatar className="h-6 w-6 border-2 border-white ring-1 ring-rogue-sage/20">
+                                                  <AvatarImage src={attendee.user?.avatar_url} alt={attendee.user?.full_name} />
+                                                  <AvatarFallback className="bg-rogue-forest text-white text-xs">
+                                                    {attendee.user?.full_name?.charAt(0) || '?'}
+                                                  </AvatarFallback>
+                                                </Avatar>
+                                              </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p className="text-xs">{attendee.user?.full_name || 'Unknown'}</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        ))}
+                                      </div>
+                                    </TooltipProvider>
+                                  </div>
+                                )}
 
                                 {/* Expanded Details */}
                                 <AnimatePresence>

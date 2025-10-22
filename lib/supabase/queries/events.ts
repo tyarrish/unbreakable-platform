@@ -172,6 +172,25 @@ export async function isRegisteredForEvent(eventId: string, userId: string) {
 }
 
 /**
+ * Get registered attendees for an event
+ */
+export async function getEventAttendees(eventId: string) {
+  const supabase = createClient()
+  
+  const { data, error } = await supabase
+    .from('event_attendance')
+    .select(`
+      user_id,
+      user:profiles(full_name, avatar_url)
+    `)
+    .eq('event_id', eventId)
+    .eq('status', 'registered')
+  
+  if (error) throw error
+  return data || []
+}
+
+/**
  * Mark attendance
  */
 export async function markAttendance(eventId: string, userId: string, status: 'attended' | 'missed') {
