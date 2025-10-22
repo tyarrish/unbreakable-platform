@@ -20,8 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Settings, Calendar, Bell, Zap, Save } from 'lucide-react'
+import { Settings, Calendar, Bell, Zap, Save, FileText } from 'lucide-react'
 import { getAllSettings, updateSetting, type PlatformSetting } from '@/lib/supabase/queries/settings'
+import { RichTextEditor } from '@/components/discussions/rich-text-editor'
 import { toast } from 'sonner'
 
 export default function AdminSettingsPage() {
@@ -120,8 +121,9 @@ export default function AdminSettingsPage() {
         />
 
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="content">Content</TabsTrigger>
             <TabsTrigger value="cohort">Cohort</TabsTrigger>
             <TabsTrigger value="features">Features</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -150,6 +152,35 @@ export default function AdminSettingsPage() {
                     )}
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Content Settings */}
+          <TabsContent value="content">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-rogue-gold" />
+                  <CardTitle>Course Introduction</CardTitle>
+                </div>
+                <CardDescription>
+                  Customize the introduction that appears at the top of the Modules page
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <Label>Course Introduction / Description</Label>
+                  <p className="text-sm text-rogue-slate mb-2">
+                    This content will replace "The Work" header and subtitle on the participant Modules page. Use it to welcome participants and explain the learning journey.
+                  </p>
+                  <RichTextEditor
+                    content={editedSettings['course_introduction_html'] || ''}
+                    onChange={(html) => updateEditedSetting('course_introduction_html', html)}
+                    placeholder="Write a welcoming introduction to the course modules..."
+                    className="tiptap-styled"
+                  />
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

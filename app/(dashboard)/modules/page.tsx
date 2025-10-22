@@ -11,6 +11,7 @@ import { PageLoader } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
 import { TreePine, Lock, ArrowRight, Circle } from 'lucide-react'
 import { getModules } from '@/lib/supabase/queries/modules'
+import { getSetting } from '@/lib/supabase/queries/settings'
 import { formatDate, isFuture, isPast } from '@/lib/utils/format-date'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
@@ -19,6 +20,7 @@ import type { Module } from '@/types/index.types'
 
 export default function ModulesPage() {
   const [modules, setModules] = useState<Module[]>([])
+  const [courseIntroHtml, setCourseIntroHtml] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [currentModuleId, setCurrentModuleId] = useState<string | null>(null)
   const router = useRouter()
@@ -26,6 +28,7 @@ export default function ModulesPage() {
 
   useEffect(() => {
     loadModules()
+    loadCourseIntroduction()
   }, [])
 
   async function loadModules() {
@@ -43,6 +46,15 @@ export default function ModulesPage() {
       toast.error('Failed to load modules')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  async function loadCourseIntroduction() {
+    try {
+      const intro = await getSetting('course_introduction_html')
+      setCourseIntroHtml(intro || '')
+    } catch (error) {
+      console.error('Error loading course introduction:', error)
     }
   }
 
@@ -74,10 +86,19 @@ export default function ModulesPage() {
         <Container>
           <div className="py-10">
             <div className="flex items-end justify-between flex-wrap gap-6">
-              <div>
-                <h1 className="text-5xl font-bold text-rogue-forest mb-3 tracking-tight">The Work</h1>
-                <p className="text-lg text-rogue-slate/80">Cohort curriculum</p>
-              </div>
+              {courseIntroHtml ? (
+                <div className="flex-1 max-w-3xl">
+                  <div 
+                    className="prose prose-rogue max-w-none"
+                    dangerouslySetInnerHTML={{ __html: courseIntroHtml }}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <h1 className="text-5xl font-bold text-rogue-forest mb-3 tracking-tight">The Work</h1>
+                  <p className="text-lg text-rogue-slate/80">Cohort curriculum</p>
+                </div>
+              )}
               <div className="flex gap-4">
                 <div className="px-5 py-3 bg-white rounded-xl border border-rogue-sage/20 shadow-sm">
                   <p className="text-xs text-rogue-slate/60 uppercase tracking-wider mb-1">Available</p>
