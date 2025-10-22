@@ -363,6 +363,36 @@ export default function CalendarPage() {
                                 </button>
                               </div>
 
+                              {/* Registered Attendees */}
+                              {eventAttendees.get(event.id) && eventAttendees.get(event.id)!.length > 0 && (
+                                <div className="flex items-center gap-3 mt-4 pt-4 border-t border-rogue-sage/10">
+                                  <span className="text-xs text-rogue-slate font-medium">
+                                    {eventAttendees.get(event.id)!.length} registered
+                                  </span>
+                                  <TooltipProvider>
+                                    <div className="flex items-center">
+                                      {eventAttendees.get(event.id)!.map((attendee: any) => (
+                                        <Tooltip key={attendee.user_id} delayDuration={0}>
+                                          <TooltipTrigger asChild>
+                                            <div className="-ml-2 first:ml-0">
+                                              <Avatar className="h-6 w-6 border-2 border-white ring-1 ring-rogue-sage/20">
+                                                <AvatarImage src={attendee.user?.avatar_url} alt={attendee.user?.full_name} />
+                                                <AvatarFallback className="bg-rogue-forest text-white text-xs">
+                                                  {attendee.user?.full_name?.charAt(0) || '?'}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                            </div>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p className="text-xs">{attendee.user?.full_name || 'Unknown'}</p>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      ))}
+                                    </div>
+                                  </TooltipProvider>
+                                </div>
+                              )}
+
                               {/* Expanded Details */}
                               <AnimatePresence>
                                 {isExpanded && (
