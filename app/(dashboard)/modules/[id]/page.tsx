@@ -284,9 +284,32 @@ export default function ModuleDetailPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-rogue-slate leading-relaxed whitespace-pre-wrap">
-                {module.description}
-              </p>
+              <div className="prose prose-rogue max-w-none">
+                {module.description.split('\n\n').map((paragraph, index) => {
+                  // Handle heading format (## Heading)
+                  if (paragraph.trim().startsWith('##')) {
+                    const headingText = paragraph.replace(/^##\s*/, '').trim()
+                    return (
+                      <h3 key={index} className="text-xl font-bold text-rogue-forest mb-4 mt-6 first:mt-0">
+                        {headingText}
+                      </h3>
+                    )
+                  }
+                  
+                  // Handle regular paragraphs with inline bold (**text**)
+                  const parts = paragraph.split(/(\*\*.*?\*\*)/)
+                  return (
+                    <p key={index} className="text-rogue-slate leading-relaxed mb-4 last:mb-0">
+                      {parts.map((part, i) => {
+                        if (part.startsWith('**') && part.endsWith('**')) {
+                          return <strong key={i} className="font-semibold text-rogue-forest">{part.slice(2, -2)}</strong>
+                        }
+                        return part
+                      })}
+                    </p>
+                  )
+                })}
+              </div>
             </CardContent>
           </Card>
         )}
