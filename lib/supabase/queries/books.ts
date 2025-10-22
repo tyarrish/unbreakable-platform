@@ -142,6 +142,8 @@ export async function updateReadingProgress(
       user_id: userId,
       book_id: bookId,
       ...updates,
+    }, {
+      onConflict: 'user_id,book_id',
     })
     .select()
     .single()
