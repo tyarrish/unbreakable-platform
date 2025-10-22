@@ -322,7 +322,7 @@ export default function ModuleDetailPage() {
         )}
 
         {/* Tabs for Lessons and Resources */}
-        <Tabs defaultValue="lessons" className="space-y-6">
+        <Tabs defaultValue="lessons" className="space-y-6 mt-8">
           <TabsList>
             <TabsTrigger value="lessons">Lessons ({lessons.length})</TabsTrigger>
             <TabsTrigger value="resources">
