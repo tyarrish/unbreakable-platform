@@ -85,37 +85,36 @@ export default function ModulesPage() {
       <div className="bg-gradient-to-r from-white/80 via-white/60 to-transparent backdrop-blur-sm border-b border-rogue-sage/20">
         <Container>
           <div className="py-10">
-            <div className="flex items-end justify-between flex-wrap gap-6">
-              {courseIntroHtml ? (
-                <div className="flex-1 max-w-3xl">
-                  <div 
-                    className="prose prose-rogue max-w-none"
-                    dangerouslySetInnerHTML={{ __html: courseIntroHtml }}
-                  />
-                </div>
-              ) : (
-                <div>
-                  <h1 className="text-5xl font-bold text-rogue-forest mb-3 tracking-tight">The Work</h1>
-                  <p className="text-lg text-rogue-slate/80">Cohort curriculum</p>
-                </div>
-              )}
-              <div className="flex gap-4">
-                <div className="px-5 py-3 bg-white rounded-xl border border-rogue-sage/20 shadow-sm">
-                  <p className="text-xs text-rogue-slate/60 uppercase tracking-wider mb-1">Available</p>
-                  <p className="text-3xl font-bold text-rogue-forest">{availableModules.length}</p>
-                </div>
-                <div className="px-5 py-3 bg-rogue-cream rounded-xl border border-rogue-sage/20 shadow-sm">
-                  <p className="text-xs text-rogue-slate/60 uppercase tracking-wider mb-1">Coming</p>
-                  <p className="text-3xl font-bold text-rogue-slate/70">{upcomingModules.length}</p>
-                </div>
+            {courseIntroHtml ? (
+              <div className="max-w-3xl">
+                <div 
+                  className="prose prose-rogue max-w-none"
+                  dangerouslySetInnerHTML={{ __html: courseIntroHtml }}
+                />
               </div>
-            </div>
+            ) : (
+              <div>
+                <h1 className="text-5xl font-bold text-rogue-forest mb-3 tracking-tight">The Work</h1>
+                <p className="text-lg text-rogue-slate/80">Cohort curriculum</p>
+              </div>
+            )}
           </div>
         </Container>
       </div>
 
       <Container>
         <div className="py-16 max-w-5xl">
+          {/* Statistics Boxes */}
+          <div className="flex justify-end gap-4 mb-12">
+            <div className="px-5 py-3 bg-white rounded-xl border border-rogue-sage/20 shadow-sm">
+              <p className="text-xs text-rogue-slate/60 uppercase tracking-wider mb-1">Available</p>
+              <p className="text-3xl font-bold text-rogue-forest">{availableModules.length}</p>
+            </div>
+            <div className="px-5 py-3 bg-rogue-cream rounded-xl border border-rogue-sage/20 shadow-sm">
+              <p className="text-xs text-rogue-slate/60 uppercase tracking-wider mb-1">Coming</p>
+              <p className="text-3xl font-bold text-rogue-slate/70">{upcomingModules.length}</p>
+            </div>
+          </div>
           {/* Available Modules */}
           {availableModules.length > 0 && (
             <div className="mb-16">
