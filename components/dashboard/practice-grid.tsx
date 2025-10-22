@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
-import { BookOpen, MessageSquare, Calendar, TrendingUp } from 'lucide-react'
+import { BookOpen, MessageSquare, Calendar, TrendingUp, Target } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format-date'
 
 interface PracticeGridProps {
@@ -21,6 +21,7 @@ interface PracticeGridProps {
   yourRhythm: {
     daysActive: number
   }
+  personalizedActions: any[]
 }
 
 export function PracticeGrid({
@@ -28,6 +29,7 @@ export function PracticeGrid({
   liveConversations,
   nextEvent,
   yourRhythm,
+  personalizedActions,
 }: PracticeGridProps) {
   return (
     <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -101,6 +103,33 @@ export function PracticeGrid({
                   ? 'Building momentum'
                   : 'Room to engage more deeply'}
               </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Your Practice This Week */}
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-rogue-gold/5 hover:shadow-2xl transition-all hover:scale-[1.02] duration-300">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-rogue-gold/10 rounded-lg">
+              <Target className="h-5 w-5 text-rogue-gold" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-rogue-slate mb-1">Your Practice This Week</p>
+              {personalizedActions && personalizedActions.length > 0 ? (
+                <div className="space-y-2">
+                  {personalizedActions.slice(0, 2).map((action: any, index: number) => (
+                    <div key={index} className="text-sm text-rogue-slate">
+                      • {action.action || action.title || action}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-rogue-slate">
+                  Your personalized practices will appear here.
+                </p>
+              )}
             </div>
           </div>
         </CardContent>

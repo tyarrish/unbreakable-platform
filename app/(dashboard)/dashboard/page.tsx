@@ -143,24 +143,11 @@ export default async function DashboardPage() {
                 yourRhythm={{
                   daysActive: userMetrics.daysActive,
                 }}
+                personalizedActions={personalizedActions}
               />
 
               {/* What Your Cohort Is Working On */}
               <CohortActivity activities={content.activityFeed || []} />
-
-              {/* Journey Context (below activity on mobile) */}
-              <div className="lg:hidden">
-                <JourneyContext
-                  currentModule={{
-                    title: content.programState.currentModule,
-                    orderNumber: content.programState.currentModule.includes('Month 1')
-                      ? 1
-                      : content.programState.currentModule.includes('Month 2')
-                      ? 2
-                      : 1,
-                  }}
-                />
-              </div>
             </div>
 
             {/* Right Column: Sidebar */}
@@ -177,22 +164,17 @@ export default async function DashboardPage() {
                   : null
               } />
 
-              {/* Your Practice This Week */}
-              <PracticeActions actions={personalizedActions} />
-
-              {/* Journey Context (desktop only) */}
-              <div className="hidden lg:block">
-                <JourneyContext
-                  currentModule={{
-                    title: content.programState.currentModule,
-                    orderNumber: content.programState.currentModule.includes('Month 1')
-                      ? 1
-                      : content.programState.currentModule.includes('Month 2')
-                      ? 2
-                      : 1,
-                  }}
-                />
-              </div>
+              {/* Journey Context */}
+              <JourneyContext
+                currentModule={{
+                  title: content.programState.currentModule,
+                  orderNumber: content.programState.currentModule.includes('Month 1')
+                    ? 1
+                    : content.programState.currentModule.includes('Month 2')
+                    ? 2
+                    : 1,
+                }}
+              />
             </div>
           </div>
         </div>
