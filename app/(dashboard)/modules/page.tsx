@@ -84,7 +84,7 @@ export default function ModulesPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-white/80 via-white/60 to-transparent backdrop-blur-sm border-b border-rogue-sage/20">
         <Container>
-          <div className="py-10">
+          <div className="py-6">
             {courseIntroHtml ? (
               <div className="max-w-3xl">
                 <div 
@@ -103,9 +103,9 @@ export default function ModulesPage() {
       </div>
 
       <Container>
-        <div className="py-16 max-w-5xl">
+        <div className="py-8 max-w-5xl">
           {/* Statistics Boxes */}
-          <div className="flex justify-end gap-4 mb-12">
+          <div className="flex justify-end gap-4 mb-8">
             <div className="px-5 py-3 bg-white rounded-xl border border-rogue-sage/20 shadow-sm">
               <p className="text-xs text-rogue-slate/60 uppercase tracking-wider mb-1">Available</p>
               <p className="text-3xl font-bold text-rogue-forest">{availableModules.length}</p>
