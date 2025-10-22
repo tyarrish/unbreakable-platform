@@ -346,7 +346,6 @@ export default function MemberProfilePage() {
                     ))}
                   {readingList
                     .filter(item => item.status === 'finished')
-                    .slice(0, 6)
                     .map((item) => (
                       <BookCoverCard
                         key={item.id}
