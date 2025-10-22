@@ -275,7 +275,7 @@ export default function ModuleDetailPage() {
         </div>
 
         {/* Module Description */}
-        {module.description && (
+        {((module as any).description_html || module.description) && (
           <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-rogue-sage/5">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
@@ -284,32 +284,39 @@ export default function ModuleDetailPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-rogue max-w-none">
-                {module.description.split('\n\n').map((paragraph, index) => {
-                  // Handle heading format (## Heading)
-                  if (paragraph.trim().startsWith('##')) {
-                    const headingText = paragraph.replace(/^##\s*/, '').trim()
+              {(module as any).description_html ? (
+                <div 
+                  className="prose prose-sm prose-rogue max-w-none text-rogue-slate"
+                  dangerouslySetInnerHTML={{ __html: (module as any).description_html }}
+                />
+              ) : (
+                <div className="prose prose-rogue max-w-none">
+                  {module.description && module.description.split('\n\n').map((paragraph, index) => {
+                    // Handle heading format (## Heading)
+                    if (paragraph.trim().startsWith('##')) {
+                      const headingText = paragraph.replace(/^##\s*/, '').trim()
+                      return (
+                        <h3 key={index} className="text-xl font-bold text-rogue-forest mb-4 mt-6 first:mt-0">
+                          {headingText}
+                        </h3>
+                      )
+                    }
+                    
+                    // Handle regular paragraphs with inline bold (**text**)
+                    const parts = paragraph.split(/(\*\*.*?\*\*)/)
                     return (
-                      <h3 key={index} className="text-xl font-bold text-rogue-forest mb-4 mt-6 first:mt-0">
-                        {headingText}
-                      </h3>
+                      <p key={index} className="text-rogue-slate leading-relaxed mb-4 last:mb-0">
+                        {parts.map((part, i) => {
+                          if (part.startsWith('**') && part.endsWith('**')) {
+                            return <strong key={i} className="font-semibold text-rogue-forest">{part.slice(2, -2)}</strong>
+                          }
+                          return part
+                        })}
+                      </p>
                     )
-                  }
-                  
-                  // Handle regular paragraphs with inline bold (**text**)
-                  const parts = paragraph.split(/(\*\*.*?\*\*)/)
-                  return (
-                    <p key={index} className="text-rogue-slate leading-relaxed mb-4 last:mb-0">
-                      {parts.map((part, i) => {
-                        if (part.startsWith('**') && part.endsWith('**')) {
-                          return <strong key={i} className="font-semibold text-rogue-forest">{part.slice(2, -2)}</strong>
-                        }
-                        return part
-                      })}
-                    </p>
-                  )
-                })}
-              </div>
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

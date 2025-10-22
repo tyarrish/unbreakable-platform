@@ -7,7 +7,6 @@ import { PageHeader } from '@/components/layout/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageLoader } from '@/components/ui/loading-spinner'
@@ -15,6 +14,7 @@ import { getModule, updateModule, getLessons } from '@/lib/supabase/queries/modu
 import { getEventsByModule } from '@/lib/supabase/queries/events'
 import { getBooksByMonth } from '@/lib/supabase/queries/books'
 import { ModuleEventsBanner } from '@/components/modules/module-events-banner'
+import { RichTextEditor } from '@/components/discussions/rich-text-editor'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { ArrowLeft, Plus, BookOpen, Eye } from 'lucide-react'
@@ -39,6 +39,7 @@ export default function EditModulePage() {
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [descriptionHtml, setDescriptionHtml] = useState('')
   const [orderNumber, setOrderNumber] = useState(1)
   const [releaseDate, setReleaseDate] = useState('')
   const [isPublished, setIsPublished] = useState(false)
@@ -70,6 +71,7 @@ export default function EditModulePage() {
       setModule(data)
       setTitle(data.title)
       setDescription(data.description || '')
+      setDescriptionHtml((data as any).description_html || data.description || '')
       setOrderNumber(data.order_number)
       setReleaseDate(data.release_date ? new Date(data.release_date).toISOString().slice(0, 16) : '')
       setIsPublished(data.is_published)
@@ -110,16 +112,22 @@ export default function EditModulePage() {
     setIsSaving(true)
 
     try {
-      await updateModule(moduleId, {
-        title,
-        description,
-        order_number: orderNumber,
-        release_date: releaseDate || undefined,
-        is_published: isPublished,
-      })
+      // Update module with both plain text and HTML
+      await supabase
+        .from('modules')
+        .update({
+          title,
+          description: descriptionHtml.replace(/<[^>]*>/g, ''), // Strip HTML for plain text fallback
+          description_html: descriptionHtml,
+          order_number: orderNumber,
+          release_date: releaseDate || null,
+          is_published: isPublished,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', moduleId)
 
       toast.success('Module updated successfully!')
-      router.push('/admin/modules')
+      loadModule() // Reload to get updated data
     } catch (error) {
       console.error('Error updating module:', error)
       toast.error('Failed to update module')
@@ -218,15 +226,48 @@ export default function EditModulePage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={4}
-                      disabled={isSaving}
-                    />
+                  <div className="space-y-3">
+                    <Label>Course Introduction / Description</Label>
+                    <p className="text-sm text-rogue-slate">
+                      Write an engaging introduction that will appear at the top of the module page for participants.
+                    </p>
+                    
+                    <div className="grid lg:grid-cols-2 gap-6">
+                      {/* Editor */}
+                      <div className="space-y-2">
+                        <Label className="text-xs text-rogue-slate">Edit</Label>
+                        <RichTextEditor
+                          content={descriptionHtml}
+                          onChange={setDescriptionHtml}
+                          placeholder="Write a compelling introduction to this module..."
+                        />
+                      </div>
+
+                      {/* Preview */}
+                      <div className="space-y-2">
+                        <Label className="text-xs text-rogue-slate">Preview (How it appears to participants)</Label>
+                        <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-rogue-sage/5">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-center gap-2">
+                              <BookOpen className="h-5 w-5 text-rogue-gold" />
+                              <h3 className="text-lg font-semibold text-rogue-forest">Course Introduction</h3>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            {descriptionHtml ? (
+                              <div 
+                                className="prose prose-sm prose-rogue max-w-none text-rogue-slate"
+                                dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+                              />
+                            ) : (
+                              <p className="text-sm text-rogue-slate/50 italic">
+                                Your module introduction will appear here...
+                              </p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
