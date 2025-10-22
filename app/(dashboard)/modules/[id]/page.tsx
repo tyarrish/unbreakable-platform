@@ -19,7 +19,7 @@ import { getBooksByMonth } from '@/lib/supabase/queries/books'
 import { calculateProgress } from '@/lib/utils/progress'
 import { formatTimeSpent } from '@/lib/utils/progress'
 import { formatDate, formatEventTime } from '@/lib/utils/format-date'
-import { ArrowLeft, Clock, CheckCircle2, TrendingUp, Calendar, MapPin, Video } from 'lucide-react'
+import { ArrowLeft, Clock, CheckCircle2, TrendingUp, Calendar, MapPin, Video, BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Module, Lesson, LessonProgress, Event } from '@/types/index.types'
 
@@ -276,8 +276,14 @@ export default function ModuleDetailPage() {
 
         {/* Module Description */}
         {module.description && (
-          <Card className="border-rogue-sage/20">
-            <CardContent className="pt-6">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-rogue-sage/5">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-rogue-gold" />
+                <h3 className="text-lg font-semibold text-rogue-forest">Course Introduction</h3>
+              </div>
+            </CardHeader>
+            <CardContent>
               <p className="text-rogue-slate leading-relaxed whitespace-pre-wrap">
                 {module.description}
               </p>
