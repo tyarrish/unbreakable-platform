@@ -117,14 +117,9 @@ export default function AdminModulesPage() {
                           </span>
                         )}
                       </div>
-                      <h3 className="text-xl font-semibold text-rogue-forest mb-2">
+                      <h3 className="text-xl font-semibold text-rogue-forest">
                         {module.title}
                       </h3>
-                      {module.description && (
-                        <p className="text-sm text-rogue-slate leading-relaxed">
-                          {module.description}
-                        </p>
-                      )}
                     </div>
                     <div className="flex gap-2 ml-4">
                       <Button

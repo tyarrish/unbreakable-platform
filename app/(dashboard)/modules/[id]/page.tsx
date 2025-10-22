@@ -274,6 +274,17 @@ export default function ModuleDetailPage() {
           )}
         </div>
 
+        {/* Module Description */}
+        {module.description && (
+          <Card className="border-rogue-sage/20">
+            <CardContent className="pt-6">
+              <p className="text-rogue-slate leading-relaxed whitespace-pre-wrap">
+                {module.description}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Tabs for Lessons and Resources */}
         <Tabs defaultValue="lessons" className="space-y-6">
           <TabsList>
