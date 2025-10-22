@@ -10,7 +10,7 @@ import { JourneyContext } from '@/components/dashboard/journey-context'
 import { DiscussionEngagementCard } from '@/components/dashboard/discussion-engagement-card'
 import { NextEventCard } from '@/components/dashboard/next-event-card'
 
-export const revalidate = 300 // Revalidate every 5 minutes
+export const revalidate = 60 // Revalidate every minute to keep event times fresh
 
 export default async function DashboardPage() {
   const supabase = await createClient()

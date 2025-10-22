@@ -36,7 +36,8 @@ export function NextEventCard({ nextEvent }: NextEventCardProps) {
                     day: 'numeric',
                     hour: 'numeric',
                     minute: '2-digit',
-                  })}
+                    timeZone: 'America/Los_Angeles',
+                  })} PT
                 </p>
                 {nextEvent.location && (
                   <p className="text-xs text-rogue-slate/70 mt-1">
