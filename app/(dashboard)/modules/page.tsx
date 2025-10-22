@@ -84,9 +84,9 @@ export default function ModulesPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-white/80 via-white/60 to-transparent backdrop-blur-sm border-b border-rogue-sage/20">
         <Container>
-          <div className="py-6">
+          <div className="py-6 max-w-5xl">
             {courseIntroHtml ? (
-              <div className="max-w-3xl">
+              <div>
                 <div 
                   className="prose prose-rogue max-w-none"
                   dangerouslySetInnerHTML={{ __html: courseIntroHtml }}
