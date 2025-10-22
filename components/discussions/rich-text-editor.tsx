@@ -81,7 +81,7 @@ export function RichTextEditor({ content, onChange, placeholder = 'Write your po
     content,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[120px] px-4 py-3',
+        class: 'prose prose-sm prose-rogue max-w-none focus:outline-none min-h-[120px] px-4 py-3 text-rogue-slate',
       },
     },
     onUpdate: ({ editor }) => {

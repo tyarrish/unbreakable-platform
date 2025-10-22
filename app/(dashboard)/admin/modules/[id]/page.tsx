@@ -228,46 +228,15 @@ export default function EditModulePage() {
 
                   <div className="space-y-3">
                     <Label>Course Introduction / Description</Label>
-                    <p className="text-sm text-rogue-slate">
+                    <p className="text-sm text-rogue-slate mb-2">
                       Write an engaging introduction that will appear at the top of the module page for participants.
                     </p>
-                    
-                    <div className="grid lg:grid-cols-2 gap-6">
-                      {/* Editor */}
-                      <div className="space-y-2">
-                        <Label className="text-xs text-rogue-slate">Edit</Label>
-                        <RichTextEditor
-                          content={descriptionHtml}
-                          onChange={setDescriptionHtml}
-                          placeholder="Write a compelling introduction to this module..."
-                        />
-                      </div>
-
-                      {/* Preview */}
-                      <div className="space-y-2">
-                        <Label className="text-xs text-rogue-slate">Preview (How it appears to participants)</Label>
-                        <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-rogue-sage/5">
-                          <CardHeader className="pb-3">
-                            <div className="flex items-center gap-2">
-                              <BookOpen className="h-5 w-5 text-rogue-gold" />
-                              <h3 className="text-lg font-semibold text-rogue-forest">Course Introduction</h3>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            {descriptionHtml ? (
-                              <div 
-                                className="prose prose-sm prose-rogue max-w-none text-rogue-slate"
-                                dangerouslySetInnerHTML={{ __html: descriptionHtml }}
-                              />
-                            ) : (
-                              <p className="text-sm text-rogue-slate/50 italic">
-                                Your module introduction will appear here...
-                              </p>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </div>
+                    <RichTextEditor
+                      content={descriptionHtml}
+                      onChange={setDescriptionHtml}
+                      placeholder="Write a compelling introduction to this module..."
+                      className="tiptap-styled"
+                    />
                   </div>
 
                   <div className="space-y-2">
