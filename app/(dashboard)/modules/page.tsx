@@ -154,16 +154,9 @@ export default function ModulesPage() {
                             </div>
 
                             {/* Title */}
-                            <h3 className={`text-3xl font-bold ${monthColor.text} mb-4 leading-tight group-hover:opacity-80 transition-opacity`}>
+                            <h3 className={`text-3xl font-bold ${monthColor.text} mb-6 leading-tight group-hover:opacity-80 transition-opacity`}>
                               {module.title}
                             </h3>
-
-                            {/* Description */}
-                            {module.description && (
-                              <p className="text-base text-rogue-slate/80 leading-relaxed mb-6 max-w-2xl">
-                                {module.description}
-                              </p>
-                            )}
 
                             {/* Action Button */}
                             <Button
